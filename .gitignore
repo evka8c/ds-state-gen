@@ -1,0 +1,19 @@
+# User config (contains local paths)
+config/project.yml
+
+# Generated reports (user-specific)
+reports/*
+!reports/.gitkeep
+
+# Scanner cache (project-specific)
+cache/*
+!cache/.gitkeep
+
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+
+# Claude Code
+.claude/

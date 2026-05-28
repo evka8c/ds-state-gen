@@ -1,0 +1,36 @@
+# DS State Gen — Project Configuration
+# Copy this to config/project.yml and fill in your details.
+
+# Path to your project's source code (absolute path)
+project_path: ~/my-project
+
+# Your design system details (optional but recommended)
+design_system:
+  name: ""
+  # Where to find CSS/token files relative to project_path
+  # The tool will search automatically, but you can specify exact paths
+  css_paths: []
+  #   - app/assets/stylesheets/design/tokens.css
+  #   - app/assets/stylesheets/design/components.css
+  # Known DS framework (helps the tool understand your component patterns)
+  # Options: custom, shadcn, material, carbon, polaris, chakra, radix, antd
+  framework: custom
+
+# What your app is (helps with state enumeration)
+product:
+  name: ""
+  description: ""
+  # Primary users and what they do
+  audience: ""
+
+# Report preferences
+reports:
+  # Max width for mockup frames in report
+  mockup_width: 800
+
+# How you want to use the output for gaps/partial states
+# Options: code, prompts, specs
+#   code    — generates CSS/components matching your project, can add directly
+#   prompts — generates prompts you paste into your AI tool in your project
+#   specs   — generates design specs for developer handoff or Figma refinement
+output_format: prompts

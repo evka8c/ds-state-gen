@@ -1,0 +1,404 @@
+name: "UI State Taxonomy"
+version: "1.0.0"
+description: "Comprehensive state enumeration by component type. Used to generate complete state coverage for any feature."
+
+component_types:
+
+  data-table:
+    description: "Table or list displaying fetched data"
+    states:
+      - name: loaded
+        required: true
+        description: "Data loaded and displayed"
+      - name: loading-initial
+        required: true
+        description: "First load, no data yet"
+        ds_hint: "Skeleton rows or centered spinner"
+      - name: loading-refresh
+        required: false
+        description: "Refreshing with stale data visible"
+        ds_hint: "Subtle overlay or top progress bar"
+      - name: empty
+        required: true
+        description: "No data exists at all"
+        ds_hint: "Empty state illustration + heading + CTA to create first item"
+      - name: empty-filtered
+        required: true
+        description: "Data exists but filters match nothing"
+        ds_hint: "Empty state with 'Clear filters' action, NOT the same as empty"
+      - name: empty-search
+        required: true
+        description: "Search returned no results"
+        ds_hint: "Show query in message, suggest corrections"
+      - name: error-fetch
+        required: true
+        description: "Data fetch failed"
+        ds_hint: "Error banner with retry action"
+      - name: error-partial
+        required: false
+        description: "Some rows loaded, some failed"
+        ds_hint: "Loaded data visible, error banner for failed portion"
+      - name: permission-denied
+        required: false
+        description: "User lacks access"
+        ds_hint: "Access denied state with request-access CTA"
+      - name: offline
+        required: false
+        description: "No network, showing cached or nothing"
+        ds_hint: "Offline banner, show cached data if available"
+      - name: pagination-loading
+        required: false
+        description: "Loading next page of results"
+        ds_hint: "Skeleton rows appended or inline spinner"
+      - name: bulk-selection
+        required: false
+        description: "One or more rows selected for bulk action"
+        ds_hint: "Toolbar appears with count and actions"
+
+  form:
+    description: "User input form (create, edit, settings)"
+    states:
+      - name: default
+        required: true
+        description: "Clean form ready for input"
+      - name: filling
+        required: true
+        description: "User has entered partial data"
+      - name: field-error
+        required: true
+        description: "One or more fields have validation errors"
+        ds_hint: "Inline error below field, field border changes to error color"
+      - name: field-success
+        required: false
+        description: "Field validated successfully (e.g., username available)"
+        ds_hint: "Inline success indicator"
+      - name: submitting
+        required: true
+        description: "Form is being submitted"
+        ds_hint: "Button shows loading state, fields disabled"
+      - name: submit-error
+        required: true
+        description: "Server rejected the submission"
+        ds_hint: "Error banner at top of form, fields remain filled"
+      - name: submit-success
+        required: true
+        description: "Submission succeeded"
+        ds_hint: "Success message or redirect, depends on context"
+      - name: unsaved-changes
+        required: false
+        description: "User has edits and tries to navigate away"
+        ds_hint: "Confirmation dialog: discard or save"
+      - name: session-expired
+        required: false
+        description: "Auth expired during form fill"
+        ds_hint: "Preserve input, show re-auth prompt"
+      - name: prefilled
+        required: false
+        description: "Form pre-populated from existing data (edit mode)"
+        ds_hint: "Show which fields are editable vs read-only"
+      - name: field-disabled
+        required: false
+        description: "Some fields conditionally disabled based on other inputs"
+        ds_hint: "Disabled styling with tooltip explaining why"
+      - name: autosaving
+        required: false
+        description: "Changes auto-saved in background"
+        ds_hint: "Subtle 'Saving...' / 'Saved' indicator"
+
+  file-upload:
+    description: "File or image upload area"
+    states:
+      - name: default
+        required: true
+        description: "Ready to receive files"
+        ds_hint: "Drop zone with icon and text"
+      - name: drag-hover
+        required: true
+        description: "File being dragged over the zone"
+        ds_hint: "Zone highlights, border changes"
+      - name: uploading
+        required: true
+        description: "File upload in progress"
+        ds_hint: "Progress bar per file, cancel button"
+      - name: upload-success
+        required: true
+        description: "File uploaded successfully"
+        ds_hint: "Thumbnail/icon with filename, remove action"
+      - name: error-too-large
+        required: true
+        description: "File exceeds size limit"
+        ds_hint: "Inline error with max size, file not added"
+      - name: error-wrong-type
+        required: true
+        description: "File type not accepted"
+        ds_hint: "Inline error listing accepted types"
+      - name: error-network
+        required: true
+        description: "Upload failed due to network"
+        ds_hint: "Error with retry action per file"
+      - name: max-files-reached
+        required: false
+        description: "Maximum number of files already attached"
+        ds_hint: "Drop zone disabled with message showing limit"
+      - name: processing
+        required: false
+        description: "File uploaded, server processing (virus scan, image resize)"
+        ds_hint: "Processing indicator distinct from upload progress"
+      - name: replacing
+        required: false
+        description: "Replacing an existing file"
+        ds_hint: "Show old and new, confirm replacement"
+
+  modal-dialog:
+    description: "Modal or dialog for focused actions"
+    states:
+      - name: default
+        required: true
+        description: "Modal open with content"
+      - name: loading-content
+        required: false
+        description: "Modal open but content loading"
+        ds_hint: "Skeleton inside modal shell"
+      - name: confirmation
+        required: false
+        description: "Asking user to confirm a destructive action"
+        ds_hint: "Clear description of what will happen, destructive button styled as danger"
+      - name: submitting
+        required: false
+        description: "Action in progress"
+        ds_hint: "Buttons disabled, loading indicator"
+      - name: error
+        required: false
+        description: "Action failed"
+        ds_hint: "Error message inside modal, retry option"
+      - name: success-dismiss
+        required: false
+        description: "Action succeeded, modal about to close"
+        ds_hint: "Brief success state or immediate close with toast"
+
+  navigation:
+    description: "Primary or secondary navigation"
+    states:
+      - name: default
+        required: true
+        description: "Navigation with current page indicated"
+      - name: collapsed
+        required: false
+        description: "Sidebar or menu collapsed"
+        ds_hint: "Icons only or hamburger"
+      - name: mobile
+        required: true
+        description: "Navigation adapted for small viewport"
+        ds_hint: "Hamburger menu, bottom nav, or drawer"
+      - name: notification-badge
+        required: false
+        description: "Nav item has pending notification"
+        ds_hint: "Badge with count on nav item"
+      - name: disabled-item
+        required: false
+        description: "Nav item visible but not accessible"
+        ds_hint: "Muted styling, tooltip explaining why"
+      - name: overflow
+        required: false
+        description: "Too many items for available space"
+        ds_hint: "More menu or horizontal scroll"
+
+  card:
+    description: "Content card (product, user, item)"
+    states:
+      - name: default
+        required: true
+        description: "Card with content"
+      - name: loading
+        required: true
+        description: "Card content loading"
+        ds_hint: "Skeleton card matching card dimensions"
+      - name: hover
+        required: false
+        description: "Mouse hovering over interactive card"
+        ds_hint: "Subtle elevation or border change"
+      - name: selected
+        required: false
+        description: "Card selected in a multi-select context"
+        ds_hint: "Checkbox and/or border highlight"
+      - name: expanded
+        required: false
+        description: "Card expanded to show more detail"
+        ds_hint: "Inline expansion or transition to detail view"
+      - name: error
+        required: false
+        description: "Card data failed to load"
+        ds_hint: "Error state within card boundaries"
+      - name: disabled
+        required: false
+        description: "Card not actionable"
+        ds_hint: "Muted colors, no hover effect"
+      - name: image-missing
+        required: false
+        description: "Card image failed to load"
+        ds_hint: "Placeholder with icon, not broken image"
+
+  search:
+    description: "Search input with results"
+    states:
+      - name: default
+        required: true
+        description: "Search field empty, ready for input"
+      - name: focused
+        required: true
+        description: "Search field focused, may show recent searches"
+        ds_hint: "Show recent searches or suggestions dropdown"
+      - name: typing
+        required: true
+        description: "User typing, results updating"
+        ds_hint: "Debounced search, show loading in results area"
+      - name: results
+        required: true
+        description: "Results displayed"
+      - name: no-results
+        required: true
+        description: "Query returned nothing"
+        ds_hint: "Helpful message, suggest corrections, show related"
+      - name: error
+        required: true
+        description: "Search request failed"
+        ds_hint: "Error with retry"
+      - name: result-highlight
+        required: false
+        description: "Keyboard navigating through results"
+        ds_hint: "Active item highlighted"
+
+  notification-toast:
+    description: "Transient notification messages"
+    states:
+      - name: info
+        required: true
+        description: "Informational message"
+        ds_hint: "Blue/neutral with info icon"
+      - name: success
+        required: true
+        description: "Action succeeded"
+        ds_hint: "Green with checkmark"
+      - name: warning
+        required: true
+        description: "Something needs attention"
+        ds_hint: "Yellow/orange with warning icon"
+      - name: error
+        required: true
+        description: "Something failed"
+        ds_hint: "Red with error icon, may need manual dismiss"
+      - name: action
+        required: false
+        description: "Toast with an undo or action button"
+        ds_hint: "Text + action link, longer auto-dismiss timer"
+      - name: persistent
+        required: false
+        description: "Won't auto-dismiss, needs manual close"
+        ds_hint: "Close button visible, no timer"
+      - name: stacked
+        required: false
+        description: "Multiple toasts visible"
+        ds_hint: "Stack with max visible count, newest on top"
+
+  toggle-switch:
+    description: "On/off toggle control"
+    states:
+      - name: off
+        required: true
+        description: "Toggle in off position"
+      - name: "on"
+        required: true
+        description: "Toggle in on position"
+      - name: off-hover
+        required: true
+        description: "Hovering while off"
+      - name: on-hover
+        required: true
+        description: "Hovering while on"
+      - name: disabled-off
+        required: true
+        description: "Disabled in off position"
+        ds_hint: "Muted styling, tooltip explaining why disabled"
+      - name: disabled-on
+        required: true
+        description: "Disabled in on position"
+        ds_hint: "Muted styling, shows current state but not changeable"
+      - name: loading
+        required: false
+        description: "Toggle change being saved to server"
+        ds_hint: "Spinner or pulse animation, prevent rapid toggling"
+      - name: error
+        required: false
+        description: "Toggle change failed"
+        ds_hint: "Reverts to previous state, shows error toast"
+
+  onboarding-flow:
+    description: "Multi-step first-time user experience"
+    states:
+      - name: step-active
+        required: true
+        description: "Current step displayed"
+      - name: step-completed
+        required: true
+        description: "Previously completed step"
+        ds_hint: "Checkmark in stepper, allows going back"
+      - name: step-upcoming
+        required: true
+        description: "Future step not yet reachable"
+        ds_hint: "Muted in stepper, not clickable"
+      - name: step-skipped
+        required: false
+        description: "Optional step the user skipped"
+        ds_hint: "Different indicator from completed"
+      - name: completed-all
+        required: true
+        description: "All steps finished"
+        ds_hint: "Success celebration, CTA to start using the product"
+      - name: abandoned-return
+        required: false
+        description: "User left mid-flow and returned"
+        ds_hint: "Resume from where they left off, not restart"
+      - name: error-in-step
+        required: false
+        description: "Current step has a validation or server error"
+        ds_hint: "Error within the step content, don't break the stepper"
+
+screen_level_states:
+  description: "States that apply to any screen regardless of component type"
+  states:
+    - name: first-time
+      description: "User has never seen this screen before"
+      ds_hint: "Onboarding tooltips, coach marks, or welcome banner"
+    - name: offline
+      description: "Device lost network connectivity"
+      ds_hint: "Offline banner, graceful degradation, show cached data"
+    - name: slow-connection
+      description: "Network is slow, things are taking longer"
+      ds_hint: "Extended loading states, progress indicators, low-bandwidth fallbacks"
+    - name: permission-upgrade
+      description: "Feature visible but requires plan upgrade"
+      ds_hint: "Locked state with upgrade CTA, not hidden"
+    - name: maintenance
+      description: "Feature temporarily unavailable"
+      ds_hint: "Maintenance message with expected return time"
+    - name: version-mismatch
+      description: "App version is outdated"
+      ds_hint: "Refresh prompt, don't break mid-task"
+    - name: responsive-breakpoints
+      description: "Layout at mobile, tablet, desktop widths"
+      ds_hint: "Define which components stack, collapse, or hide at each breakpoint"
+    - name: keyboard-navigation
+      description: "User navigating entirely by keyboard"
+      ds_hint: "Visible focus rings, logical tab order, skip links"
+    - name: screen-reader
+      description: "Content consumed by screen reader"
+      ds_hint: "Proper heading hierarchy, aria-labels, live regions for dynamic content"
+    - name: high-contrast
+      description: "User has high contrast mode enabled"
+      ds_hint: "Respect prefers-contrast, don't rely on color alone"
+    - name: reduced-motion
+      description: "User prefers reduced motion"
+      ds_hint: "Respect prefers-reduced-motion, provide static alternatives"
+    - name: print
+      description: "User is printing the page"
+      ds_hint: "Print stylesheet, hide nav/actions, optimize for paper"

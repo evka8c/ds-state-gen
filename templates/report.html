@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>State Report — {{FEATURE_NAME}}</title>
+<style>
+  /* =========================================================
+     DS State Gen — Report Template
+     Self-contained. No external dependencies.
+     Replace {{TOKENS}} sections with actual DS values if available.
+     ========================================================= */
+
+  /* --- Reset & Base --- */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* Report chrome (NOT the audited DS — these style the report itself) */
+    --report-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --report-bg: #f8f8f6;
+    --report-surface: #ffffff;
+    --report-text: #1a1a1a;
+    --report-text-secondary: #6b6b6b;
+    --report-text-tertiary: #999999;
+    --report-border: #e5e5e5;
+    --report-border-light: #f0f0f0;
+    --report-radius: 10px;
+    --report-radius-sm: 6px;
+
+    --status-covered: #2a7d4f;
+    --status-covered-bg: #e8f5ec;
+    --status-partial: #b8860b;
+    --status-partial-bg: #fef9e7;
+    --status-gap: #c0392b;
+    --status-gap-bg: #fdecea;
+    --status-unknown: #6b6b6b;
+    --status-unknown-bg: #f3f3f3;
+  }
+
+  body {
+    font-family: var(--report-font);
+    background: var(--report-bg);
+    color: var(--report-text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- Layout --- */
+  .report {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  /* --- Header --- */
+  .report-header {
+    margin-bottom: 48px;
+  }
+
+  .report-header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+  }
+
+  .report-meta {
+    font-size: 13px;
+    color: var(--report-text-tertiary);
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .report-description {
+    margin-top: 16px;
+    font-size: 15px;
+    color: var(--report-text-secondary);
+    max-width: 640px;
+  }
+
+  /* --- Stats Bar --- */
+  .stats-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  .stat-card {
+    flex: 1;
+    min-width: 140px;
+    background: var(--report-surface);
+    border: 1px solid var(--report-border);
+    border-radius: var(--report-radius);
+    padding: 20px;
+  }
+
+  .stat-card .stat-value {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+
+  .stat-card .stat-label {
+    font-size: 12px;
+    color: var(--report-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  .stat-covered .stat-value { color: var(--status-covered); }
+  .stat-gaps .stat-value { color: var(--status-gap); }
+  .stat-partial .stat-value { color: var(--status-partial); }
+
+  /* --- Coverage Matrix --- */
+  .section {
+    margin-bottom: 48px;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--report-text-tertiary);
+    margin-bottom: 16px;
+  }
+
+  .matrix-table {
+    width: 100%;
+    background: var(--report-surface);
+    border: 1px solid var(--report-border);
+    border-radius: var(--report-radius);
+    overflow: hidden;
+    border-spacing: 0;
+    font-size: 14px;
+  }
+
+  .matrix-table th {
+    text-align: left;
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--report-text-tertiary);
+    padding: 12px 16px;
+    background: var(--report-bg);
+    border-bottom: 1px solid var(--report-border);
+  }
+
+  .matrix-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--report-border-light);
+    vertical-align: top;
+  }
+
+  .matrix-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .matrix-table .state-name {
+    font-weight: 500;
+  }
+
+  .matrix-table .state-component {
+    color: var(--report-text-tertiary);
+    font-size: 12px;
+  }
+
+  .matrix-table .state-description {
+    color: var(--report-text-secondary);
+    font-size: 13px;
+  }
+
+  /* --- Status Badges --- */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .badge-covered { background: var(--status-covered-bg); color: var(--status-covered); }
+  .badge-partial { background: var(--status-partial-bg); color: var(--status-partial); }
+  .badge-gap { background: var(--status-gap-bg); color: var(--status-gap); }
+  .badge-unknown { background: var(--status-unknown-bg); color: var(--status-unknown); }
+
+  .badge-required {
+    background: transparent;
+    border: 1px solid var(--report-border);
+    color: var(--report-text-tertiary);
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+
+  /* --- State Design Cards --- */
+  .state-card {
+    background: var(--report-surface);
+    border: 1px solid var(--report-border);
+    border-radius: var(--report-radius);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+
+  .state-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--report-border-light);
+  }
+
+  .state-card-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .state-card-header .badges {
+    display: flex;
+    gap: 6px;
+  }
+
+  .state-card-description {
+    padding: 12px 20px;
+    font-size: 14px;
+    color: var(--report-text-secondary);
+    border-bottom: 1px solid var(--report-border-light);
+  }
+
+  /* --- Mockup Container --- */
+  .mockup-container {
+    padding: 24px;
+    background: var(--report-bg);
+  }
+
+  .mockup-frame {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--report-surface);
+    border: 1px solid var(--report-border);
+    border-radius: var(--report-radius-sm);
+    overflow: hidden;
+    /* DS tokens go inside here */
+  }
+
+  .mockup-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--report-text-tertiary);
+    margin-bottom: 12px;
+  }
+
+  /* --- Implementation Notes --- */
+  .state-card-notes {
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    font-size: 13px;
+  }
+
+  .note-group h4 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--report-text-tertiary);
+    margin-bottom: 6px;
+  }
+
+  .note-group p, .note-group ul {
+    color: var(--report-text-secondary);
+  }
+
+  .note-group ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .note-group li {
+    padding: 2px 0;
+  }
+
+  .note-group li::before {
+    content: "·";
+    margin-right: 6px;
+    color: var(--report-text-tertiary);
+  }
+
+  .note-group code {
+    font-size: 12px;
+    background: var(--report-bg);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  /* --- Gap Report --- */
+  .gap-card {
+    border-left: 3px solid var(--status-gap);
+  }
+
+  .gap-suggestion {
+    padding: 16px 20px;
+    background: var(--status-gap-bg);
+    font-size: 13px;
+    color: var(--report-text-secondary);
+  }
+
+  .gap-suggestion strong {
+    color: var(--status-gap);
+  }
+
+  /* --- DS Tokens Reference (when DS is linked) --- */
+  .token-ref {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--report-text-secondary);
+    background: var(--report-bg);
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid var(--report-border-light);
+  }
+
+  .token-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    border: 1px solid rgba(0,0,0,0.1);
+    display: inline-block;
+  }
+
+  /* --- Footer --- */
+  .report-footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--report-border);
+    font-size: 12px;
+    color: var(--report-text-tertiary);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* --- Print --- */
+  @media print {
+    body { background: white; }
+    .report { padding: 0; max-width: none; }
+    .state-card, .matrix-table { break-inside: avoid; }
+    .mockup-container { background: white; }
+  }
+</style>
+</head>
+<body>
+
+<div class="report">
+
+  <!-- ============ HEADER ============ -->
+  <header class="report-header">
+    <h1>{{FEATURE_NAME}}</h1>
+    <div class="report-meta">
+      <span>Generated {{DATE}}</span>
+      <span>·</span>
+      <span>Design system: {{DS_NAME}}</span>
+    </div>
+    <p class="report-description">{{FEATURE_DESCRIPTION}}</p>
+  </header>
+
+  <!-- ============ STATS ============ -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-value">{{TOTAL_STATES}}</div>
+      <div class="stat-label">Total States</div>
+    </div>
+    <div class="stat-card stat-covered">
+      <div class="stat-value">{{COVERED_COUNT}}</div>
+      <div class="stat-label">DS Covered</div>
+    </div>
+    <div class="stat-card stat-partial">
+      <div class="stat-value">{{PARTIAL_COUNT}}</div>
+      <div class="stat-label">Partial</div>
+    </div>
+    <div class="stat-card stat-gaps">
+      <div class="stat-value">{{GAP_COUNT}}</div>
+      <div class="stat-label">Gaps</div>
+    </div>
+  </div>
+
+  <!-- ============ COVERAGE MATRIX ============ -->
+  <div class="section">
+    <h2 class="section-title">State Coverage Matrix</h2>
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th style="width:4%">#</th>
+          <th style="width:22%">State</th>
+          <th style="width:32%">Description</th>
+          <th style="width:14%">Required</th>
+          <th style="width:14%">Coverage</th>
+          <th style="width:14%">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- {{MATRIX_ROWS}} -->
+        <!-- Example row: -->
+        <tr>
+          <td>1</td>
+          <td>
+            <div class="state-name">Empty</div>
+            <div class="state-component">data-table</div>
+          </td>
+          <td class="state-description">No data exists at all</td>
+          <td><span class="badge badge-required">Required</span></td>
+          <td><span class="badge badge-covered">Covered</span></td>
+          <td class="state-description">DS empty-state pattern with illustration</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============ STATE DESIGNS ============ -->
+  <div class="section">
+    <h2 class="section-title">State Designs</h2>
+
+    <!-- Example state card — duplicate and fill for each state -->
+    <div class="state-card">
+      <div class="state-card-header">
+        <h3>1. Empty State</h3>
+        <div class="badges">
+          <span class="badge badge-required">Required</span>
+          <span class="badge badge-covered">Covered</span>
+        </div>
+      </div>
+      <div class="state-card-description">
+        No data exists yet. The user needs guidance on what to do first.
+      </div>
+
+      <div class="mockup-container">
+        <div class="mockup-label">Visual Mockup</div>
+        <div class="mockup-frame">
+          <!--
+            INSERT MOCKUP HTML HERE
+            Use DS tokens: var(--color-bg-surface), var(--color-text-secondary), etc.
+            Show the FULL screen context, not just the empty state component.
+          -->
+          <div style="padding: 64px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;">📋</div>
+            <div style="font-size: 16px; font-weight: 500; margin-bottom: 8px;">No invoices yet</div>
+            <div style="font-size: 14px; color: #6b6b6b; margin-bottom: 24px;">Create your first invoice to start tracking payments.</div>
+            <button style="padding: 10px 20px; background: #2a7d4f; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">Create Invoice</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="state-card-notes">
+        <div class="note-group">
+          <h4>DS Components Used</h4>
+          <ul>
+            <li><code>empty-state</code> pattern</li>
+            <li><code>btn-primary</code> for CTA</li>
+            <li><span class="token-ref"><span class="token-swatch" style="background:#6b6b6b"></span> --color-text-secondary</span></li>
+          </ul>
+        </div>
+        <div class="note-group">
+          <h4>Accessibility</h4>
+          <ul>
+            <li>Heading level must fit page hierarchy</li>
+            <li>CTA should be the first focusable element</li>
+            <li>Illustration is decorative: <code>aria-hidden="true"</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Example gap card -->
+    <div class="state-card gap-card">
+      <div class="state-card-header">
+        <h3>7. Offline State</h3>
+        <div class="badges">
+          <span class="badge badge-required">Optional</span>
+          <span class="badge badge-gap">Gap</span>
+        </div>
+      </div>
+      <div class="state-card-description">
+        Device lost network connectivity. No cached data available for this view.
+      </div>
+
+      <div class="mockup-container">
+        <div class="mockup-label">Suggested Design</div>
+        <div class="mockup-frame">
+          <div style="padding: 48px; text-align: center;">
+            <div style="font-size: 40px; margin-bottom: 16px; opacity: 0.3;">📡</div>
+            <div style="font-size: 16px; font-weight: 500; margin-bottom: 8px;">You're offline</div>
+            <div style="font-size: 14px; color: #6b6b6b; margin-bottom: 24px;">Check your connection and try again.</div>
+            <button style="padding: 10px 20px; background: transparent; color: #1a1a1a; border: 1px solid #e5e5e5; border-radius: 6px; font-size: 14px; cursor: pointer;">Retry</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="gap-suggestion">
+        <strong>DS Gap:</strong> No offline state pattern exists in the design system. Suggested approach: reuse the existing <code>empty-state</code> pattern with a connectivity icon and retry action. Add a persistent top banner (<code>--color-bg-surface-caution</code>) that appears on all screens when offline.
+      </div>
+
+      <div class="state-card-notes">
+        <div class="note-group">
+          <h4>Implementation Notes</h4>
+          <ul>
+            <li>Listen for <code>navigator.onLine</code> changes</li>
+            <li>Show cached data if available, this screen if not</li>
+            <li>Auto-retry when connection restores</li>
+          </ul>
+        </div>
+        <div class="note-group">
+          <h4>Accessibility</h4>
+          <ul>
+            <li>Announce connectivity change via <code>aria-live="assertive"</code></li>
+            <li>Focus management: move focus to retry button</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ GAP SUMMARY ============ -->
+  <div class="section">
+    <h2 class="section-title">Gap Report</h2>
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th style="width:25%">Missing Pattern</th>
+          <th style="width:45%">Suggested Approach</th>
+          <th style="width:15%">Priority</th>
+          <th style="width:15%">Affects</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- {{GAP_ROWS}} -->
+        <tr>
+          <td class="state-name">Offline state</td>
+          <td class="state-description">Reuse empty-state pattern with connectivity icon. Add persistent banner component.</td>
+          <td><span class="badge badge-partial">Nice to have</span></td>
+          <td class="state-description">All data screens</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="report-footer">
+    <span>Generated by DS State Gen</span>
+    <span>{{TOTAL_STATES}} states · {{GAP_COUNT}} gaps · {{DATE}}</span>
+  </footer>
+
+</div>
+
+</body>
+</html>
