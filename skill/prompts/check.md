@@ -4,6 +4,8 @@ You get a scope JSON from `states-scan.mjs` and, maybe, an app `context` block. 
 
 ## 1. What to judge, in this order
 
+**If you were given a lens file, it replaces this section and the coverage rule below: judge only the lens's targets and questions.** Sections 2–9 still apply.
+
 The bugs that matter most live in the feature's own actions (sign, run, save, delete, verify, upload), not in generic states. So:
 
 1. **`actions`** — the feature's async actions, ranked, with signals (`pending`, `error`, `disabled_while_pending`, `confirm`, `timeout_or_cancel`). For each of the top actions, read its handler and the control that triggers it, and answer:

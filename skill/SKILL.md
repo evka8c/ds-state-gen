@@ -46,18 +46,20 @@ node $SKILL_DIR/../states-scan.mjs check <project root> [--paths <paths>] --out 
 ```
 Print its one-line summary. If it reports no UI files, say so and stop. If `scope.dropped.count` is large, mention that the scope was cut and suggest a narrower path.
 
-**4b. Judge (one subagent):** spawn one general-purpose agent so the file reads don't flood this conversation:
+**4b. Judge (three reviewers in parallel).** Always run all three; one pass misses too much. Spawn three general-purpose agents in one message, each with:
 ```
-Read your instructions from $SKILL_DIR/prompts/check.md and follow them exactly.
+Read $SKILL_DIR/prompts/check.md, then your lens $SKILL_DIR/prompts/lens-<name>.md, and follow them exactly. The lens replaces section 1 of check.md.
 Output schema: $SKILL_DIR/schema/findings.schema.json
 Scope JSON: <scratch>/scope.json
 Project root: <path>
 App context: <the context block, or "none — use defaults">
-Return only the JSON.
+Write the JSON to <scratch>/findings-<name>.json and reply with a 3-line summary.
 ```
-If you already read most of the scoped files in this conversation, you may judge inline instead, following the same prompt and budget.
+Lenses: `actions` (every action and guard: double submit, failure in every mode, input on 401, offline/cancel, rollback, guard holes), `screens` (who lands on each screen, truthful copy, config dead ends, v1/v2 parity, taxonomy states), `a11y` (keyboard path, names, announcements, dialogs, time limits).
 
-**4c. Check the output before showing it.** Every top-10 action, sibling screen, guard and a11y hint in the scope JSON must have a `coverage` entry; if any are missing, or marked `not_checked` with `reads_used` under 25, send the agent back once with the list of missing targets. Drop any finding with no `repro`, no `where`, or a `where` whose line doesn't exist. Re-apply the refresh test: if refreshing or retrying recovers it and nothing is lost, it is at most a nuisance. If the JSON is malformed, re-prompt once with the error; after that, judge inline.
+**Merge.** Read the three files. Merge findings that point at the same `file:line` or the same missing piece (keep the worst consequence, union `where`, keep the clearer repro). A finding from one lens beats an `ok` from another on the same target only if its repro holds when you read the cited line.
+
+**4c. Check the output before showing it.** Each lens file lists its targets; every one must have a `coverage` entry in that lens's output. If any are missing, or `not_checked` with `reads_used` under 25, send that agent back once with the list. Drop any finding with no `repro`, no `where`, or a `where` whose line doesn't exist. Re-apply the refresh test: if refreshing or retrying recovers it and nothing is lost, it is at most a nuisance. If the JSON is malformed, re-prompt once with the error; after that, judge inline.
 
 **4d. Present** (short, plain language, no raw JSON):
 
