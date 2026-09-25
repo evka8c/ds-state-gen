@@ -3,7 +3,7 @@
  "description": "Documenso /sign/:token: link gating, access auth, PDF with assigned fields, signature pad, rejection, completion, terminal pages.",
  "ds_name": "@documenso/ui (shadcn + Tailwind)",
  "project_path": "documenso/documenso",
- "summary": "On new envelopes, a recipient who uses a keyboard or a screen reader cannot sign at all: the fields are drawn on a canvas that only answers to a mouse or finger. Of the 38 states this page needs, 3 block signing outright and 3 mislead, while offline and slow loading turn out to be nuisances that a refresh fixes. Three fixes take the score from 22 to 74.",
+ "summary": "On new envelopes, a recipient who uses a keyboard or a screen reader cannot sign at all: the fields are drawn on a canvas that only answers to a mouse or finger. Of the 38 states this page needs, 3 block signing outright and 3 mislead, while offline and slow loading turn out to be nuisances that a refresh fixes. Fixing those three takes the score from 50 to 89.",
  "context": {
   "unsaved_work": "partly",
   "poor_connectivity_is_normal": "no",

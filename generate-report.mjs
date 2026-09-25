@@ -6,6 +6,8 @@
 // Usage:
 //   node generate-report.mjs <auditor.json> [inventory.json]
 //        [--enumerator enumerator.json]   join state source + cluster (needed for an honest score)
+//        [--preclassified pre.json]       states marked Covered without auditing: [{ state_id, evidence }]
+//                                         merged in here so the Auditor never has to echo them back
 //        [--mockups mockups.json]         before/after mockups for the top fixes, keyed by state_id
 //        [--meta meta.json]               { feature, description, ds_name, project_path, summary }
 //        [--out report.html]              default: reports/<feature-slug>.html
@@ -23,19 +25,25 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // ---------------------------------------------------------------------------
-// Scoring. The score starts at 100 and loses points for each state the page
-// needs that is missing or half-built, weighted by CONSEQUENCE, not by how
-// often it happens:
-//   blocker    - the user can't finish, and refresh/retry doesn't help
-//   misleading - the screen says something false, so the user acts wrongly
-//   nuisance   - refresh or retry recovers it, nothing is lost
+// Scoring. Each state the page needs that is missing or half-built costs
+// points, by two questions:
+//   1. Can the user still finish? (consequence, set by the Auditor)
+//        blocker    - no, and refresh/retry doesn't help
+//        misleading - yes, but the screen says something false, so they may act wrongly
+//        nuisance   - yes, refresh or retry recovers it and nothing is lost
+//   2. Will real users hit it? (likelihood, the Enumerator's priority)
+//        critical     - yes, in normal use
+//        nice-to-have - an edge case
+// Half-built costs less than missing. Each finding takes its share of what's
+// left, not a flat amount, so a long tail of edge cases can't push a good
+// product to zero: score = 100 x product of (1 - points/100).
 // States the enumerator merely found in the feature code do not raise the
 // score: existing is not the same as needed.
 // ---------------------------------------------------------------------------
 export const WEIGHTS = {
-  blocker: { gap: 20, partial: 12 },
-  misleading: { gap: 10, partial: 6 },
-  nuisance: { gap: 4, partial: 2 },
+  consequence: { blocker: 20, misleading: 10, nuisance: 4 }, // a common, fully missing state
+  status: { gap: 1, partial: 0.6 },
+  likelihood: { critical: 1, 'nice-to-have': 0.3 },
 };
 const NEEDS_SOURCES = new Set(['taxonomy', 'screen-level']);
 const CONSEQUENCES = ['blocker', 'misleading', 'nuisance'];
@@ -53,14 +61,22 @@ function consequenceOf(c) {
   return c.priority === 'critical' ? 'misleading' : 'nuisance';
 }
 
+function isEdgeCase(c) { return c.priority === 'nice-to-have'; }
+
+// Share of the score this finding takes, in points out of 100.
 function deduction(c) {
   const k = consequenceOf(c);
-  return k ? WEIGHTS[k][c.status] : 0;
+  if (!k) return 0;
+  return WEIGHTS.consequence[k] * WEIGHTS.status[c.status] * (WEIGHTS.likelihood[c.priority] ?? 1);
+}
+
+function scoreOf(findings) {
+  return 100 * findings.reduce((s, c) => s * (1 - deduction(c) / 100), 1);
 }
 
 function consBadge(c) {
   const k = consequenceOf(c);
-  return k ? `<span class="cons cons-${k}">${CONS_LABEL[k]}</span>` : '';
+  return k ? `<span class="cons cons-${k}">${CONS_LABEL[k]}</span>${isEdgeCase(c) ? ' <span class="cons cons-edge">Edge case</span>' : ''}` : '';
 }
 
 // ---------------------------------------------------------------------------
@@ -75,7 +91,7 @@ function flag(name) {
 
 function loadInput() {
   const positional = [];
-  const valueFlags = new Set(['--enumerator', '--mockups', '--meta', '--out', '--tier2']);
+  const valueFlags = new Set(['--enumerator', '--preclassified', '--mockups', '--meta', '--out', '--tier2']);
   for (let i = 2; i < process.argv.length; i++) {
     const a = process.argv[i];
     if (valueFlags.has(a)) { i++; continue; }
@@ -95,6 +111,7 @@ function loadInput() {
   }
 
   if (flag('--enumerator')) data.enumerator = readJson(flag('--enumerator'));
+  if (flag('--preclassified')) data.preclassified = readJson(flag('--preclassified'));
   if (flag('--mockups')) data.mockups = readJson(flag('--mockups'));
   if (flag('--meta')) data.meta = { ...(data.meta || {}), ...readJson(flag('--meta')) };
   if (flag('--out')) data.meta = { ...(data.meta || {}), output: flag('--out') };
@@ -135,20 +152,24 @@ function missingText(c) {
 // ---------------------------------------------------------------------------
 function cssColor(value) {
   const v = String(value || '');
+  // A colour built from other variables can't be drawn here; let the caller try the next token.
+  if (/var\(|calc\(|\bfrom\b/.test(v.split(' / ')[0])) return null;
   const hex = v.match(/#[0-9a-fA-F]{3,8}\b/);
   if (hex) return hex[0];
   const fn = v.match(/\b(?:rgba?|hsla?|oklch|lab)\([^)]*\)/);
   if (fn) return fn[0];
-  const hslTriplet = v.match(/^\s*(-?\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/);
+  const hslTriplet = v.match(/^\s*(-?\d+(?:\.\d+)?)(?:deg)?\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/);
   if (hslTriplet) return `hsl(${hslTriplet[1]} ${hslTriplet[2]}% ${hslTriplet[3]}%)`;
   return null;
 }
 
 function pickColor(colors, patterns) {
   for (const re of patterns) {
-    const t = colors.find((c) => re.test(c.name || ''));
-    const v = t && cssColor(t.value);
-    if (v) return v;
+    for (const t of colors) {
+      if (!re.test(t.name || '')) continue;
+      const v = cssColor(t.value);
+      if (v) return v;
+    }
   }
   return null;
 }
@@ -297,7 +318,7 @@ function heroSection(ctx) {
       <div class="count count-nuisance"><div class="count-value">${cons.nuisance}</div><div class="count-label">Nuisances</div></div>
       <div class="count count-covered"><div class="count-value">${counts.covered}</div><div class="count-label">Designed</div></div>
     </div>
-    <p class="score-how">Scored on the ${needsCount} states this page needs, by what happens to the user. A blocker costs ${WEIGHTS.blocker.gap} points (${WEIGHTS.blocker.partial} if half-built), misleading ${WEIGHTS.misleading.gap} (${WEIGHTS.misleading.partial}), a nuisance ${WEIGHTS.nuisance.gap} (${WEIGHTS.nuisance.partial}).${ctxLine}</p>
+    <p class="score-how">Scored on the ${needsCount} states this page needs, by whether the user can still finish and how many people will hit it. A common blocker takes ${WEIGHTS.consequence.blocker}% of the score, misleading ${WEIGHTS.consequence.misleading}%, a nuisance ${WEIGHTS.consequence.nuisance}%. Half-built counts ${WEIGHTS.status.partial * 100}%, an edge case ${WEIGHTS.likelihood['nice-to-have'] * 100}%.${ctxLine}</p>
   </div>
   <div class="card summary-card">
     <div class="eyebrow">Summary</div>
@@ -330,7 +351,7 @@ function fixesSection(ctx) {
     </div>` : '';
     return `<article class="fix">
     <div class="fix-head"><span class="fix-num">0${i + 1}</span><div>
-      <div class="fix-title">${esc(c.name)} ${consBadge(c)} ${badge(c.status)} <span class="fix-points">+${deduction(c)}</span></div>
+      <div class="fix-title">${esc(c.name)} ${consBadge(c)} ${badge(c.status)} <span class="fix-points">+${c.gain}</span></div>
       ${c.consequence_reason ? `<p class="fix-why">${esc(c.consequence_reason)}</p>` : `<p class="fix-body">${esc(c.description || '')}</p>`}
       <div class="fix-actions"><button class="copy-btn" type="button" data-prompt="${esc(fixPrompt(c, meta))}">Copy the fix prompt</button><span>${esc(c.gap_label || '')}</span><a href="#state-${c.state_id}">Evidence</a></div>
     </div></div>
@@ -474,7 +495,19 @@ function build(data) {
   meta.project_label = meta.project_path || inventory?.project?.name || '';
 
   const enumById = new Map((enumerator?.states || []).map((s) => [s.id, s]));
-  const coverage = (auditor.coverage || []).map((c) => {
+  // Pre-classified states come from the orchestrator, not the Auditor. The
+  // Auditor's verdict wins if it audited the same state anyway.
+  const audited = auditor.coverage || [];
+  const auditedIds = new Set(audited.map((c) => c.state_id));
+  const pre = [].concat(data.preclassified?.coverage || data.preclassified || [])
+    .filter((p) => !auditedIds.has(p.state_id))
+    .map((p) => ({ status: 'covered', name: enumById.get(p.state_id)?.name, ...p, notes: p.notes || 'Pre-classified, not audited' }));
+  if (enumerator) {
+    const known = new Set([...auditedIds, ...pre.map((p) => p.state_id)]);
+    const missing = enumerator.states.filter((s) => !known.has(s.id));
+    if (missing.length) console.error(`warning: ${missing.length} enumerated state(s) neither audited nor pre-classified, left out: ${missing.map((s) => s.id).join(', ')}`);
+  }
+  const coverage = [...audited, ...pre].map((c) => {
     const e = enumById.get(c.state_id) || {};
     return {
       ...c,
@@ -497,14 +530,23 @@ function build(data) {
 
   const cons = { blocker: 0, misleading: 0, nuisance: 0 };
   for (const c of needs) { const k = consequenceOf(c); if (k) cons[k]++; }
-  const total = needs.reduce((s, c) => s + deduction(c), 0);
-  const score = Math.max(0, 100 - total);
+  const findings = needs.filter((c) => deduction(c) > 0);
+  const raw = scoreOf(findings);
+  const score = Math.round(raw);
 
   const srcRank = { taxonomy: 0, 'screen-level': 1, 'feature-specific': 2 };
   const fixes = needs.filter((c) => deduction(c) > 0)
     .sort((a, b) => deduction(b) - deduction(a) || (b.required ? 1 : 0) - (a.required ? 1 : 0) || (srcRank[a.source] ?? 3) - (srcRank[b.source] ?? 3) || a.state_id - b.state_id)
     .slice(0, 3);
-  const lifted = Math.min(100, score + fixes.reduce((s, c) => s + deduction(c), 0));
+  const lifted = Math.round(scoreOf(findings.filter((c) => !fixes.includes(c))));
+  // What each fix adds. The top fixes count in order, so their gains add up to the lift.
+  for (const c of findings) c.gain = Math.max(1, Math.round(raw / (1 - deduction(c) / 100) - raw));
+  let before = score;
+  fixes.forEach((c, i) => {
+    const after = Math.round(scoreOf(findings.filter((x) => !fixes.slice(0, i + 1).includes(x))));
+    c.gain = after - before;
+    before = after;
+  });
 
   const clusterOf = (c) => c.cluster || (c.source === 'screen-level' ? 'Whole screen' : null);
   const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });

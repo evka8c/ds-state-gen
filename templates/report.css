@@ -247,6 +247,7 @@ details.exists .exists-note { font-size: 13px; color: var(--report-text-secondar
 .cons-blocker { background: var(--cons-blocker-bg); color: var(--cons-blocker); }
 .cons-misleading { background: var(--cons-misleading-bg); color: var(--cons-misleading); }
 .cons-nuisance { background: var(--cons-nuisance-bg); color: var(--cons-nuisance); }
+.cons-edge { background: transparent; color: var(--report-text-tertiary); box-shadow: inset 0 0 0 1px var(--report-border); font-weight: 550; }
 .count-blocker { background: var(--cons-blocker-bg); color: var(--cons-blocker); }
 .count-misleading { background: var(--cons-misleading-bg); color: var(--cons-misleading); }
 .count-nuisance { background: var(--cons-nuisance-bg); color: var(--cons-nuisance); }

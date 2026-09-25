@@ -4,7 +4,7 @@ A multi-agent Claude Code tool that generates complete UI state coverage for any
 
 ![Report example](docs/report-example.png)
 
-**[Example: Documenso's signing page, 22/100](examples/documenso-signing/report.html)** · [FlyTabs editor](examples/flytabs-editor.html) · [FlyTabs landing page](examples/flytabs-landing.html)
+**[Example: Documenso's signing page, 50/100](examples/documenso-signing/report.html)** · **[Supabase SQL editor](examples/supabase-sql-editor/report.html)** · [FlyTabs editor](examples/flytabs-editor.html) · [FlyTabs landing page](examples/flytabs-landing.html)
 
 ## The Problem
 
@@ -19,6 +19,17 @@ Existing tools (StateBuilder, Figma plugins) only handle component-level states 
 3. You get a self-contained HTML report: coverage matrix, gap analysis, and visual mockups using your actual DS tokens
 
 The output is actionable: every gap cites what DS components to reuse, what tokens to extend, and what's genuinely new.
+
+## Quick Scan (seconds, no AI)
+
+```
+node quick-scan.mjs ~/myapp
+node quick-scan.mjs ~/myapp --scope src/checkout --scope packages/ui   # one feature
+```
+
+Searches the code for signs that 25 unhappy-path states are handled at all: loading, empty, crash screen, retry, offline, session expired, unsaved work, keyboard, screen reader, reduced motion and more. It also flags concrete problems: canvases that only work with a mouse, clickable `div`s a keyboard can't reach, images without alt text. It writes `reports/<name>-quick.html` and a share card, and takes under a second on a 2,000-file repo.
+
+It finds patterns, so it can say "no offline handling anywhere" but not "this error message is misleading". Use it for the first picture, then run the deep audit (below) on the feature that matters. It reads web code only (JS/TS, Vue, Svelte, CSS) and refuses native apps rather than print a wrong score.
 
 ## Architecture
 
@@ -130,17 +141,21 @@ Not every finding needs a visual mockup. The pipeline uses a tiered approach:
 
 **Tier 2 (visual mockup):** The orchestrator promotes 3-5 findings that are genuinely novel, involve complex layout changes, or would be ambiguous without a visual. These get HTML/CSS mockups built from real DS components.
 
-This means a typical report generates in 3-5 minutes, not 15+.
+The first real run (Documenso's signing page) still took about 15 minutes and 525K tokens end to end. That is why the quick scan exists.
 
-## Performance Optimizations
+## Performance and Token Cost
 
-Three optimizations keep the pipeline fast:
+Rule: scripts do everything that doesn't need judgement; agents only judge. The first Documenso run spent about 525K subagent tokens (Scanner 136K, Enumerator 241K, Auditor 148K). Most of it went on reading files and on writing out 137 states that were simply covered.
 
-**1. Cached Scanner:** The DS inventory (tokens, components, patterns) doesn't change between features. The Scanner runs once per project and saves to `cache/`. Every subsequent feature audit skips it entirely. Saves ~4 minutes per run.
+**1. Inventory by script, not agent.** `quick-scan.mjs --inventory` writes the DS inventory in the Scanner's format in under a second: CSS custom properties (light and dark), components exported from design-system folders with their `cva` variants, BEM components from CSS, and state patterns. On Documenso the report's colours, radius and font come out the same as with the agent's inventory. The Scanner agent now runs only when the script finds no colour tokens or fewer than 5 components. Cached in `cache/` either way.
 
-**2. Smart Auditor Scope:** Not all states need codebase searches. "Document loaded", "card hover", and "toast success" are obviously covered. The orchestrator pre-classifies ~70% of states as Covered based on the Enumerator's evidence, and only sends the remaining ~20-30 states to the Auditor for actual grep verification. Saves ~3 minutes per run.
+**2. Feature files by script.** `quick-scan.mjs --entry <route> --files` follows imports (relative, tsconfig aliases, workspace packages) and lists the feature's files with depth and line counts. The Enumerator reads depth 0–1 in full, searches the rest, skips design-system files, and stops at about 6,000 lines.
 
-**3. Script-Based Reporter:** Instead of an LLM agent writing 500+ lines of HTML from scratch, a Node.js script (`generate-report.mjs`) takes the auditor JSON and generates the report in <1 second. The orchestrator only writes mockup HTML for the 2-3 Tier 2 findings. Saves ~10+ minutes per run.
+**3. Short output for what works.** The Enumerator lists working states in one line with a `works: file:line`, and the orchestrator marks them Covered without auditing them.
+
+**4. Auditor sees only likely gaps and returns only those.** It gets `file:line` starting points from the inventory and the quick scan. `generate-report.mjs --preclassified` merges the rest back in, so the Auditor never echoes them (on Documenso: 13 audited states instead of 150 written out, same report).
+
+**5. Script-based report.** `generate-report.mjs` builds the HTML in under a second instead of an agent writing it.
 
 ## State Taxonomy
 
@@ -178,7 +193,7 @@ Reports are HTML files in `reports/`, plus a 1200x630 share card (`{slug}-card.s
 
 Statuses: **No design** (gap), **Half-built** (partial), **Designed** (covered), **Optional** (recommendation, costs nothing).
 
-Example: [Documenso's recipient signing page](examples/documenso-signing/report.html) scores 22/100. On new envelopes the fields are drawn on a canvas, so keyboard and screen reader users can't sign at all. Three fixes lift it to 74. Offline, which a likelihood-based ranking put first, is a nuisance here because every field saves as you go.
+Example: [Documenso's recipient signing page](examples/documenso-signing/report.html) scores 50/100. On new envelopes the fields are drawn on a canvas, so keyboard and screen reader users can't sign at all. Three fixes lift it to 89. Offline, which a likelihood-based ranking put first, is a nuisance here because every field saves as you go.
 
 ## Using the Report
 

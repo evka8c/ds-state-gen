@@ -1,0 +1,1266 @@
+{
+  "feature": {
+    "name": "Supabase Studio SQL Editor",
+    "description": "Monaco SQL editor in tabs at /project/[ref]/sql/[id]: run SQL against the project's Postgres (often production), view results/errors, destructive-query warnings, snippets with autosave or manual save, rename/move/export/share/delete, templates and AI assistant.",
+    "component_types": [
+      "data-table",
+      "form",
+      "modal-dialog",
+      "navigation",
+      "search",
+      "notification-toast"
+    ]
+  },
+  "states": [
+    {
+      "id": 1,
+      "name": "Results loaded",
+      "component": "results grid",
+      "source": "taxonomy",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:175"
+    },
+    {
+      "id": 2,
+      "name": "Query running",
+      "component": "results grid",
+      "source": "taxonomy",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:41"
+    },
+    {
+      "id": 3,
+      "name": "No rows returned",
+      "component": "results grid",
+      "source": "taxonomy",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:170"
+    },
+    {
+      "id": 4,
+      "name": "Not yet run",
+      "component": "results grid",
+      "source": "taxonomy",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:163"
+    },
+    {
+      "id": 5,
+      "name": "Query error",
+      "component": "results grid",
+      "source": "taxonomy",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:87"
+    },
+    {
+      "id": 6,
+      "name": "Re-run hides results",
+      "component": "results grid",
+      "source": "taxonomy",
+      "cluster": "Query Execution",
+      "required": false,
+      "description": "Re-running replaces previous results with 'Running...'; old rows vanish until new ones arrive (loading-refresh).",
+      "priority": "nice-to-have"
+    },
+    {
+      "id": 7,
+      "name": "Results offline",
+      "component": "results grid",
+      "source": "taxonomy",
+      "cluster": "Query Execution",
+      "required": true,
+      "description": "Network loss mid-run shows raw EHOSTUNREACH text; no offline explanation or retry (UtilityTabResults.tsx:39).",
+      "priority": "critical"
+    },
+    {
+      "id": 8,
+      "name": "Very large result",
+      "component": "results grid",
+      "source": "taxonomy",
+      "cluster": "Query Execution",
+      "required": false,
+      "description": "Wide or huge results under 'No limit'; ambiguous how grid copes beyond browser limits.",
+      "priority": "nice-to-have"
+    },
+    {
+      "id": 9,
+      "name": "Long-running query, no cancel",
+      "component": "run button",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "required": true,
+      "description": "While running, only a spinner shows; no Stop/Cancel, only a separate 'View running queries' link.",
+      "priority": "critical",
+      "trigger": "executeQuery pending (useSqlEditorExecution.ts:65)"
+    },
+    {
+      "id": 10,
+      "name": "Target database unclear",
+      "component": "toolbar",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "required": true,
+      "description": "Run button never restates target (production primary vs replica, role); context lives in separate selectors.",
+      "priority": "critical",
+      "trigger": "Run on primary DB with postgres role (UtilityActions.tsx:258)"
+    },
+    {
+      "id": 11,
+      "name": "Statement timeout error",
+      "component": "results grid",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:60"
+    },
+    {
+      "id": 12,
+      "name": "Read-replica write error",
+      "component": "results grid",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:103"
+    },
+    {
+      "id": 13,
+      "name": "Query too large error",
+      "component": "results grid",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:109"
+    },
+    {
+      "id": 14,
+      "name": "Auto-limit syntax hint",
+      "component": "results grid",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:97"
+    },
+    {
+      "id": 15,
+      "name": "Connection string missing",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/useSqlEditorExecution.ts:126"
+    },
+    {
+      "id": 16,
+      "name": "Error line highlighted",
+      "component": "editor",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/SQLEditorContext.tsx:133"
+    },
+    {
+      "id": 17,
+      "name": "Results limited notice",
+      "component": "results header",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityPanel.tsx:143"
+    },
+    {
+      "id": 18,
+      "name": "Run selected",
+      "component": "run button",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/RunButton.tsx:46"
+    },
+    {
+      "id": 19,
+      "name": "Run disabled during diff",
+      "component": "run button",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:298"
+    },
+    {
+      "id": 20,
+      "name": "Logs run blocked",
+      "component": "run button",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:300"
+    },
+    {
+      "id": 21,
+      "name": "Database switch clears results",
+      "component": "toolbar",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:101"
+    },
+    {
+      "id": 22,
+      "name": "Results lost on reload",
+      "component": "results grid",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "required": false,
+      "description": "Results live in session state only; after refresh the panel resets to 'Click Run'.",
+      "priority": "nice-to-have",
+      "trigger": "Browser refresh after a run (sql-editor-session-state)"
+    },
+    {
+      "id": 23,
+      "name": "Multiple statements result",
+      "component": "results grid",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "required": false,
+      "description": "Only results[id][0] renders; ambiguous which statement's output a multi-statement run shows.",
+      "priority": "nice-to-have",
+      "trigger": "Run script with several SELECTs (UtilityPanel.tsx:58)"
+    },
+    {
+      "id": 24,
+      "name": "Download results",
+      "component": "results header",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityPanel.tsx:161"
+    },
+    {
+      "id": 25,
+      "name": "Debug error with Assistant",
+      "component": "results grid",
+      "source": "feature-specific",
+      "cluster": "Query Execution",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:147"
+    },
+    {
+      "id": 26,
+      "name": "Destructive query warning",
+      "component": "warning dialog",
+      "source": "feature-specific",
+      "cluster": "Run Warnings",
+      "works": "apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx:86"
+    },
+    {
+      "id": 27,
+      "name": "UPDATE without WHERE warning",
+      "component": "warning dialog",
+      "source": "feature-specific",
+      "cluster": "Run Warnings",
+      "works": "apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx:94"
+    },
+    {
+      "id": 28,
+      "name": "Connection-blocking warning",
+      "component": "warning dialog",
+      "source": "feature-specific",
+      "cluster": "Run Warnings",
+      "works": "apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx:107"
+    },
+    {
+      "id": 29,
+      "name": "Missing RLS warning",
+      "component": "warning dialog",
+      "source": "feature-specific",
+      "cluster": "Run Warnings",
+      "works": "apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx:181"
+    },
+    {
+      "id": 30,
+      "name": "Multiple issues listed",
+      "component": "warning dialog",
+      "source": "feature-specific",
+      "cluster": "Run Warnings",
+      "works": "apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx:160"
+    },
+    {
+      "id": 31,
+      "name": "Warning cancelled",
+      "component": "warning dialog",
+      "source": "feature-specific",
+      "cluster": "Run Warnings",
+      "works": "apps/studio/components/interfaces/SQLEditor/SQLEditorLayout.tsx:30"
+    },
+    {
+      "id": 32,
+      "name": "Undetected destructive query",
+      "component": "warning dialog",
+      "source": "feature-specific",
+      "cluster": "Run Warnings",
+      "required": false,
+      "description": "Heuristic analyzeQueryIssues may miss destructive SQL (e.g. inside DO blocks); ambiguous coverage.",
+      "priority": "nice-to-have",
+      "trigger": "Destructive statement the analyzer doesn't parse (useSqlEditorExecution.ts:97)"
+    },
+    {
+      "id": 33,
+      "name": "Snippet content loading",
+      "component": "editor",
+      "source": "feature-specific",
+      "cluster": "Snippet Loading",
+      "works": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:190"
+    },
+    {
+      "id": 34,
+      "name": "Snippet deleted elsewhere",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "Snippet Loading",
+      "works": "apps/studio/pages/project/[ref]/sql/[id].tsx:150"
+    },
+    {
+      "id": 35,
+      "name": "Invalid snippet ID",
+      "component": "page",
+      "source": "feature-specific",
+      "cluster": "Snippet Loading",
+      "works": "apps/studio/pages/project/[ref]/sql/[id].tsx:164"
+    },
+    {
+      "id": 36,
+      "name": "Reopen last snippet",
+      "component": "page",
+      "source": "feature-specific",
+      "cluster": "Snippet Loading",
+      "works": "apps/studio/pages/project/[ref]/sql/index.tsx:25"
+    },
+    {
+      "id": 37,
+      "name": "Replication-lag 404 swallowed",
+      "component": "page",
+      "source": "feature-specific",
+      "cluster": "Snippet Loading",
+      "works": "apps/studio/pages/project/[ref]/sql/[id].tsx:65"
+    },
+    {
+      "id": 38,
+      "name": "Snippet fetch failed",
+      "component": "editor",
+      "source": "feature-specific",
+      "cluster": "Snippet Loading",
+      "required": true,
+      "description": "A 500 or network error loading content leaves both panels spinning forever, no message or retry.",
+      "priority": "critical",
+      "trigger": "useSqlSnippetByIdQuery error not 404/400 ([id].tsx:48; SQLEditor.utils.ts:332)"
+    },
+    {
+      "id": 39,
+      "name": "Snippet from other project",
+      "component": "page",
+      "source": "feature-specific",
+      "cluster": "Snippet Loading",
+      "required": false,
+      "description": "Opening another project's snippet silently redirects to a blank new query with no explanation.",
+      "priority": "nice-to-have",
+      "trigger": "data.project_id !== project.id ([id].tsx:77)"
+    },
+    {
+      "id": 40,
+      "name": "Autosaving",
+      "component": "save indicator",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SavingIndicator.tsx:66"
+    },
+    {
+      "id": 41,
+      "name": "All changes saved",
+      "component": "save indicator",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SavingIndicator.tsx:59"
+    },
+    {
+      "id": 42,
+      "name": "Autosave failed, retry",
+      "component": "save indicator",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SavingIndicator.tsx:49"
+    },
+    {
+      "id": 43,
+      "name": "Manual: unsaved edits label",
+      "component": "save status",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/AutosaveStatus.tsx:35"
+    },
+    {
+      "id": 44,
+      "name": "Manual: saving",
+      "component": "save button",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SaveButton.tsx:28"
+    },
+    {
+      "id": 45,
+      "name": "Manual save failed",
+      "component": "save status",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "required": true,
+      "description": "In manual mode a failed save shows no error; label just says 'Unsaved edits' again.",
+      "priority": "critical",
+      "trigger": "upsertContent throws in manual mode (sql-editor-save.ts:103; UtilityActions.tsx:110)"
+    },
+    {
+      "id": 46,
+      "name": "Unsaved tab dot",
+      "component": "tab",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "works": "apps/studio/components/interfaces/SQLEditor/SqlTabStatusIndicator.tsx:27"
+    },
+    {
+      "id": 47,
+      "name": "Close tab with unsaved edits",
+      "component": "confirm dialog",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "works": "apps/studio/state/sql-editor/sql-editor-save-coordinator.tsx:120"
+    },
+    {
+      "id": 48,
+      "name": "Leave page with unsaved work",
+      "component": "browser prompt",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "works": "apps/studio/state/sql-editor/sql-editor-save-coordinator.tsx:138"
+    },
+    {
+      "id": 49,
+      "name": "Manual-save rollout notice",
+      "component": "dialog",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "works": "apps/studio/components/interfaces/SQLEditor/SqlEditorManualSaveNoticeDialog.tsx:57"
+    },
+    {
+      "id": 50,
+      "name": "Read-only shared snippet",
+      "component": "editor",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "works": "apps/studio/components/interfaces/SQLEditor/MonacoEditor.tsx:190"
+    },
+    {
+      "id": 51,
+      "name": "Save blocked by folder rule",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "works": "apps/studio/state/sql-editor/sql-editor-save-scheduler.ts:54"
+    },
+    {
+      "id": 52,
+      "name": "No permission to save",
+      "component": "editor",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "required": false,
+      "description": "Users without create permission get one toast on New; the editor itself never says work won't save.",
+      "priority": "nice-to-have",
+      "trigger": "canCreateSQLSnippet false (SQLEditorMenu.tsx:76)"
+    },
+    {
+      "id": 53,
+      "name": "Concurrent edits conflict",
+      "component": "editor",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "required": false,
+      "description": "Same snippet edited in two tabs or by two sessions: last write wins silently, no conflict notice.",
+      "priority": "nice-to-have",
+      "trigger": "Two browser tabs on one snippet (sql-editor-save.ts:91)"
+    },
+    {
+      "id": 54,
+      "name": "Empty-list copy wrong in manual mode",
+      "component": "snippet list",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "required": false,
+      "description": "Empty panel promises queries are 'automatically saved', which is false under manual save.",
+      "priority": "nice-to-have",
+      "trigger": "Manual save on, no private snippets (PrivateSqlSnippetEmpty.tsx:8)"
+    },
+    {
+      "id": 55,
+      "name": "Favorite toggled",
+      "component": "toolbar",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:137"
+    },
+    {
+      "id": 56,
+      "name": "Favorite save failed",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "Saving",
+      "works": "apps/studio/state/sql-editor/sql-editor-save.ts:148"
+    },
+    {
+      "id": 57,
+      "name": "Snippet list loading",
+      "component": "snippet list",
+      "source": "taxonomy",
+      "cluster": "Snippet Library",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:683"
+    },
+    {
+      "id": 58,
+      "name": "Snippet list empty",
+      "component": "snippet list",
+      "source": "taxonomy",
+      "cluster": "Snippet Library",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:686"
+    },
+    {
+      "id": 59,
+      "name": "Snippet list pagination",
+      "component": "snippet list",
+      "source": "taxonomy",
+      "cluster": "Snippet Library",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:776"
+    },
+    {
+      "id": 60,
+      "name": "Bulk-selected snippets",
+      "component": "snippet list",
+      "source": "taxonomy",
+      "cluster": "Snippet Library",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:744"
+    },
+    {
+      "id": 61,
+      "name": "Snippet list fetch failed",
+      "component": "snippet list",
+      "source": "taxonomy",
+      "cluster": "Snippet Library",
+      "required": true,
+      "description": "Error toasts, then list shows 'No private queries created yet' as if the user has none.",
+      "priority": "critical"
+    },
+    {
+      "id": 62,
+      "name": "Shared list empty",
+      "component": "snippet list",
+      "source": "feature-specific",
+      "cluster": "Snippet Library",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:530"
+    },
+    {
+      "id": 63,
+      "name": "Favorites list empty",
+      "component": "snippet list",
+      "source": "feature-specific",
+      "cluster": "Snippet Library",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:605"
+    },
+    {
+      "id": 64,
+      "name": "Sort snippets",
+      "component": "snippet list",
+      "source": "feature-specific",
+      "cluster": "Snippet Library",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx:129"
+    },
+    {
+      "id": 65,
+      "name": "Owner-only context actions",
+      "component": "snippet list",
+      "source": "feature-specific",
+      "cluster": "Snippet Library",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorTreeViewItem.tsx:304"
+    },
+    {
+      "id": 66,
+      "name": "Search typing/loading",
+      "component": "snippet search",
+      "source": "taxonomy",
+      "cluster": "Snippet Search",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SearchList.tsx:110"
+    },
+    {
+      "id": 67,
+      "name": "Search results",
+      "component": "snippet search",
+      "source": "taxonomy",
+      "cluster": "Snippet Search",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SearchList.tsx:115"
+    },
+    {
+      "id": 68,
+      "name": "Search no results",
+      "component": "snippet search",
+      "source": "taxonomy",
+      "cluster": "Snippet Search",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SearchList.tsx:128"
+    },
+    {
+      "id": 69,
+      "name": "Search failed",
+      "component": "snippet search",
+      "source": "taxonomy",
+      "cluster": "Snippet Search",
+      "required": true,
+      "description": "SearchList has no error branch; a failed search likely reads as 'No queries found'.",
+      "priority": "nice-to-have"
+    },
+    {
+      "id": 70,
+      "name": "Clear search",
+      "component": "snippet search",
+      "source": "feature-specific",
+      "cluster": "Snippet Search",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx:119"
+    },
+    {
+      "id": 71,
+      "name": "Rename dialog open",
+      "component": "rename dialog",
+      "source": "feature-specific",
+      "cluster": "Snippet Rename",
+      "works": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:244"
+    },
+    {
+      "id": 72,
+      "name": "Rename empty name",
+      "component": "rename dialog",
+      "source": "taxonomy",
+      "cluster": "Snippet Rename",
+      "works": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:48"
+    },
+    {
+      "id": 73,
+      "name": "Renaming",
+      "component": "rename dialog",
+      "source": "taxonomy",
+      "cluster": "Snippet Rename",
+      "works": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:226"
+    },
+    {
+      "id": 74,
+      "name": "Rename failed",
+      "component": "toast",
+      "source": "taxonomy",
+      "cluster": "Snippet Rename",
+      "works": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:152"
+    },
+    {
+      "id": 75,
+      "name": "Rename succeeded",
+      "component": "toast",
+      "source": "taxonomy",
+      "cluster": "Snippet Rename",
+      "works": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:147"
+    },
+    {
+      "id": 76,
+      "name": "AI rename generating",
+      "component": "rename dialog",
+      "source": "feature-specific",
+      "cluster": "Snippet Rename",
+      "works": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:196"
+    },
+    {
+      "id": 77,
+      "name": "AI rename failed",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "Snippet Rename",
+      "works": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:81"
+    },
+    {
+      "id": 78,
+      "name": "AI rename unavailable",
+      "component": "rename dialog",
+      "source": "feature-specific",
+      "cluster": "Snippet Rename",
+      "works": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:186"
+    },
+    {
+      "id": 79,
+      "name": "Move dialog",
+      "component": "move dialog",
+      "source": "feature-specific",
+      "cluster": "Snippet Organize",
+      "works": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx:210"
+    },
+    {
+      "id": 80,
+      "name": "Moving",
+      "component": "move dialog",
+      "source": "taxonomy",
+      "cluster": "Snippet Organize",
+      "works": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx:357"
+    },
+    {
+      "id": 81,
+      "name": "Move failed",
+      "component": "toast",
+      "source": "taxonomy",
+      "cluster": "Snippet Organize",
+      "works": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx:79"
+    },
+    {
+      "id": 82,
+      "name": "Move to same folder blocked",
+      "component": "move dialog",
+      "source": "feature-specific",
+      "cluster": "Snippet Organize",
+      "works": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx:356"
+    },
+    {
+      "id": 83,
+      "name": "New folder in move failed",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "Snippet Organize",
+      "works": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx:74"
+    },
+    {
+      "id": 84,
+      "name": "Folder name saving",
+      "component": "snippet list",
+      "source": "feature-specific",
+      "cluster": "Snippet Organize",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorTreeViewItem.tsx:253"
+    },
+    {
+      "id": 85,
+      "name": "Folder save failed",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "Snippet Organize",
+      "works": "apps/studio/state/sql-editor/sql-editor-save.ts:164"
+    },
+    {
+      "id": 86,
+      "name": "Export dialog",
+      "component": "export dialog",
+      "source": "feature-specific",
+      "cluster": "Snippet Organize",
+      "works": "apps/studio/components/interfaces/SQLEditor/DownloadSnippetModal.tsx:104"
+    },
+    {
+      "id": 87,
+      "name": "Export unsaved snippet",
+      "component": "export dialog",
+      "source": "feature-specific",
+      "cluster": "Snippet Organize",
+      "required": false,
+      "description": "CLI command downloads the server copy; unsaved or never-saved edits are silently missing (ambiguous).",
+      "priority": "nice-to-have",
+      "trigger": "Export while status is new/unsaved (DownloadSnippetModal.tsx:63)"
+    },
+    {
+      "id": 88,
+      "name": "Share to project confirm",
+      "component": "share dialog",
+      "source": "feature-specific",
+      "cluster": "Snippet Organize",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/ShareSnippetModal.tsx:65"
+    },
+    {
+      "id": 89,
+      "name": "Share failed",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "Snippet Organize",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/ShareSnippetModal.tsx:26"
+    },
+    {
+      "id": 90,
+      "name": "Unshare failed",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "Snippet Organize",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/UnshareSnippetModal.tsx:26"
+    },
+    {
+      "id": 91,
+      "name": "Delete confirmation",
+      "component": "delete dialog",
+      "source": "taxonomy",
+      "cluster": "Snippet Delete",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/DeleteSnippetsModal.tsx:76"
+    },
+    {
+      "id": 92,
+      "name": "Deleting",
+      "component": "delete dialog",
+      "source": "taxonomy",
+      "cluster": "Snippet Delete",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/DeleteSnippetsModal.tsx:82"
+    },
+    {
+      "id": 93,
+      "name": "Delete failed",
+      "component": "toast",
+      "source": "taxonomy",
+      "cluster": "Snippet Delete",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/DeleteSnippetsModal.tsx:65"
+    },
+    {
+      "id": 94,
+      "name": "Delete shared warning",
+      "component": "delete dialog",
+      "source": "feature-specific",
+      "cluster": "Snippet Delete",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/DeleteSnippetsModal.tsx:87"
+    },
+    {
+      "id": 95,
+      "name": "Delete open snippet",
+      "component": "page",
+      "source": "feature-specific",
+      "cluster": "Snippet Delete",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/DeleteSnippetsModal.tsx:32"
+    },
+    {
+      "id": 96,
+      "name": "Delete folder confirmation",
+      "component": "delete dialog",
+      "source": "feature-specific",
+      "cluster": "Snippet Delete",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:871"
+    },
+    {
+      "id": 97,
+      "name": "Delete folder failed",
+      "component": "delete dialog",
+      "source": "feature-specific",
+      "cluster": "Snippet Delete",
+      "required": false,
+      "description": "Folder delete mutation has no onError here; ambiguous whether a default toast fires or dialog just stops.",
+      "priority": "nice-to-have",
+      "trigger": "Folder delete request fails (SQLEditorNav.tsx:339)"
+    },
+    {
+      "id": 98,
+      "name": "New query tab",
+      "component": "tabs",
+      "source": "feature-specific",
+      "cluster": "Tabs",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx:81"
+    },
+    {
+      "id": 99,
+      "name": "New query failed",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "Tabs",
+      "works": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx:85"
+    },
+    {
+      "id": 100,
+      "name": "Close several dirty tabs",
+      "component": "confirm dialog",
+      "source": "feature-specific",
+      "cluster": "Tabs",
+      "works": "apps/studio/state/sql-editor/sql-editor-save-coordinator.tsx:128"
+    },
+    {
+      "id": 101,
+      "name": "Many tabs overflow",
+      "component": "tabs",
+      "source": "taxonomy",
+      "cluster": "Tabs",
+      "required": false,
+      "description": "Tab bar with many open snippets; overflow behavior not visible in feature files.",
+      "priority": "nice-to-have"
+    },
+    {
+      "id": 102,
+      "name": "New from template",
+      "component": "templates",
+      "source": "feature-specific",
+      "cluster": "Tabs",
+      "works": "apps/studio/components/interfaces/SQLEditor/SQLTemplates/SQLTemplates.tsx:76"
+    },
+    {
+      "id": 103,
+      "name": "Template without permission",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "Tabs",
+      "works": "apps/studio/components/interfaces/SQLEditor/SQLTemplates/SQLTemplates.tsx:42"
+    },
+    {
+      "id": 104,
+      "name": "Empty editor placeholder",
+      "component": "editor",
+      "source": "feature-specific",
+      "cluster": "AI Assistant",
+      "works": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:157"
+    },
+    {
+      "id": 105,
+      "name": "Inline AI prompt open",
+      "component": "editor",
+      "source": "feature-specific",
+      "cluster": "AI Assistant",
+      "works": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:170"
+    },
+    {
+      "id": 106,
+      "name": "AI generating",
+      "component": "editor",
+      "source": "feature-specific",
+      "cluster": "AI Assistant",
+      "works": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:109"
+    },
+    {
+      "id": 107,
+      "name": "AI generation failed",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "AI Assistant",
+      "works": "apps/studio/components/interfaces/SQLEditor/useSqlEditorAi.ts:252"
+    },
+    {
+      "id": 108,
+      "name": "AI diff review",
+      "component": "diff editor",
+      "source": "feature-specific",
+      "cluster": "AI Assistant",
+      "works": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:57"
+    },
+    {
+      "id": 109,
+      "name": "AI diff accept fails silently",
+      "component": "diff editor",
+      "source": "feature-specific",
+      "cluster": "AI Assistant",
+      "required": false,
+      "description": "Accept returns early with no message when editor or diff isn't ready (TODO in code).",
+      "priority": "nice-to-have",
+      "trigger": "acceptAiHandler guard fails (useSqlEditorAi.ts:156)"
+    },
+    {
+      "id": 110,
+      "name": "Editor chunk loading",
+      "component": "editor",
+      "source": "feature-specific",
+      "cluster": "Editor",
+      "required": false,
+      "description": "Monaco is dynamically imported with no loading fallback; area stays blank on slow networks.",
+      "priority": "nice-to-have",
+      "trigger": "next/dynamic without loading (SQLEditorEditorPanel.tsx:20)"
+    },
+    {
+      "id": 111,
+      "name": "Prettify disabled for logs",
+      "component": "toolbar",
+      "source": "feature-specific",
+      "cluster": "Editor",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:226"
+    },
+    {
+      "id": 112,
+      "name": "Intellisense needs refresh",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "Editor",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:95"
+    },
+    {
+      "id": 113,
+      "name": "Toolbar collapsed to menu",
+      "component": "toolbar",
+      "source": "feature-specific",
+      "cluster": "Editor",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:119"
+    },
+    {
+      "id": 114,
+      "name": "Legacy logs banner",
+      "component": "editor",
+      "source": "feature-specific",
+      "cluster": "Editor",
+      "works": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:196"
+    },
+    {
+      "id": 115,
+      "name": "Chart config save failed",
+      "component": "toast",
+      "source": "feature-specific",
+      "cluster": "Editor",
+      "works": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityPanel.tsx:81"
+    },
+    {
+      "id": 116,
+      "name": "Chart with no results",
+      "component": "chart tab",
+      "source": "feature-specific",
+      "cluster": "Editor",
+      "required": false,
+      "description": "Chart tab before any run or with zero rows; ChartConfig not read, behavior unverified.",
+      "priority": "nice-to-have",
+      "trigger": "Open Chart tab with no result (UtilityPanel.tsx:187)"
+    },
+    {
+      "id": 117,
+      "name": "Toast stack",
+      "component": "toast",
+      "source": "taxonomy",
+      "cluster": null,
+      "required": false,
+      "description": "Several failures at once (autosave, list, run) stack toasts; ambiguous ordering and limit.",
+      "priority": "nice-to-have"
+    },
+    {
+      "id": 118,
+      "name": "First-time",
+      "component": "screen",
+      "source": "screen-level",
+      "cluster": null,
+      "required": true,
+      "description": "New user lands on /sql/new with no snippets; only placeholder and templates guide them.",
+      "priority": "critical"
+    },
+    {
+      "id": 119,
+      "name": "Offline",
+      "component": "screen",
+      "source": "screen-level",
+      "cluster": null,
+      "required": true,
+      "description": "Connection drops: runs, autosave and list fetch fail separately with no unified offline banner.",
+      "priority": "critical"
+    },
+    {
+      "id": 120,
+      "name": "Slow connection",
+      "component": "screen",
+      "source": "screen-level",
+      "cluster": null,
+      "required": true,
+      "description": "Slow network stretches Monaco load, snippet fetch and query run spinners.",
+      "priority": "critical"
+    },
+    {
+      "id": 121,
+      "name": "Session expired",
+      "component": "screen",
+      "source": "screen-level",
+      "cluster": null,
+      "required": true,
+      "description": "Auth expires mid-edit: autosave fails quietly; unsaved SQL must survive re-login.",
+      "priority": "critical"
+    },
+    {
+      "id": 122,
+      "name": "Project paused or unhealthy",
+      "component": "screen",
+      "source": "screen-level",
+      "cluster": null,
+      "required": true,
+      "description": "Database unreachable (paused, restoring, upgrading); runs fail with raw errors.",
+      "priority": "critical"
+    },
+    {
+      "id": 123,
+      "name": "Stale app version",
+      "component": "screen",
+      "source": "screen-level",
+      "cluster": null,
+      "required": true,
+      "description": "Persisted tabs/local state from an older deploy after an update.",
+      "priority": "nice-to-have"
+    },
+    {
+      "id": 124,
+      "name": "Responsive breakpoints",
+      "component": "screen",
+      "source": "screen-level",
+      "cluster": null,
+      "required": true,
+      "description": "Split editor/results and toolbar on tablet and phone widths.",
+      "priority": "nice-to-have"
+    },
+    {
+      "id": 125,
+      "name": "Keyboard navigation",
+      "component": "screen",
+      "source": "screen-level",
+      "cluster": null,
+      "required": true,
+      "description": "Cmd+Enter run, Cmd+S save, focus leaving Monaco, dialog focus traps.",
+      "priority": "critical"
+    },
+    {
+      "id": 126,
+      "name": "Screen reader",
+      "component": "screen",
+      "source": "screen-level",
+      "cluster": null,
+      "required": true,
+      "description": "Run status, errors and results announced; Monaco and grid accessible.",
+      "priority": "nice-to-have"
+    },
+    {
+      "id": 127,
+      "name": "High contrast",
+      "component": "screen",
+      "source": "screen-level",
+      "cluster": null,
+      "required": true,
+      "description": "Error-line highlight and unsaved dot must not rely on colour alone.",
+      "priority": "nice-to-have"
+    },
+    {
+      "id": 128,
+      "name": "Reduced motion",
+      "component": "screen",
+      "source": "screen-level",
+      "cluster": null,
+      "required": true,
+      "description": "Spinners and AI animation respect prefers-reduced-motion.",
+      "priority": "nice-to-have"
+    }
+  ],
+  "clusters": [
+    {
+      "name": "Query Execution",
+      "description": "Running SQL against the project database and showing rows or errors",
+      "source_files": [
+        "apps/studio/components/interfaces/SQLEditor/useSqlEditorExecution.ts",
+        "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx",
+        "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx",
+        "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityPanel.tsx"
+      ],
+      "states_count": 25
+    },
+    {
+      "name": "Run Warnings",
+      "description": "Pre-run confirmation for destructive, unbounded or RLS-less queries",
+      "source_files": [
+        "apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx",
+        "apps/studio/components/interfaces/SQLEditor/SQLEditorLayout.tsx"
+      ],
+      "states_count": 7
+    },
+    {
+      "name": "Snippet Loading",
+      "description": "Resolving /sql/[id] to snippet content, including missing and invalid ids",
+      "source_files": [
+        "apps/studio/pages/project/[ref]/sql/[id].tsx",
+        "apps/studio/pages/project/[ref]/sql/index.tsx",
+        "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx"
+      ],
+      "states_count": 7
+    },
+    {
+      "name": "Saving",
+      "description": "Autosave and manual-save lifecycle, unsaved guards, read-only snippets",
+      "source_files": [
+        "apps/studio/state/sql-editor/sql-editor-save-coordinator.tsx",
+        "apps/studio/state/sql-editor/sql-editor-save.ts",
+        "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SavingIndicator.tsx",
+        "apps/studio/components/interfaces/SQLEditor/UtilityPanel/AutosaveStatus.tsx",
+        "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SaveButton.tsx"
+      ],
+      "states_count": 17
+    },
+    {
+      "name": "Snippet Library",
+      "description": "Private, shared and favorite snippet trees in the sidebar",
+      "source_files": [
+        "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx",
+        "apps/studio/components/layouts/SQLEditorLayout/PrivateSqlSnippetEmpty.tsx"
+      ],
+      "states_count": 9
+    },
+    {
+      "name": "Snippet Search",
+      "description": "Searching and sorting snippets in the sidebar",
+      "source_files": [
+        "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx",
+        "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SearchList.tsx"
+      ],
+      "states_count": 5
+    },
+    {
+      "name": "Snippet Rename",
+      "description": "Rename dialog with optional AI-generated title",
+      "source_files": [
+        "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx"
+      ],
+      "states_count": 8
+    },
+    {
+      "name": "Snippet Organize",
+      "description": "Move to folder, folders, export via CLI, share/unshare",
+      "source_files": [
+        "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx",
+        "apps/studio/components/interfaces/SQLEditor/DownloadSnippetModal.tsx",
+        "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/ShareSnippetModal.tsx"
+      ],
+      "states_count": 12
+    },
+    {
+      "name": "Snippet Delete",
+      "description": "Deleting snippets and folders with confirmation",
+      "source_files": [
+        "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/DeleteSnippetsModal.tsx",
+        "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx"
+      ],
+      "states_count": 7
+    },
+    {
+      "name": "Tabs",
+      "description": "Opening, creating and closing snippet tabs, templates",
+      "source_files": [
+        "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx",
+        "apps/studio/components/interfaces/SQLEditor/SQLTemplates/SQLTemplates.tsx"
+      ],
+      "states_count": 6
+    },
+    {
+      "name": "AI Assistant",
+      "description": "Inline AI prompt, SQL generation and diff review",
+      "source_files": [
+        "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx",
+        "apps/studio/components/interfaces/SQLEditor/useSqlEditorAi.ts"
+      ],
+      "states_count": 6
+    },
+    {
+      "name": "Editor",
+      "description": "Monaco editor surface, toolbar options, chart tab",
+      "source_files": [
+        "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx",
+        "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx"
+      ],
+      "states_count": 7
+    }
+  ],
+  "summary": {
+    "total": 128,
+    "from_taxonomy": 28,
+    "from_features": 89,
+    "from_screen_level": 11,
+    "required": 112,
+    "nice_to_have": 22,
+    "works": 94,
+    "lines_read": 4400,
+    "skipped_files": [
+      "apps/studio/components/interfaces/SQLEditor/UtilityPanel/ChartConfig.tsx",
+      "apps/studio/components/interfaces/SQLEditor/UtilityPanel/QuerySourceMenu/QuerySourceMenu.tsx",
+      "apps/studio/components/interfaces/SQLEditor/LegacyLogsRewriteBanner.tsx",
+      "apps/studio/components/interfaces/SQLEditor/useLogsSqlExecution.ts",
+      "apps/studio/components/interfaces/SQLEditor/SQLEditor.queries.ts",
+      "apps/studio/components/interfaces/SQLEditor/SQLTemplates/SQLExamples.tsx",
+      "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/LogsSnippetsSection.tsx",
+      "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/ReferenceSnippetsSection.tsx",
+      "apps/studio/state/ai-assistant-state.tsx",
+      "apps/studio/state/role-impersonation-state.tsx",
+      "apps/studio/state/tabs.tsx (grepped only)",
+      "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx (grepped only)",
+      "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorTreeViewItem.tsx (grepped only)",
+      "apps/studio/components/interfaces/SQLEditor/useSqlEditorAi.ts (grepped only)"
+    ]
+  }
+}

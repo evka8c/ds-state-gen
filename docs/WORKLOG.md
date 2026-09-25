@@ -82,9 +82,88 @@ An agent re-read the code for each finding and checked whether refreshing or ret
 
 The keyboard and screen reader findings are the headline: on Documenso's current default, some people legally cannot sign the document.
 
+### Quick scan (`quick-scan.mjs`)
+
+Answer to the speed item below. A deterministic Node script with no dependencies: 25 states in six groups (waiting, nothing there, things going wrong, being cut off, edge cases, ways of using it), each with regex signals, plus four problem detectors (mouse-only canvas, canvas with no ARIA, clickable non-buttons, images without alt). Score is weighted by what a missing state does to someone (3 / 2 / 1). Partly counts half, or a quarter when a problem was found.
+
+**Documenso:** whole repo, 1,966 files in 0.6s, 80/100. Signing page only (`--scope` on the recipient routes, the two signing component folders and `packages/ui`), 184 files in under 0.1s, 65/100. Top 3 on both: keyboard, screen reader, offline.
+
+Against the deep audit's 13 findings on the signing page:
+
+| Deep finding | Quick scan |
+|---|---|
+| Keyboard navigation (blocker) | Caught. Points at `envelope-signer-page-renderer.tsx:419`, the same V2 canvas |
+| Screen reader (blocker) | Caught, same canvas files |
+| Signature methods restricted via API (blocker) | Missed. Needs tracing API to UI |
+| Status page says "Sign up" (misleading) | Missed |
+| Over-long text cleared (misleading) | Missed. Reports length limits as handled |
+| Expired 2FA reported as invalid (misleading) | Missed |
+| Offline, slow connection (nuisance) | Caught (not found) |
+| PDF load error without retry (nuisance) | Missed. Retry exists elsewhere in scope |
+| Link expires mid-session (nuisance) | Missed. Session copy exists on sign-in |
+| Reduced motion, high contrast, print (optional) | Caught (not found) |
+
+7 of 13, including 2 of 3 blockers. Everything it misses needs judgement about one screen, which is what the agents are for. That's the split: quick scan to hook, deep audit to find the story.
+
+Known noise: the signature pad's drawing canvas is flagged as mouse-only even though the pad has Type and Upload tabs. `docs/`, `examples/` and `*-tests` folders are skipped because documentation sites polluted the first run (404, onboarding, conflict). Native apps (tested on the Swift drip-app) are refused instead of scored.
+
+### Token cost
+
+Asked for after the quick scan. Where the 525K went, and what replaces it:
+
+| Step | Before | Now |
+|---|---|---|
+| Scanner (136K) | Agent reads CSS and components | `quick-scan.mjs --inventory`, 0.7s. Agent only if no colour tokens or fewer than 5 components |
+| Enumerator (241K) | Explores the repo, lists all 150 states in full | Reads a script-made file list (`--entry` follows imports: 223 files from the signing route, 74 feature UI files) within a ~6,000-line budget; working states in one line |
+| Auditor (148K) | Gets all states, searches broadly, writes all 150 back | Gets only likely gaps with `file:line` starting points; returns only those |
+
+Checked: the script inventory gives the Documenso report the same palette as the agent's (primary hsl(95 71% 67%), destructive, 0.5rem radius, Inter). On FlyTabs it finds 40 BEM components, including 9 of the agent's 14 (`badge`, `card`, `tooltip`, `tabs` and `inline-select` have no modifiers, so they're missed). The report is unchanged when the Documenso audit is split into 13 audited plus 137 pre-classified states.
+
+Measured on the Supabase run below: **288K subagent tokens against 525K (45% less)**. Scanner 0 (script), Enumerator 154K (was 241K), Auditor 134K (was 148K). The Auditor saved least: 56 tool calls for 33 states. Giving it fewer states, or splitting it by cluster, is the next lever.
+
+Bugs found on the way: a light theme selector named `.dark-mode-disabled` was read as dark mode; a small Next.js API package made the monorepo look like a Next app; `assets/builds/` (compiled CSS) polluted the component list.
+
+### Supabase Studio SQL editor (second example)
+
+`examples/supabase-sql-editor/`, all inputs in `data/`. Entry files `apps/studio/pages/project/[ref]/sql/[id].tsx` and `index.tsx`: 637 files reached, 118 in the Enumerator's list. Enumerator: 128 states (94 one-line `works`). 95 pre-classified, 33 audited.
+
+**Score 0/100. Three fixes lift it to 34.** 2 blockers, 8 misleading, 7 nuisances. Verified by hand before the report:
+- **Long-running query, no cancel (blocker):** Run spins and is disabled; the only cancel is on Observability › Connections. Refresh doesn't stop the query on the server.
+- **Session expired (blocker):** the snippet store is an in-memory valtio proxy (`sql-editor-state.ts:19`), so manual-save edits die on the reload after sign-in.
+- **Offline (misleading):** on hosted Studio React Query pauses the run mutation offline (`onlineManager` is only forced online when `!IS_PLATFORM`), so the panel says "Running..." while nothing is sent, and the query goes out on reconnect.
+- **Undetected destructive query (misleading):** ran Supabase's own `destructiveSqlRegex`. `DELETE` inside a `WITH` clause or a `DO` block gets no warning.
+
+Quick-scan fixes this run needed: tsconfig comment stripping broke on `"@/*"`; bare `components/...` imports; app-shell layouts pulled in the whole app (now listed, not followed); theme tokens in a checked-in `build/css/`; `deg` in HSL tokens; colours built from `var()` are skipped instead of used.
+
+**The score hits the floor.** 17 findings deduct 116 points, so a well-built product reads 0/100 and the number stops saying anything. Needs a decision (see open items).
+
+### Scoring: likelihood and diminishing deductions
+
+Eva's call after Supabase hit 0/100: most findings are edge cases where the user can still finish, so they shouldn't weigh like blockers everyone hits. The score now asks two questions per finding, whether the user can still finish (consequence) and whether real users will hit it (the Enumerator's likelihood), and deductions compound instead of adding:
+
+| | Common | Edge case (×0.3) |
+|---|---|---|
+| Blocker | 20% (12% half-built) | 6% (3.6%) |
+| Misleading | 10% (6%) | 3% (1.8%) |
+| Nuisance | 4% (2.4%) | 1.2% (0.7%) |
+
+score = 100 × ∏(1 − points/100). Fix badges show gains in order, so they add up to the lift.
+
+| | Old | New |
+|---|---|---|
+| Documenso signing | 22 → 74 | **50 → 89** |
+| Supabase SQL editor | 0 → 34 | **48 → 69** |
+
+Top 3 fixes unchanged on both, so the mockups still hold. Documenso's three blockers take half its score; Supabase's are spread over two blockers and eight misleading states, most of them edge cases. Findings are tagged "Edge case" in the report.
+
 ### Open items
 
 - [ ] `examples/flytabs-editor.html` had uncommitted changes from before this session (regenerated with the old script). Not included in this branch's commits. Decide whether to keep or discard.
 - [ ] The Auditor doesn't emit `implementation`; either add it to `agents/auditor.md` or drop the field.
-- [ ] Speed. 15 minutes and 500K tokens per feature won't get roast-style adoption. Idea: a deterministic scan of screen-level states (offline listeners, reduced-motion, focus-visible, aria-live, error boundaries, retry affordances) that runs in seconds, with the agents as an optional deep mode.
+- [x] Speed. 15 minutes and 500K tokens per feature won't get roast-style adoption. Done as `quick-scan.mjs` (see above); the agents are now the deep mode.
+- [x] Quick scan: follow imports from a route file (`--entry`).
+- [x] Run the new pipeline on Supabase Studio and record per-agent tokens against the 525K baseline.
+- [x] Score floor: fixed with likelihood weighting and compounding deductions (above).
+- [ ] Likelihood now moves the score, so the Enumerator's `priority` needs the same scrutiny as the Auditor's consequence.
+- [ ] Auditor cost: 134K for 33 states. Try splitting by cluster or pre-classifying more.
 - [ ] Publish: the Documenso report as a public example, and a short write-up in the shape of "states are where interfaces stop being finished".

@@ -256,6 +256,7 @@ details.exists .exists-note { font-size: 13px; color: var(--report-text-secondar
 .cons-blocker { background: var(--cons-blocker-bg); color: var(--cons-blocker); }
 .cons-misleading { background: var(--cons-misleading-bg); color: var(--cons-misleading); }
 .cons-nuisance { background: var(--cons-nuisance-bg); color: var(--cons-nuisance); }
+.cons-edge { background: transparent; color: var(--report-text-tertiary); box-shadow: inset 0 0 0 1px var(--report-border); font-weight: 550; }
 .count-blocker { background: var(--cons-blocker-bg); color: var(--cons-blocker); }
 .count-misleading { background: var(--cons-misleading-bg); color: var(--cons-misleading); }
 .count-nuisance { background: var(--cons-nuisance-bg); color: var(--cons-nuisance); }
@@ -290,29 +291,29 @@ details.exists .exists-note { font-size: 13px; color: var(--report-text-secondar
     </div>
   </header>
   <div class="hero">
-  <div class="card score-card score-band-gap">
+  <div class="card score-card score-band-partial">
     <div class="eyebrow">State coverage</div>
-    <div class="score"><span class="score-value">22</span><span class="score-max">/100</span></div>
-    <div class="score-bar" style="color:var(--status-gap)"><div class="score-bar-now" style="width:22%"></div><div class="score-bar-lift" style="left:22%;width:52%"></div></div>
-    <div class="score-lift"><strong>3 fixes lift it to 74.</strong></div>
+    <div class="score"><span class="score-value">50</span><span class="score-max">/100</span></div>
+    <div class="score-bar" style="color:var(--status-partial)"><div class="score-bar-now" style="width:50%"></div><div class="score-bar-lift" style="left:50%;width:39%"></div></div>
+    <div class="score-lift"><strong>3 fixes lift it to 89.</strong></div>
     <div class="counts">
       <div class="count count-blocker"><div class="count-value">3</div><div class="count-label">Blockers</div></div>
       <div class="count count-misleading"><div class="count-value">3</div><div class="count-label">Misleading</div></div>
       <div class="count count-nuisance"><div class="count-value">4</div><div class="count-label">Nuisances</div></div>
       <div class="count count-covered"><div class="count-value">28</div><div class="count-label">Designed</div></div>
     </div>
-    <p class="score-how">Scored on the 38 states this page needs, by what happens to the user. A blocker costs 20 points (12 if half-built), misleading 10 (6), a nuisance 4 (2). App context: unsaved work: partly; poor connectivity normal: no; stakes: legally binding e-signatures sent to the public; accessibility obligations.</p>
+    <p class="score-how">Scored on the 38 states this page needs, by whether the user can still finish and how many people will hit it. A common blocker takes 20% of the score, misleading 10%, a nuisance 4%. Half-built counts 60%, an edge case 30%. App context: unsaved work: partly; poor connectivity normal: no; stakes: legally binding e-signatures sent to the public; accessibility obligations.</p>
   </div>
   <div class="card summary-card">
     <div class="eyebrow">Summary</div>
-    <p class="summary-text">On new envelopes, a recipient who uses a keyboard or a screen reader cannot sign at all: the fields are drawn on a canvas that only answers to a mouse or finger. Of the 38 states this page needs, 3 block signing outright and 3 mislead, while offline and slow loading turn out to be nuisances that a refresh fixes. Three fixes take the score from 22 to 74.</p><p class="ai-label">Summary written by AI from the measured findings below.</p>
+    <p class="summary-text">On new envelopes, a recipient who uses a keyboard or a screen reader cannot sign at all: the fields are drawn on a canvas that only answers to a mouse or finger. Of the 38 states this page needs, 3 block signing outright and 3 mislead, while offline and slow loading turn out to be nuisances that a refresh fixes. Fixing those three takes the score from 50 to 89.</p><p class="ai-label">Summary written by AI from the measured findings below.</p>
   </div>
 </div>
   <section class="section" id="fixes">
   <div class="section-head"><h2>Where to start</h2><p>Ranked by how many points each fix is worth.</p></div>
   <article class="fix">
     <div class="fix-head"><span class="fix-num">01</span><div>
-      <div class="fix-title">Keyboard navigation <span class="cons cons-blocker">Blocker</span> <span class="badge badge-gap">No design</span> <span class="fix-points">+20</span></div>
+      <div class="fix-title">Keyboard navigation <span class="cons cons-blocker">Blocker</span> <span class="badge badge-gap">No design</span> <span class="fix-points">+13</span></div>
       <p class="fix-why">On V2 envelopes the fields are drawn on a canvas that only responds to a pointer, so a keyboard-only recipient cannot insert any field at all and no refresh or retry changes that; on V1 the same happens for draw-only envelopes.</p>
       <div class="fix-actions"><button class="copy-btn" type="button" data-prompt="In documenso/documenso, the &quot;Recipient document signing page&quot; has a UI state that isn't fully designed: Keyboard navigation.
 What happens today: Field overlays are real buttons; dialogs trap focus; tabs have role=tab; PIN inputs autofocus. Gap: draw canvas has no keyboard alternative (Type tab is the fallback), color/zoom/undo buttons rely on focus-visible rings.
@@ -329,7 +330,7 @@ Show me the change before writing it.">Copy the fix prompt</button><span>Extend 
   </article>
 <article class="fix">
     <div class="fix-head"><span class="fix-num">02</span><div>
-      <div class="fix-title">Screen reader <span class="cons cons-blocker">Blocker</span> <span class="badge badge-gap">No design</span> <span class="fix-points">+20</span></div>
+      <div class="fix-title">Screen reader <span class="cons cons-blocker">Blocker</span> <span class="badge badge-gap">No design</span> <span class="fix-points">+15</span></div>
       <p class="fix-why">A screen-reader user cannot find or identify fields: V2 fields are canvas shapes with nothing exposed to assistive tech, and V1 fields are unnamed buttons, and refreshing changes nothing.</p>
       <div class="fix-actions"><button class="copy-btn" type="button" data-prompt="In documenso/documenso, the &quot;Recipient document signing page&quot; has a UI state that isn't fully designed: Screen reader.
 What happens today: Signature img has alt 'Signature for {name}'; undo/zoom have sr-only labels; widget chevron has aria-label; 2FA PinInput has aria-label. Gaps: field overlay buttons have no accessible name, remaining-count changes and toasts are not announced via live region, 'Signature is too small' is visual only.
@@ -346,7 +347,7 @@ Show me the change before writing it.">Copy the fix prompt</button><span>Extend 
   </article>
 <article class="fix">
     <div class="fix-head"><span class="fix-num">03</span><div>
-      <div class="fix-title">Signature methods restricted <span class="cons cons-blocker">Blocker</span> <span class="badge badge-partial">Half-built</span> <span class="fix-points">+12</span></div>
+      <div class="fix-title">Signature methods restricted <span class="cons cons-blocker">Blocker</span> <span class="badge badge-partial">Half-built</span> <span class="fix-points">+11</span></div>
       <p class="fix-why">A sender using the public API can turn off all three signature methods, and then the signature dialog crashes the page for every recipient on every retry, so nobody can sign.</p>
       <div class="fix-actions"><button class="copy-btn" type="button" data-prompt="In documenso/documenso, the &quot;Recipient document signing page&quot; has a UI state that isn't fully designed: Signature methods restricted.
 What happens today: Sender disables draw/type/upload: only enabled tabs render; single-method shows one tab. All disabled renders nothing (throws 'No signature enabled' in state init; ambiguity).
@@ -572,42 +573,6 @@ Show me the change before writing it.">Copy the fix prompt</button><span>Extend 
   
   <div class="detail-notes"><div class="note-group"><h4>Notes</h4><p>Edge case: the useState initializer at signature-pad.tsx:58-83 throws &quot;No signature enabled&quot; before the null guard at :134 runs, so an envelope with all three methods disabled crashes to the route ErrorBoundary (GenericErrorLayout). Sender-side misconfiguration only; moving the guard above the hook is a one-line fix, not a new state.</p></div></div>
 </td></tr>
-<tr id="state-14" class="expandable" onclick="toggleDetail(this)">
-  <td><div class="state-name">Status page gated by auth</div><div class="state-component">auth page</div></td>
-  <td class="state-description">/complete, /expired, /rejected also render DocumentSigningAuthPageView (no emailHasAccount, so button says Sign up) when access auth fails. Ambiguity: label may be wrong for existing users.</td>
-  <td class="req-cell"></td>
-  <td><span class="badge badge-partial">Half-built</span><div style="margin-top:4px"><span class="cons cons-misleading">Misleading</span></div></td>
-  <td class="file-ref">DocumentSigningAuthPageView reused on complete.tsx:146, expired.tsx:84, rejected.tsx:91 but called without emailHasAccount, so document-signing-auth-page.tsx:73 always renders &quot;Sign up&quot; and :27 deep-links /signup#email= — missing: loaders on the three terminal routes do not compute recipientHasAccount the way _index.tsx:406,503 does | Recovery check: document-signing-auth-page.tsx:27 routes to /signup#email= and :73 labels the button 'Sign up' whenever emailHasAccount is falsy; complete.tsx:146 passes only email. Account access auth means the recipient needed an account to sign in the first place, so on /complete the label is wrong for nearly everyone who sees it.</td>
-</tr>
-<tr class="state-detail"><td colspan="5">
-  <div class="suggestion suggestion-partial"><strong>Misleading.</strong> A recipient who already has an account is told to Sign up and sent to the signup page, so they head down the wrong path, and refreshing shows the same wrong button.<br><strong>Fix:</strong> Reuse [DocumentSigningAuthPageView emailHasAccount prop, _index.tsx recipientHasAccount loader lookup]</div>
-  
-  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>DocumentSigningAuthPageView (document-signing-auth-page.tsx:15)</code></li><li><code>emailHasAccount prop (document-signing-auth-page.tsx:12,27,73)</code></li><li><code>recipientHasAccount loader value (_index.tsx:406)</code></li><li><code>Button loading prop (button.tsx:36-47)</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Existing users who reopen their completion or rejection link while logged out are told to Sign up and sent to /signup. All parts exist; the three loaders just need to pass the flag.</p></div></div>
-</td></tr>
-<tr id="state-74" class="expandable" onclick="toggleDetail(this)">
-  <td><div class="state-name">Characters remaining</div><div class="state-component">form</div></td>
-  <td class="state-description">'# characters remaining' counter when fieldMeta.characterLimit &gt; 0 and no error. Ambiguity: no client-side block when exceeded.</td>
-  <td class="req-cell"></td>
-  <td><span class="badge badge-partial">Half-built</span><div style="margin-top:4px"><span class="cons cons-misleading">Misleading</span></div></td>
-  <td class="file-ref">Plural &quot;# characters remaining&quot; rendered when characterLimit &gt; 0 and no error at apps/remix/app/components/dialogs/sign-field-text-dialog.tsx:72-77 | Recovery check: V1 blocks it correctly: document-signing-text-field.tsx:106-116 validates before sending and :296-305 shows '(N characters over)'. V2 does not: sign-field-text-dialog.tsx:21-23 schema has no max, the counter at :72-77 just goes negative, text-field.ts:34-44 sends it, the server rejects via envelope-signing.ts:127-132 (with the wrong message 'Invalid email'), the renderer shows the generic toast at envelope-signer-page-renderer.tsx:527-531, and the dialog reopens empty (sign-field-text-dialog.tsx:35-38).</td>
-</tr>
-<tr class="state-detail"><td colspan="5">
-  <div class="suggestion suggestion-partial"><strong>Misleading.</strong> On V2 envelopes the dialog lets you submit over-long text, then shows a generic 'error occurred while signing the field' toast and throws the text away, so the recipient retries the same thing without knowing it was too long.<br><strong>Fix:</strong> Reuse [validateTextField + 'N characters over' message from document-signing-text-field.tsx:106-116,296-305] in sign-field-text-dialog.tsx</div>
-  
-  <div class="detail-notes"><div class="note-group"><h4>Notes</h4><p>Counter exists but nothing blocks going over: grep &quot;maxLength&quot; in sign-field-text-dialog.tsx returns nothing and the zod schema at :22 has no .max(). Over-limit text goes to the server and, if rejected, surfaces as the generic field sign toast (#48). Adding .max(characterLimit) with a FormMessage would close it; nice-to-have.</p></div></div>
-</td></tr>
-<tr id="state-111" class="expandable" onclick="toggleDetail(this)">
-  <td><div class="state-name">Access 2FA code expired</div><div class="state-component">form</div></td>
-  <td class="state-description">Countdown reaches 00:00 and turns destructive; Verify button remains enabled (ambiguity: server rejects, user must Resend).</td>
-  <td class="req-cell"></td>
-  <td><span class="badge badge-partial">Half-built</span><div style="margin-top:4px"><span class="cons cons-misleading">Misleading</span></div></td>
-  <td class="file-ref">Countdown turns text-destructive when millisecondsRemaining &lt;= 0 at apps/remix/app/components/general/document-signing/access-auth-2fa-form.tsx:254-262 — missing: Verify &amp; Complete stays enabled (disabled only by !form.formState.isValid at :274), no expiry message, and the server rejection then routes through #112 &quot;Invalid verification code&quot; which misdescribes the problem | Recovery check: document-signing-complete-dialog.tsx:173-178 maps every TWO_FACTOR_AUTH_FAILED to 'Invalid verification code. Please try again.'; the server check validate-2fa-token-from-email.ts returns only true/false, so expiry and typos are indistinguishable. Resend exists (access-auth-2fa-form.tsx:111-121), so the path out is there but not pointed to.</td>
-</tr>
-<tr class="state-detail"><td colspan="5">
-  <div class="suggestion suggestion-partial"><strong>Misleading.</strong> When the code has expired the screen says 'Invalid verification code. Please try again.', so the recipient re-enters the same dead code instead of pressing Resend.<br><strong>Fix:</strong> Reuse [Alert variant=warning, Button disabled, existing Resend code button]</div>
-  
-  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>Alert variant=warning (packages/ui/primitives/alert.tsx:16)</code></li><li><code>Button disabled:opacity-50 (button.tsx:10)</code></li><li><code>Resend code button (access-auth-2fa-form.tsx:286-289)</code></li><li><code>--destructive</code></li><li><code>--warning</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Realistic on phones: recipient switches to the mail app, comes back after the window. Building blocks all exist in the same file; needs a millisecondsRemaining &lt;= 0 branch that disables Verify and shows &quot;Code expired, resend a new one&quot;.</p></div></div>
-</td></tr>
 <tr id="state-16" class="expandable" onclick="toggleDetail(this)">
   <td><div class="state-name">PDF load error</div><div class="state-component">pdf viewer</div></td>
   <td class="state-description">'Something went wrong while loading the document. Please try again or contact our support.' plus error toast. No retry button exists.</td>
@@ -632,11 +597,47 @@ Show me the change before writing it.">Copy the fix prompt</button><span>Extend 
   
   <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>Alert variant=warning (packages/ui/primitives/alert.tsx:16)</code></li><li><code>root.tsx global banner pattern bg-destructive px-4 py-3 text-sm (apps/remix/app/root.tsx:163-164)</code></li><li><code>--warning</code></li><li><code>toast variant=destructive (toast.tsx:33)</code></li><li><code>Button disabled:opacity-50 for Next Field / Complete (button.tsx:10)</code></li><li><code>TOAST_LIMIT=1 (use-toast.ts:6) so offline toast must not fight field toasts</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Collapses the offline sub-states that all need the same detector: PDF fetch offline, field insert/remove offline, completion offline, reconnect. Anonymous recipients on phones are the primary audience; today a dropped connection mid-signature reads as &quot;something went wrong&quot; with no cause and no cue to wait and retry. Minimum viable: window online/offline listeners + persistent warning banner + disable mutating buttons while offline.</p></div></div>
 </td></tr>
+<tr id="state-14" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">Status page gated by auth</div><div class="state-component">auth page</div></td>
+  <td class="state-description">/complete, /expired, /rejected also render DocumentSigningAuthPageView (no emailHasAccount, so button says Sign up) when access auth fails. Ambiguity: label may be wrong for existing users.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-partial">Half-built</span><div style="margin-top:4px"><span class="cons cons-misleading">Misleading</span> <span class="cons cons-edge">Edge case</span></div></td>
+  <td class="file-ref">DocumentSigningAuthPageView reused on complete.tsx:146, expired.tsx:84, rejected.tsx:91 but called without emailHasAccount, so document-signing-auth-page.tsx:73 always renders &quot;Sign up&quot; and :27 deep-links /signup#email= — missing: loaders on the three terminal routes do not compute recipientHasAccount the way _index.tsx:406,503 does | Recovery check: document-signing-auth-page.tsx:27 routes to /signup#email= and :73 labels the button 'Sign up' whenever emailHasAccount is falsy; complete.tsx:146 passes only email. Account access auth means the recipient needed an account to sign in the first place, so on /complete the label is wrong for nearly everyone who sees it.</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-partial"><strong>Misleading.</strong> A recipient who already has an account is told to Sign up and sent to the signup page, so they head down the wrong path, and refreshing shows the same wrong button.<br><strong>Fix:</strong> Reuse [DocumentSigningAuthPageView emailHasAccount prop, _index.tsx recipientHasAccount loader lookup]</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>DocumentSigningAuthPageView (document-signing-auth-page.tsx:15)</code></li><li><code>emailHasAccount prop (document-signing-auth-page.tsx:12,27,73)</code></li><li><code>recipientHasAccount loader value (_index.tsx:406)</code></li><li><code>Button loading prop (button.tsx:36-47)</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Existing users who reopen their completion or rejection link while logged out are told to Sign up and sent to /signup. All parts exist; the three loaders just need to pass the flag.</p></div></div>
+</td></tr>
+<tr id="state-74" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">Characters remaining</div><div class="state-component">form</div></td>
+  <td class="state-description">'# characters remaining' counter when fieldMeta.characterLimit &gt; 0 and no error. Ambiguity: no client-side block when exceeded.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-partial">Half-built</span><div style="margin-top:4px"><span class="cons cons-misleading">Misleading</span> <span class="cons cons-edge">Edge case</span></div></td>
+  <td class="file-ref">Plural &quot;# characters remaining&quot; rendered when characterLimit &gt; 0 and no error at apps/remix/app/components/dialogs/sign-field-text-dialog.tsx:72-77 | Recovery check: V1 blocks it correctly: document-signing-text-field.tsx:106-116 validates before sending and :296-305 shows '(N characters over)'. V2 does not: sign-field-text-dialog.tsx:21-23 schema has no max, the counter at :72-77 just goes negative, text-field.ts:34-44 sends it, the server rejects via envelope-signing.ts:127-132 (with the wrong message 'Invalid email'), the renderer shows the generic toast at envelope-signer-page-renderer.tsx:527-531, and the dialog reopens empty (sign-field-text-dialog.tsx:35-38).</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-partial"><strong>Misleading.</strong> On V2 envelopes the dialog lets you submit over-long text, then shows a generic 'error occurred while signing the field' toast and throws the text away, so the recipient retries the same thing without knowing it was too long.<br><strong>Fix:</strong> Reuse [validateTextField + 'N characters over' message from document-signing-text-field.tsx:106-116,296-305] in sign-field-text-dialog.tsx</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Notes</h4><p>Counter exists but nothing blocks going over: grep &quot;maxLength&quot; in sign-field-text-dialog.tsx returns nothing and the zod schema at :22 has no .max(). Over-limit text goes to the server and, if rejected, surfaces as the generic field sign toast (#48). Adding .max(characterLimit) with a FormMessage would close it; nice-to-have.</p></div></div>
+</td></tr>
+<tr id="state-111" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">Access 2FA code expired</div><div class="state-component">form</div></td>
+  <td class="state-description">Countdown reaches 00:00 and turns destructive; Verify button remains enabled (ambiguity: server rejects, user must Resend).</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-partial">Half-built</span><div style="margin-top:4px"><span class="cons cons-misleading">Misleading</span> <span class="cons cons-edge">Edge case</span></div></td>
+  <td class="file-ref">Countdown turns text-destructive when millisecondsRemaining &lt;= 0 at apps/remix/app/components/general/document-signing/access-auth-2fa-form.tsx:254-262 — missing: Verify &amp; Complete stays enabled (disabled only by !form.formState.isValid at :274), no expiry message, and the server rejection then routes through #112 &quot;Invalid verification code&quot; which misdescribes the problem | Recovery check: document-signing-complete-dialog.tsx:173-178 maps every TWO_FACTOR_AUTH_FAILED to 'Invalid verification code. Please try again.'; the server check validate-2fa-token-from-email.ts returns only true/false, so expiry and typos are indistinguishable. Resend exists (access-auth-2fa-form.tsx:111-121), so the path out is there but not pointed to.</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-partial"><strong>Misleading.</strong> When the code has expired the screen says 'Invalid verification code. Please try again.', so the recipient re-enters the same dead code instead of pressing Resend.<br><strong>Fix:</strong> Reuse [Alert variant=warning, Button disabled, existing Resend code button]</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>Alert variant=warning (packages/ui/primitives/alert.tsx:16)</code></li><li><code>Button disabled:opacity-50 (button.tsx:10)</code></li><li><code>Resend code button (access-auth-2fa-form.tsx:286-289)</code></li><li><code>--destructive</code></li><li><code>--warning</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Realistic on phones: recipient switches to the mail app, comes back after the window. Building blocks all exist in the same file; needs a millisecondsRemaining &lt;= 0 branch that disables Verify and shows &quot;Code expired, resend a new one&quot;.</p></div></div>
+</td></tr>
 <tr id="state-142" class="expandable" onclick="toggleDetail(this)">
   <td><div class="state-name">Slow connection</div><div class="state-component">screen</div></td>
   <td class="state-description">Long PDF spinner with no progress; per-field spinner lingers; completion button spins until redirect. No timeouts or progress indicators.</td>
   <td class="req-cell"></td>
-  <td><span class="badge badge-partial">Half-built</span><div style="margin-top:4px"><span class="cons cons-nuisance">Nuisance</span></div></td>
+  <td><span class="badge badge-partial">Half-built</span><div style="margin-top:4px"><span class="cons cons-nuisance">Nuisance</span> <span class="cons cons-edge">Edge case</span></div></td>
   <td class="file-ref">Indeterminate handling exists: PdfViewerLoadingState 80vh Spinner at apps/remix/app/components/general/pdf-viewer/pdf-viewer-states.tsx:4-10, per-field Loader overlay (#42), Button loading prop (#106) — missing: no progress or slow-load messaging; grep &quot;onProgress|AbortSignal.timeout&quot; in pdf-viewer.tsx returns nothing (the only setTimeout at :382,486 is an idle timer for page rendering), and getDocument at :114 receives already-fetched bytes so the fetch itself has no progress callback</td>
 </tr>
 <tr class="state-detail"><td colspan="5">
@@ -648,7 +649,7 @@ Show me the change before writing it.">Copy the fix prompt</button><span>Extend 
   <td><div class="state-name">Link expires mid-session</div><div class="state-component">screen</div></td>
   <td class="state-description">Recipient deadline passes, or sender cancels/completes, while the tab is open: field/completion calls fail with RECIPIENT_EXPIRED / ENVELOPE_CANCELLED / ENVELOPE_COMPLETED toasts (113); reload lands on 5 or 6.</td>
   <td class="req-cell"></td>
-  <td><span class="badge badge-partial">Half-built</span><div style="margin-top:4px"><span class="cons cons-nuisance">Nuisance</span></div></td>
+  <td><span class="badge badge-partial">Half-built</span><div style="margin-top:4px"><span class="cons cons-nuisance">Nuisance</span> <span class="cons cons-edge">Edge case</span></div></td>
   <td class="file-ref">Specific destructive toasts for RECIPIENT_EXPIRED, ENVELOPE_COMPLETED, ENVELOPE_REJECTED, ENVELOPE_CANCELLED, NOT_FOUND exist in apps/remix/app/utils/toast-error-messages.ts:52-79, and the terminal pages for each exist (expired.tsx, rejected.tsx, cancelled card in _index.tsx; pre-classified #4-#6) — missing: after the toast the page stays in the signing layout with the confirm dialog still open (envelope-signing-complete-dialog.tsx:141-158 rethrows, dialog does not close or navigate); nothing on the signing page polls for status the way complete.tsx does every 3s | Recovery check: Toast copy is specific and true (toast-error-messages.ts:52-79); field data is not at stake because the document is closed server-side.</td>
 </tr>
 <tr class="state-detail"><td colspan="5">
@@ -900,7 +901,7 @@ Show me the change before writing it.">Copy the fix prompt</button><span>Extend 
 </section>
   <footer class="report-footer">
     <span>ds-state-gen</span>
-    <span>2 no design &middot; 8 half-built &middot; 28 designed &middot; score 22/100</span>
+    <span>2 no design &middot; 8 half-built &middot; 28 designed &middot; score 50/100</span>
   </footer>
 </main>
 <div class="toast-copied" role="status" aria-live="polite"></div>

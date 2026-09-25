@@ -1,0 +1,1098 @@
+{
+  "project": "Supabase SQL editor",
+  "scope": "from apps/studio/pages/project/[ref]/sql/[id].tsx, from apps/studio/pages/project/[ref]/sql/index.tsx",
+  "scanned_files": 637,
+  "ms": 712,
+  "score": 83,
+  "counts": {
+    "handled": 18,
+    "partial": 1,
+    "missing": 6
+  },
+  "results": [
+    {
+      "id": "loading",
+      "group": "waiting",
+      "name": "Loading",
+      "weight": 2,
+      "hurts": "A blank or frozen screen while data loads.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "Skeleton placeholders",
+          "files": 6,
+          "samples": [
+            {
+              "path": "packages/ui/index.tsx",
+              "line": 58
+            },
+            {
+              "path": "packages/ui-patterns/src/InnerSideMenu/index.tsx",
+              "line": 19
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/sidebar.tsx",
+              "line": 15
+            }
+          ]
+        },
+        {
+          "label": "Spinners",
+          "files": 17,
+          "samples": [
+            {
+              "path": "packages/ui/index.tsx",
+              "line": 26
+            },
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/SQLEditorLayout.tsx",
+              "line": 3
+            },
+            {
+              "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SearchList.tsx",
+              "line": 3
+            }
+          ]
+        },
+        {
+          "label": "Suspense fallbacks",
+          "files": 0,
+          "samples": []
+        },
+        {
+          "label": "aria-busy",
+          "files": 0,
+          "samples": []
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "slow",
+      "group": "waiting",
+      "name": "Slow or stuck requests",
+      "weight": 2,
+      "hurts": "A spinner that never ends, with no hint that something is wrong.",
+      "status": "partial",
+      "flagged": false,
+      "lost": 1,
+      "signals": [
+        {
+          "key": "msg",
+          "label": "\"Taking longer than usual\" copy",
+          "files": 0,
+          "samples": []
+        },
+        {
+          "label": "Request timeouts",
+          "files": 1,
+          "samples": [
+            {
+              "path": "apps/studio/data/fetchers.ts",
+              "line": 399
+            }
+          ]
+        },
+        {
+          "label": "Connection quality checks",
+          "files": 0,
+          "samples": []
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "pending",
+      "group": "waiting",
+      "name": "Saving in progress",
+      "weight": 2,
+      "hurts": "Double submits, or no sign that a click did anything.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "Buttons disabled while saving",
+          "files": 5,
+          "samples": [
+            {
+              "path": "packages/ui/src/components/shadcn/ui/alert-dialog.tsx",
+              "line": 381
+            },
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx",
+              "line": 220
+            },
+            {
+              "path": "packages/ui-patterns/src/Dialogs/ConfirmationModal.tsx",
+              "line": 143
+            }
+          ]
+        },
+        {
+          "label": "Button loading prop",
+          "files": 8,
+          "samples": [
+            {
+              "path": "packages/ui/src/components/shadcn/ui/alert-dialog.tsx",
+              "line": 351
+            },
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx",
+              "line": 353
+            },
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx",
+              "line": 223
+            }
+          ]
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "empty",
+      "group": "empty",
+      "name": "Empty lists",
+      "weight": 2,
+      "hurts": "A blank area that looks broken instead of explaining what goes here.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "Empty state component",
+          "files": 2,
+          "samples": [
+            {
+              "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx",
+              "line": 686
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/command.tsx",
+              "line": 116
+            }
+          ]
+        },
+        {
+          "label": "\"No … yet\" copy",
+          "files": 8,
+          "samples": [
+            {
+              "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SearchList.tsx",
+              "line": 128
+            },
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx",
+              "line": 253
+            },
+            {
+              "path": "apps/studio/components/layouts/SQLEditorLayout/PrivateSqlSnippetEmpty.tsx",
+              "line": 7
+            }
+          ]
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "no-results",
+      "group": "empty",
+      "name": "No search results",
+      "weight": 1,
+      "hurts": "Search that returns nothing without saying so, or offering a way out.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "\"No results\" copy",
+          "files": 2,
+          "samples": [
+            {
+              "path": "apps/studio/components/interfaces/Auth/Users/Users.utils.tsx",
+              "line": 115
+            },
+            {
+              "path": "packages/ui-patterns/src/CommandMenu/api/CommandMenuList.tsx",
+              "line": 34
+            }
+          ]
+        },
+        {
+          "label": "Clear filters action",
+          "files": 5,
+          "samples": [
+            {
+              "path": "apps/studio/state/shortcuts/registry/table-editor.ts",
+              "line": 139
+            },
+            {
+              "path": "apps/studio/state/shortcuts/registry.ts",
+              "line": 308
+            },
+            {
+              "path": "apps/studio/state/shortcuts/registry/list-page.ts",
+              "line": 46
+            }
+          ]
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "first-time",
+      "group": "empty",
+      "name": "First-time use",
+      "weight": 1,
+      "hurts": "New users dropped into an empty tool with no guidance.",
+      "status": "missing",
+      "flagged": false,
+      "lost": 1,
+      "signals": [
+        {
+          "label": "Onboarding",
+          "files": 0,
+          "samples": []
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "crash",
+      "group": "wrong",
+      "name": "Crash screen",
+      "weight": 3,
+      "hurts": "One broken component takes down the whole page, often to a white screen.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "Error boundaries",
+          "files": 1,
+          "samples": [
+            {
+              "path": "packages/ui-patterns/src/CommandMenu/api/CommandMenu.tsx",
+              "line": 288
+            }
+          ]
+        },
+        {
+          "label": "Framework error pages",
+          "files": 0,
+          "samples": []
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "not-found",
+      "group": "wrong",
+      "name": "Page not found",
+      "weight": 1,
+      "hurts": "A dead link shows a framework default or a blank page.",
+      "status": "missing",
+      "flagged": false,
+      "lost": 1,
+      "signals": [
+        {
+          "label": "404 page",
+          "files": 0,
+          "samples": []
+        },
+        {
+          "label": "\"Not found\" copy",
+          "files": 0,
+          "samples": []
+        },
+        {
+          "label": "404 in a shared error page",
+          "files": 0,
+          "samples": []
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "errors",
+      "group": "wrong",
+      "name": "Error messages",
+      "weight": 3,
+      "hurts": "Something fails and the user is never told, or told in developer language.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "Error toasts",
+          "files": 29,
+          "samples": [
+            {
+              "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx",
+              "line": 85
+            },
+            {
+              "path": "apps/studio/state/sql-editor/sql-editor-state.ts",
+              "line": 224
+            },
+            {
+              "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx",
+              "line": 176
+            }
+          ]
+        },
+        {
+          "label": "Alert components",
+          "files": 3,
+          "samples": [
+            {
+              "path": "packages/ui-patterns/src/Admonition/Admonition.tsx",
+              "line": 45
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/alert.tsx",
+              "line": 37
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/field.tsx",
+              "line": 209
+            }
+          ]
+        },
+        {
+          "label": "Inline field errors",
+          "files": 3,
+          "samples": [
+            {
+              "path": "packages/ui/src/components/shadcn/ui/form.tsx",
+              "line": 127
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/input-group.tsx",
+              "line": 21
+            },
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx",
+              "line": 341
+            }
+          ]
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "retry",
+      "group": "wrong",
+      "name": "Retry after failure",
+      "weight": 3,
+      "hurts": "After an error the only way forward is to reload and hope.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "key": "ui",
+          "label": "\"Try again\" / \"Retry\" buttons",
+          "files": 2,
+          "samples": [
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SavingIndicator.tsx",
+              "line": 55
+            },
+            {
+              "path": "apps/studio/components/interfaces/Settings/Logs/LegacyLogsRewriteAdmonition.tsx",
+              "line": 41
+            }
+          ]
+        },
+        {
+          "key": "ui",
+          "label": "Retry copy in translations",
+          "files": 0,
+          "samples": []
+        },
+        {
+          "label": "Refetch / reload calls",
+          "files": 1,
+          "samples": [
+            {
+              "path": "apps/studio/components/interfaces/SignIn/SessionTimeoutModal.tsx",
+              "line": 44
+            }
+          ]
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "validation",
+      "group": "wrong",
+      "name": "Invalid input",
+      "weight": 2,
+      "hurts": "Forms that reject input without saying what is wrong or where.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "Schema validation",
+          "files": 27,
+          "samples": [
+            {
+              "path": "apps/studio/data/query-sources/query-source-registry.ts",
+              "line": 50
+            },
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx",
+              "line": 1
+            },
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx",
+              "line": 1
+            }
+          ]
+        },
+        {
+          "label": "Field error messages",
+          "files": 1,
+          "samples": [
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx",
+              "line": 341
+            }
+          ]
+        },
+        {
+          "label": "aria-invalid",
+          "files": 2,
+          "samples": [
+            {
+              "path": "packages/ui/src/components/shadcn/ui/form.tsx",
+              "line": 127
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/input-group.tsx",
+              "line": 21
+            }
+          ]
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "offline",
+      "group": "cutoff",
+      "name": "Offline",
+      "weight": 2,
+      "hurts": "Actions silently fail when the connection drops.",
+      "status": "missing",
+      "flagged": false,
+      "lost": 2,
+      "signals": [
+        {
+          "label": "Online/offline detection",
+          "files": 0,
+          "samples": []
+        },
+        {
+          "label": "\"You're offline\" copy",
+          "files": 0,
+          "samples": []
+        },
+        {
+          "label": "Service worker",
+          "files": 0,
+          "samples": []
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "session",
+      "group": "cutoff",
+      "name": "Session expired",
+      "weight": 3,
+      "hurts": "Users are logged out mid-task and lose what they were doing, with no explanation.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "key": "msg",
+          "label": "\"Session expired\" copy",
+          "files": 2,
+          "samples": [
+            {
+              "path": "apps/studio/components/interfaces/SignIn/SessionTimeoutModal.tsx",
+              "line": 56
+            },
+            {
+              "path": "packages/shared-data/error-codes.ts",
+              "line": 101
+            }
+          ]
+        },
+        {
+          "label": "401 handling",
+          "files": 1,
+          "samples": [
+            {
+              "path": "apps/studio/lib/profile.tsx",
+              "line": 93
+            }
+          ]
+        },
+        {
+          "label": "Token refresh",
+          "files": 3,
+          "samples": [
+            {
+              "path": "packages/common/auth.tsx",
+              "line": 23
+            },
+            {
+              "path": "packages/pg-meta/src/sql/studio/advisor/lints.ts",
+              "line": 1187
+            },
+            {
+              "path": "packages/shared-data/error-codes.ts",
+              "line": 255
+            }
+          ]
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "permission",
+      "group": "cutoff",
+      "name": "No permission",
+      "weight": 2,
+      "hurts": "Users hit a wall with no explanation or way to ask for access.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "\"No access\" copy",
+          "files": 2,
+          "samples": [
+            {
+              "path": "apps/studio/components/interfaces/Integrations/Wrappers/Wrappers.constants.ts",
+              "line": 3027
+            },
+            {
+              "path": "apps/studio/components/interfaces/Auth/AuthProvidersFormValidation.tsx",
+              "line": 1056
+            }
+          ]
+        },
+        {
+          "label": "403 handling",
+          "files": 0,
+          "samples": []
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "unsaved",
+      "group": "cutoff",
+      "name": "Leaving with unsaved work",
+      "weight": 3,
+      "hurts": "A closed tab or back button throws away work without warning.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "Leave-page warning",
+          "files": 2,
+          "samples": [
+            {
+              "path": "packages/common/telemetry.tsx",
+              "line": 411
+            },
+            {
+              "path": "apps/studio/state/sql-editor/sql-editor-save-coordinator.tsx",
+              "line": 148
+            }
+          ]
+        },
+        {
+          "label": "\"Unsaved changes\" copy",
+          "files": 3,
+          "samples": [
+            {
+              "path": "apps/studio/state/sql-editor/sql-editor-state.ts",
+              "line": 137
+            },
+            {
+              "path": "apps/studio/state/sql-editor/sql-editor-save-coordinator.tsx",
+              "line": 124
+            },
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/SqlTabStatusIndicator.tsx",
+              "line": 29
+            }
+          ]
+        },
+        {
+          "label": "Autosave or drafts",
+          "files": 8,
+          "samples": [
+            {
+              "path": "apps/studio/components/layouts/DefaultLayout.tsx",
+              "line": 122
+            },
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/SQLEditorLayout.tsx",
+              "line": 144
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/resizable.tsx",
+              "line": 41
+            }
+          ]
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "limits",
+      "group": "edges",
+      "name": "Too long or too big",
+      "weight": 1,
+      "hurts": "Input over a limit is rejected after the fact, or silently cut.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "Length limits",
+          "files": 5,
+          "samples": [
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx",
+              "line": 62
+            },
+            {
+              "path": "apps/studio/components/ui/AIEditor/ResizableAIWidget.tsx",
+              "line": 71
+            },
+            {
+              "path": "apps/studio/components/ui/QueryBlock/QueryBlock.utils.ts",
+              "line": 33
+            }
+          ]
+        },
+        {
+          "label": "Remaining-count copy",
+          "files": 0,
+          "samples": []
+        },
+        {
+          "label": "File size limits",
+          "files": 4,
+          "samples": [
+            {
+              "path": "apps/studio/components/layouts/DefaultLayout.tsx",
+              "line": 74
+            },
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/SQLEditorLayout.tsx",
+              "line": 146
+            },
+            {
+              "path": "packages/shared-data/error-codes.ts",
+              "line": 111
+            }
+          ]
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "rate-limit",
+      "group": "edges",
+      "name": "Too many requests",
+      "weight": 1,
+      "hurts": "Rate-limited actions fail with a generic error.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "Rate limit handling",
+          "files": 6,
+          "samples": [
+            {
+              "path": "apps/studio/data/fetchers.ts",
+              "line": 144
+            },
+            {
+              "path": "packages/shared-data/config.ts",
+              "line": 3
+            },
+            {
+              "path": "packages/shared-data/error-codes.ts",
+              "line": 26
+            }
+          ]
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "conflict",
+      "group": "edges",
+      "name": "Someone else changed it",
+      "weight": 1,
+      "hurts": "Two people edit the same thing and one silently overwrites the other.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "Conflict handling",
+          "files": 1,
+          "samples": [
+            {
+              "path": "apps/studio/lib/profile.tsx",
+              "line": 55
+            }
+          ]
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "stale-app",
+      "group": "edges",
+      "name": "Outdated app after a release",
+      "weight": 1,
+      "hurts": "After a deploy, open tabs break when they try to load code that no longer exists.",
+      "status": "missing",
+      "flagged": false,
+      "lost": 1,
+      "signals": [
+        {
+          "label": "Chunk load recovery",
+          "files": 0,
+          "samples": []
+        },
+        {
+          "label": "\"New version available\" prompt",
+          "files": 0,
+          "samples": []
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "keyboard",
+      "group": "access",
+      "name": "Keyboard only",
+      "weight": 3,
+      "hurts": "People who can't use a mouse can't reach or operate controls.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "key": "focus",
+          "label": "Visible focus styles",
+          "files": 15,
+          "samples": [
+            {
+              "path": "packages/ui/src/components/radio-group-card.tsx",
+              "line": 50
+            },
+            {
+              "path": "packages/ui/src/components/radio-group-stacked.tsx",
+              "line": 54
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/input-group.tsx",
+              "line": 59
+            }
+          ]
+        },
+        {
+          "label": "Keyboard handlers",
+          "files": 8,
+          "samples": [
+            {
+              "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx",
+              "line": 108
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/sidebar.tsx",
+              "line": 101
+            },
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/useSqlEditorShortcuts.ts",
+              "line": 76
+            }
+          ]
+        },
+        {
+          "label": "Skip link",
+          "files": 0,
+          "samples": []
+        }
+      ],
+      "problems": [
+        {
+          "id": "pointerOnlyCanvas",
+          "label": "Canvas that only works with a mouse",
+          "count": 0,
+          "over": false,
+          "samples": []
+        },
+        {
+          "id": "clickableNonButton",
+          "label": "Clickable elements a keyboard can't reach (div or span with a click handler)",
+          "count": 4,
+          "over": false,
+          "samples": [
+            {
+              "path": "packages/ui/src/components/shadcn/ui/input-group.tsx",
+              "line": 106
+            },
+            {
+              "path": "packages/ui/src/components/Menu/Menu.tsx",
+              "line": 106
+            },
+            {
+              "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx",
+              "line": 77
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "screen-reader",
+      "group": "access",
+      "name": "Screen reader",
+      "weight": 3,
+      "hurts": "Blind users can't tell what controls do or when something changes.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "key": "live",
+          "label": "Live announcements (aria-live, role=status/alert)",
+          "files": 3,
+          "samples": [
+            {
+              "path": "packages/ui/src/components/shadcn/ui/alert.tsx",
+              "line": 37
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/field.tsx",
+              "line": 209
+            },
+            {
+              "path": "apps/studio/components/interfaces/RoleImpersonationSelector/index.tsx",
+              "line": 119
+            }
+          ]
+        },
+        {
+          "label": "Screen-reader-only text",
+          "files": 7,
+          "samples": [
+            {
+              "path": "packages/ui-patterns/src/InnerSideMenu/index.tsx",
+              "line": 178
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/breadcrumb.tsx",
+              "line": 105
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/dialog.tsx",
+              "line": 122
+            }
+          ]
+        },
+        {
+          "label": "aria-label on controls",
+          "files": 22,
+          "samples": [
+            {
+              "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx",
+              "line": 101
+            },
+            {
+              "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx",
+              "line": 538
+            },
+            {
+              "path": "packages/ui-patterns/src/Admonition/Admonition.tsx",
+              "line": 48
+            }
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "silentCanvas",
+          "label": "Canvas content hidden from screen readers",
+          "count": 0,
+          "over": false,
+          "samples": []
+        },
+        {
+          "id": "imgNoAlt",
+          "label": "Images with no alt text",
+          "count": 0,
+          "over": false,
+          "samples": []
+        }
+      ]
+    },
+    {
+      "id": "responsive",
+      "group": "access",
+      "name": "Small screens",
+      "weight": 2,
+      "hurts": "Layouts that overflow or hide actions on a phone.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "Breakpoints",
+          "files": 24,
+          "samples": [
+            {
+              "path": "apps/studio/components/layouts/editors/EditorBaseLayout.tsx",
+              "line": 71
+            },
+            {
+              "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx",
+              "line": 118
+            },
+            {
+              "path": "packages/common/helpers.ts",
+              "line": 21
+            }
+          ]
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "reduced-motion",
+      "group": "access",
+      "name": "Reduced motion",
+      "weight": 1,
+      "hurts": "Animations that can make people with vestibular disorders feel sick.",
+      "status": "handled",
+      "flagged": false,
+      "lost": 0,
+      "signals": [
+        {
+          "label": "prefers-reduced-motion",
+          "files": 5,
+          "samples": [
+            {
+              "path": "packages/common/helpers.ts",
+              "line": 21
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/accordion.tsx",
+              "line": 57
+            },
+            {
+              "path": "packages/ui/src/components/shadcn/ui/tabs.tsx",
+              "line": 56
+            }
+          ]
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "high-contrast",
+      "group": "access",
+      "name": "High contrast",
+      "weight": 1,
+      "hurts": "Controls that disappear in Windows high-contrast mode.",
+      "status": "missing",
+      "flagged": false,
+      "lost": 1,
+      "signals": [
+        {
+          "label": "Contrast / forced colours",
+          "files": 0,
+          "samples": []
+        }
+      ],
+      "problems": []
+    },
+    {
+      "id": "print",
+      "group": "access",
+      "name": "Print",
+      "weight": 1,
+      "hurts": "Printing gives navigation, buttons and cut-off content.",
+      "status": "missing",
+      "flagged": false,
+      "lost": 1,
+      "signals": [
+        {
+          "label": "Print styles",
+          "files": 0,
+          "samples": []
+        }
+      ],
+      "problems": []
+    }
+  ],
+  "blocks": [
+    {
+      "label": "Skeleton",
+      "path": "packages/ui/src/components/shadcn/ui/skeleton.tsx"
+    },
+    {
+      "label": "Spinner / Loader",
+      "path": "packages/ui/src/components/Loading/Loading.tsx"
+    },
+    {
+      "label": "Alert",
+      "path": "packages/ui/src/components/shadcn/ui/alert.tsx"
+    },
+    {
+      "label": "Toast",
+      "path": "packages/ui/src/components/shadcn/ui/sonner-progress.tsx"
+    },
+    {
+      "label": "Empty state",
+      "path": null
+    },
+    {
+      "label": "Banner",
+      "path": "apps/studio/components/ui/BannerStack/BannerStackProvider.tsx"
+    },
+    {
+      "label": "Progress",
+      "path": "packages/ui/src/components/shadcn/ui/progress.tsx"
+    },
+    {
+      "label": "Dialog",
+      "path": "packages/ui/src/components/shadcn/ui/alert-dialog.tsx"
+    },
+    {
+      "label": "Tooltip",
+      "path": "packages/ui/src/components/shadcn/ui/tooltip.tsx"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "feature": "SQL editor",
+  "description": "Supabase Studio /project/[ref]/sql: write SQL in tabs, run it against the project's Postgres database, see results, save snippets (autosave or manual).",
+  "ds_name": "Supabase ui (shadcn + Tailwind)",
+  "project_path": "supabase/supabase · apps/studio",
+  "context": {
+    "unsaved_work": "partly",
+    "poor_connectivity_is_normal": "no",
+    "stakes": "SQL runs against live, often production, databases; destructive statements are irreversible"
+  }
+}

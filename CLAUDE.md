@@ -1,6 +1,6 @@
 # DS State Gen — Multi-Agent UI State Coverage Generator
 
-You are the **orchestrator** for a multi-agent pipeline that generates UI state coverage reports. You coordinate four specialized agents, review their outputs, make routing decisions, and deliver the final report to the user.
+You are the **orchestrator** for a multi-agent pipeline that generates UI state coverage reports. You coordinate specialized agents and scripts, review their outputs, make routing decisions, and deliver the final report to the user.
 
 ## Architecture
 
@@ -10,21 +10,22 @@ User Request ("generate states for the editor")
     v
 [Orchestrator — you]
     |
-    +---> [1. DS Scanner Agent]        reads codebase, outputs component inventory (JSON)
-    |         |
-    +---> [2. State Enumerator Agent]  reasons about states, outputs state list (JSON)
-    |         |              (Scanner + Enumerator run in PARALLEL — independent inputs)
+    +---> [quick-scan.mjs]             script, seconds: inventory (tokens, components, state
+    |         |                        patterns), feature file list, quick-scan evidence
+    |         |                        (Scanner agent only if the inventory is too thin)
     |         v
-    +---> [3. Coverage Auditor Agent]  takes inventory + state list, searches codebase,
-    |         |                        outputs coverage matrix (JSON)
+    +---> [State Enumerator Agent]     reads the feature files within a budget, outputs state list
     |         v
-    +---> [4. Report Builder Agent]    takes matrix + inventory + tier decisions,
-              |                        outputs HTML report file
+    +---> [Coverage Auditor Agent]     audits only the likely gaps, from file:line starting
+    |         |                        points; returns only what it audited
+    |         v
+    +---> [generate-report.mjs]        script, <1s: merges pre-classified states, scores,
+              |                        writes the HTML report + share card
               v
          reports/{feature}.html
 ```
 
-Each agent has a focused system prompt in `agents/`. Each returns structured JSON (except Reporter, which writes HTML). You chain them, review outputs between stages, and make decisions the agents can't.
+Each agent has a focused system prompt in `agents/`. Each returns structured JSON. You chain them, review outputs between stages, and make decisions the agents can't.
 
 ## First Run — Setup
 
@@ -65,94 +66,98 @@ User describes a feature. No code, no DS. **Only the Enumerator runs.** Output i
 
 ## Pipeline Execution
 
-### Phase 0: Cache Check (instant)
+### Quick scan first
 
-Before spawning any agents, check for cached data:
+When the user points at a new web project, or asks "how does my app do on states?", run `node quick-scan.mjs <project_path>` before anything else. It takes seconds and needs no agents. Show the score and the top 3 from its output, link `reports/<name>-quick.html`, and offer the deep audit for the feature they care about. Don't present its "Handled" as proof: it means a pattern was found somewhere.
 
-1. **Scanner cache:** Does `cache/{project-slug}-inventory.json` exist?
-   - Yes → skip Scanner agent entirely, load from cache
-   - No → Scanner runs, output saved to cache after
-2. **Enumerator does NOT need caching** — its output is feature-specific every time.
+### Token budget
 
-The DS inventory (tokens, components, patterns) rarely changes between features. Caching the Scanner eliminates ~4 minutes per run.
+Scripts do everything that doesn't need judgement; agents only judge. The first Documenso run spent about 525K subagent tokens (Scanner 136K, Enumerator 241K, Auditor 148K), mostly on reading files and on writing out 137 states that were simply covered. The rules below exist to stop that:
+- No Scanner agent unless the script inventory is too thin (Phase 0).
+- The Enumerator reads a script-made file list within a reading budget (Phase 1).
+- The Auditor sees only states worth auditing, gets `file:line` starting points, and returns only what it audited (Phase 2).
+- Never paste the whole inventory into a prompt. Pass the path plus the slice the agent needs.
+
+### Phase 0: Inventory (script, seconds)
+
+1. Does `cache/{project-slug}-inventory.json` exist? Use it.
+2. If not, write it with the script, not the Scanner agent:
+   ```
+   node quick-scan.mjs <project_path> --no-report --inventory cache/{slug}-inventory.json
+   ```
+   It writes tokens (CSS custom properties, light and dark), design-system components with their `cva` variants, and state patterns, in the Scanner's format.
+3. Spawn the **Scanner agent** (`agents/scanner.md`) only if the script inventory has no colour tokens or fewer than 5 components (for example, Rails BEM CSS or tokens defined only in JS), or when the user asks for a deep DS catalogue. Save its output to the same cache path.
 
 To force a rescan: delete the cache file or say "rescan the DS".
 
-### Phase 1: Enumerate (+ Scanner if uncached)
+### Phase 1: Feature files + Enumerate
 
-**If Scanner cache miss:** Spawn Scanner + Enumerator in parallel (same as before).
-
-**If Scanner cache hit:** Only spawn the Enumerator. Pass the cached inventory path.
+1. Find the route or page file for the feature (and its sibling states, e.g. `complete.tsx`, `expired.tsx`). Then:
+   ```
+   node quick-scan.mjs <project_path> --entry <route file> [--entry <sibling>] \
+     --name "<feature>" --files cache/{slug}-{feature}-files.json --json cache/{slug}-{feature}-quick.json
+   ```
+   This follows imports (relative, tsconfig aliases, workspace packages) and writes the file list with depth and line counts. It also writes the feature's quick-scan report, and the JSON feeds Phase 2.
+2. Spawn only the Enumerator:
 
 **Agent — State Enumerator** (`agents/enumerator.md`)
 ```
 Prompt: Read the system prompt from agents/enumerator.md.
 Read the taxonomy from states.yml.
 Feature: [user's feature description].
-Feature files to read: [specific files if user pointed to them, or files you identified].
+Feature files: read the list at cache/{slug}-{feature}-files.json and follow the reading budget in your system prompt.
 Scenario: [A/B/C].
 Return the JSON state list.
 ```
 
-**Agent — DS Scanner** (only if cache miss) (`agents/scanner.md`)
-```
-Prompt: Read the system prompt from agents/scanner.md.
-Scan the project at [project_path].
-CSS paths to prioritize: [from config/project.yml css_paths].
-Return the JSON inventory.
-```
-
-After Scanner returns, save output to `cache/{project-slug}-inventory.json`.
+Scenario C (no code) skips step 1.
 
 ### Phase 2: Audit (smart scope)
 
-**Before spawning the Auditor, filter the state list.** Don't audit all states — most "loaded", "default", "hover", and "success" states are obviously covered. Only audit states likely to be gaps:
+**Before spawning the Auditor, split the state list** into states to audit and states to pre-classify as Covered. Write the pre-classified ones to `preclassified.json` as `[{ "state_id", "evidence" }]`.
 
-**Always audit (high gap probability):**
-- Screen-level states (offline, first-time, session expired, reduced motion, high contrast, print)
-- Error and failure states
-- Empty and zero-data states
-- Loading states beyond basic skeleton (slow connection, partial load, timeout)
-- Permission and auth states
-- Accessibility states (keyboard nav, screen reader)
+**Pre-classify (don't audit):**
+- Every state with a `works` field. Its `file:line` is the evidence.
+- "X loaded" / "X default" / "X success".
+- "hover" / "focus" states, if the inventory has focus-visible and hover patterns.
+- Navigation / redirect states (code behaviour, not DS coverage).
+- Screen-level states the quick scan marked Handled with no problems, when the signal is in this feature's files. Cite its `file:line`.
 
-**Skip auditing (almost always covered):**
-- "X loaded" / "X default" / "X success" — mark as Covered automatically
-- "hover" / "focus" states — if the DS has focus-visible and hover patterns, mark Covered
-- Navigation / redirect states — these are code behavior, not DS coverage
-- States where the Enumerator already cited the exact file:line implementing it
+**Audit:**
+- Screen-level states the quick scan marked Not found or Partly, or where it found problems.
+- Error and failure states, empty and zero-data states, loading beyond a basic skeleton (slow, partial, timeout), permission and auth states.
 
-This typically reduces ~90 states to ~20 that actually need codebase searches, cutting Auditor time from ~5 minutes to ~1-2 minutes.
+This typically leaves 15–25 states out of 100+.
 
 **Agent — Coverage Auditor** (`agents/auditor.md`)
 ```
 Prompt: Read the system prompt from agents/auditor.md.
-State list: [FILTERED list — only states that need auditing]
-Pre-classified states: [list of state IDs auto-marked as Covered with reason]
-DS inventory: [JSON from Scanner or cache]
+State list: [only the states to audit]
+DS inventory: `state_patterns` and the component names + files from cache/{slug}-inventory.json (not the tokens)
+Quick-scan evidence: for each screen-level state in the list, its signals and problems from cache/{slug}-{feature}-quick.json
 Project path: [path]
 App context: [the `context` block from config/project.yml, verbatim]
-Return the JSON coverage matrix (include both audited and pre-classified states), with consequence + consequence_reason on every Partial and Gap.
+Return JSON with only the audited states, with consequence + consequence_reason on every Partial and Gap.
 ```
 
 ### Phase 3: Report (script, not agent)
 
 **Do NOT spawn the Report Builder agent.** Use the `generate-report.mjs` script instead.
 
-1. Save the Enumerator's JSON and the Auditor's JSON to files.
+1. Save the Enumerator's JSON, the Auditor's JSON and `preclassified.json` to files. The script merges the pre-classified states and warns about any enumerated state that is in neither file.
 2. Write `meta.json`: `{ "feature", "description", "ds_name", "project_path", "context", "summary" }` (`context` is copied from config so the report can show it). `summary` is 2-3 plain sentences a designer would say out loud: the worst thing a real user hits, the counts, and the score lift. It is labelled in the report as written by AI.
 3. Write `mockups.json` for the **top 3 fixes** (see below).
 4. Run:
    ```
    node generate-report.mjs auditor.json cache/{slug}-inventory.json \
-     --enumerator enumerator.json --mockups mockups.json --meta meta.json \
-     --out reports/{slug}.html
+     --enumerator enumerator.json --preclassified preclassified.json \
+     --mockups mockups.json --meta meta.json --out reports/{slug}.html
    ```
    It writes the report and `reports/{slug}-card.svg` (a 1200x630 share card) in under a second. The status line goes to stderr and includes the score.
 
 **Always pass `--enumerator`.** The score only counts states the page *needs* (taxonomy + screen-level + anything the auditor found not covered). States the enumerator merely discovered in the feature code are shown as "what already exists" and never raise the score. Without the enumerator the script can't tell them apart.
 
-**Score:** starts at 100 and deducts by **consequence**, not by how often a state happens. Blocker (can't finish; refresh doesn't help) costs 20, or 12 if half-built. Misleading (the screen says something false) costs 10 or 6. Nuisance (refresh or retry recovers it) costs 4 or 2. Recommendations cost nothing. The top 3 fixes are the biggest deductions, and "N fixes lift it to X" is their sum. Weights live in `WEIGHTS` at the top of the script. The Auditor sets consequence using section 3b of `agents/auditor.md` and the app context; check its calls against the refresh test before generating.
+**Score:** asks two questions of every missing or half-built state: *can the user still finish?* (consequence, set by the Auditor) and *will real users hit it?* (likelihood, the Enumerator's `priority`). A common blocker takes 20% of the score, misleading 10%, a nuisance 4%. Half-built counts 60%, an edge case (`nice-to-have`) 30%. Each finding takes its share of what's left, so many small edge cases can't drive a good product to zero. Recommendations cost nothing. The top 3 fixes are the biggest deductions, and "N fixes lift it to X" is the score without them. Weights live in `WEIGHTS` at the top of the script. The Auditor sets consequence using section 3b of `agents/auditor.md` and the app context; check its calls against the refresh test, and the Enumerator's likelihood against the page's real users, before generating.
 
 **Mockups (before / after):** after the auditor returns, run the script once without `--mockups` and read which 3 states lead "Where to start". For each, write `{ "<state_id>": { "today", "today_caption", "proposed", "proposed_caption" } }`. `today` must reproduce what the product shows now, using the real copy from the code (grep for it). `proposed` must use only components and tokens from the inventory. Build both from the mockup kit in `templates/report.css` (`mk-bar`, `mk-body`, `mk-doc`, `mk-line`, `mk-side`, `mk-field`, `mk-btn mk-btn-primary|secondary|outline`, `mk-focus`, `mk-center`, `mk-toast mk-toast-destructive`, `mk-banner mk-banner-warning`, `mk-overlay`, `mk-dialog`, `mk-dialog-title`, `mk-tabs`/`mk-tab`/`mk-tab-active`, `mk-pad`, `mk-sig`, `mk-row`, `mk-annot`). The script fills in the project's own colours, radius and font. Frames are 240px tall; keep content inside them and check with a screenshot.
 
@@ -213,7 +218,6 @@ Ask on first use which format they prefer.
 Use the Agent tool with:
 - `description`: short label (e.g., "DS Scanner — FlyTabs")
 - `prompt`: include the instruction to read the agent's system prompt file, plus the specific inputs for this run
-- For Phase 1, spawn both agents in a single message (parallel execution)
 - For Phase 2+, spawn sequentially (each depends on prior output)
 
 ### Passing Data Between Agents
@@ -237,6 +241,8 @@ Each agent is stateless. It knows nothing about the other agents. All context co
 - Don't audit obviously-covered states. Filter before spawning the Auditor.
 - Don't use the Report Builder agent. Use `generate-report.mjs` instead.
 - Don't re-scan the DS if the cache exists. Only rescan when the user asks or the project changes.
+- Don't spawn the Scanner agent when the script inventory is good enough.
+- Don't ask the Auditor to echo pre-classified states back.
 
 ## File Structure
 
@@ -245,6 +251,7 @@ ds-state-gen/
   CLAUDE.md                    — This file (orchestrator instructions)
   states.yml                   — State taxonomy by component type
   generate-report.mjs          — Report generator script (replaces Reporter agent)
+  quick-scan.mjs               — Seconds-long pattern scan, no agents
   agents/
     scanner.md                 — DS Scanner agent system prompt
     enumerator.md              — State Enumerator agent system prompt
