@@ -67,11 +67,24 @@ App context moves states between levels. Two setup questions now live in `config
 
 The Enumerator's `priority` now means likelihood only (`agents/enumerator.md`). The report groups thumbnails worst first: blockers, misleading, nuisances, optional, designed.
 
+### Documenso, reclassified by consequence
+
+An agent re-read the code for each finding and checked whether refreshing or retrying actually recovers it. Every claim below was verified by hand before merging. Inputs and its output are in `examples/documenso-signing/data/` (`reclassify.json` holds the raw calls).
+
+- **App context:** unsaved work is *partly*. Each field saves to the server as it's inserted, but a signature drawn in the pad and text in an open dialog are lost on refresh.
+- **Score: 22/100. Three fixes lift it to 74.** (Under the old likelihood weights it was 45, with Offline on top.)
+
+| Consequence | States |
+|---|---|
+| Blocker | **Keyboard navigation** (gap): new envelopes are V2 (`create-envelope.ts` sets `internalVersion: 2`) and their fields are Konva canvas shapes that only listen to `pointerdown` (`envelope-signer-page-renderer.tsx`), so a keyboard-only recipient can't insert any field. **Screen reader** (gap): V2 fields expose nothing to assistive tech; V1 field buttons have no name. **Signature methods restricted** (was covered, now half-built): the UI prevents disabling all three methods, but the public API (`api/v1/schema.ts`) accepts it, and then the signature pad throws and every recipient lands on the 500 page. |
+| Misleading | Status pages tell existing account holders to "Sign up". V2 text fields accept over-long input and then show a generic error and clear the text. An expired 2FA code is reported as "Invalid verification code". |
+| Nuisance | Offline (was the #1 gap), PDF load error without a retry button, slow connection, link expiring mid-session. |
+
+The keyboard and screen reader findings are the headline: on Documenso's current default, some people legally cannot sign the document.
+
 ### Open items
 
-- [ ] Documenso findings reclassified under the consequence rubric, report regenerated, new top-3 mockups written. *(in progress when this note was written)*
 - [ ] `examples/flytabs-editor.html` had uncommitted changes from before this session (regenerated with the old script). Not included in this branch's commits. Decide whether to keep or discard.
-- [ ] README header still points at the FlyTabs examples first. Swap to Documenso once the reclassified report is final.
 - [ ] The Auditor doesn't emit `implementation`; either add it to `agents/auditor.md` or drop the field.
 - [ ] Speed. 15 minutes and 500K tokens per feature won't get roast-style adoption. Idea: a deterministic scan of screen-level states (offline listeners, reduced-motion, focus-visible, aria-live, error boundaries, retry affordances) that runs in seconds, with the agents as an optional deep mode.
 - [ ] Publish: the Documenso report as a public example, and a short write-up in the shape of "states are where interfaces stop being finished".

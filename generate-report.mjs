@@ -331,8 +331,7 @@ function fixesSection(ctx) {
     return `<article class="fix">
     <div class="fix-head"><span class="fix-num">0${i + 1}</span><div>
       <div class="fix-title">${esc(c.name)} ${consBadge(c)} ${badge(c.status)} <span class="fix-points">+${deduction(c)}</span></div>
-      ${c.consequence_reason ? `<p class="fix-why">${esc(c.consequence_reason)}</p>` : ''}
-      <p class="fix-body">${esc(c.description || '')}</p>
+      ${c.consequence_reason ? `<p class="fix-why">${esc(c.consequence_reason)}</p>` : `<p class="fix-body">${esc(c.description || '')}</p>`}
       <div class="fix-actions"><button class="copy-btn" type="button" data-prompt="${esc(fixPrompt(c, meta))}">Copy the fix prompt</button><span>${esc(c.gap_label || '')}</span><a href="#state-${c.state_id}">Evidence</a></div>
     </div></div>
     ${compare}
@@ -441,7 +440,7 @@ function shareCard(ctx) {
     const y = 250 + i * 88;
     const col = { blocker: '#b42318', misleading: '#c4620a', nuisance: '#7a8595' }[consequenceOf(c)];
     return `<circle cx="652" cy="${y - 8}" r="8" fill="${col}"/>
-  <text x="676" y="${y}" font-size="30" font-weight="650" fill="#18181b">${xml(trunc(c.name, 26))}</text>
+  <text x="676" y="${y}" font-size="26" font-weight="650" fill="#18181b">${xml(trunc(c.name, 30))}</text>
   <text x="676" y="${y + 34}" font-size="21" fill="#6b6b72">${CONS_LABEL[consequenceOf(c)]} · ${c.status === 'gap' ? 'no design' : 'half-built'}</text>`;
   }).join('\n  ');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="Inter, -apple-system, 'Segoe UI', system-ui, sans-serif">

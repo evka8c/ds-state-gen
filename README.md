@@ -4,7 +4,7 @@ A multi-agent Claude Code tool that generates complete UI state coverage for any
 
 ![Report example](docs/report-example.png)
 
-**[See a full example report (HTML)](examples/flytabs-editor.html)** | **[Landing page report with recommendations](examples/flytabs-landing.html)**
+**[Example: Documenso's signing page, 22/100](examples/documenso-signing/report.html)** · [FlyTabs editor](examples/flytabs-editor.html) · [FlyTabs landing page](examples/flytabs-landing.html)
 
 ## The Problem
 
@@ -178,7 +178,7 @@ Reports are HTML files in `reports/`, plus a 1200x630 share card (`{slug}-card.s
 
 Statuses: **No design** (gap), **Half-built** (partial), **Designed** (covered), **Optional** (recommendation, costs nothing).
 
-Example: [Documenso's recipient signing page](examples/documenso-signing/report.html) scores 45/100; three fixes (offline, PDF load error, keyboard signing) lift it to 76.
+Example: [Documenso's recipient signing page](examples/documenso-signing/report.html) scores 22/100. On new envelopes the fields are drawn on a canvas, so keyboard and screen reader users can't sign at all. Three fixes lift it to 74. Offline, which a likelihood-based ranking put first, is a nuisance here because every field saves as you go.
 
 ## Using the Report
 

@@ -177,7 +177,7 @@
    "required": false,
    "priority": "nice-to-have",
    "status": "partial",
-   "evidence": "DocumentSigningAuthPageView reused on complete.tsx:146, expired.tsx:84, rejected.tsx:91 but called without emailHasAccount, so document-signing-auth-page.tsx:73 always renders \"Sign up\" and :27 deep-links /signup#email= — missing: loaders on the three terminal routes do not compute recipientHasAccount the way _index.tsx:406,503 does",
+   "evidence": "DocumentSigningAuthPageView reused on complete.tsx:146, expired.tsx:84, rejected.tsx:91 but called without emailHasAccount, so document-signing-auth-page.tsx:73 always renders \"Sign up\" and :27 deep-links /signup#email= — missing: loaders on the three terminal routes do not compute recipientHasAccount the way _index.tsx:406,503 does | Recovery check: document-signing-auth-page.tsx:27 routes to /signup#email= and :73 labels the button 'Sign up' whenever emailHasAccount is falsy; complete.tsx:146 passes only email. Account access auth means the recipient needed an account to sign in the first place, so on /complete the label is wrong for nearly everyone who sees it.",
    "gap_label": "Reuse [DocumentSigningAuthPageView emailHasAccount prop, _index.tsx recipientHasAccount loader lookup]",
    "extends_from": [
     "DocumentSigningAuthPageView (document-signing-auth-page.tsx:15)",
@@ -185,7 +185,9 @@
     "recipientHasAccount loader value (_index.tsx:406)",
     "Button loading prop (button.tsx:36-47)"
    ],
-   "notes": "Existing users who reopen their completion or rejection link while logged out are told to Sign up and sent to /signup. All parts exist; the three loaders just need to pass the flag."
+   "notes": "Existing users who reopen their completion or rejection link while logged out are told to Sign up and sent to /signup. All parts exist; the three loaders just need to pass the flag.",
+   "consequence": "misleading",
+   "consequence_reason": "A recipient who already has an account is told to Sign up and sent to the signup page, so they head down the wrong path, and refreshing shows the same wrong button."
   },
   {
    "state_id": 15,
@@ -208,7 +210,7 @@
    "required": true,
    "priority": "critical",
    "status": "partial",
-   "evidence": "PdfViewerErrorState in apps/remix/app/components/general/pdf-viewer/pdf-viewer-states.tsx:12-25 (\"Please try again or contact our support\") plus destructive toast in pdf-viewer.tsx:160-164 — missing: no retry affordance; grep \"retry|Retry|reload\" over apps/remix/app/components/general/pdf-viewer/ returns nothing, so \"try again\" means a manual full-page reload",
+   "evidence": "PdfViewerErrorState in apps/remix/app/components/general/pdf-viewer/pdf-viewer-states.tsx:12-25 (\"Please try again or contact our support\") plus destructive toast in pdf-viewer.tsx:160-164 — missing: no retry affordance; grep \"retry|Retry|reload\" over apps/remix/app/components/general/pdf-viewer/ returns nothing, so \"try again\" means a manual full-page reload | Recovery check: pdf-viewer-states.tsx:12-25 has no button, so 'try again' means a manual reload; fields persist per action (signFieldWithToken / envelope.field.sign), so reload loses nothing already inserted.",
    "gap_label": "Extend [PdfViewerErrorState], add [Retry button that re-runs the fetch/getDocument effect]",
    "extends_from": [
     "PdfViewerErrorState (pdf-viewer-states.tsx:12-25)",
@@ -217,7 +219,9 @@
     "GenericErrorLayout Go Back / Home footer pattern (generic-error-layout.tsx:91-107)",
     "--muted-foreground"
    ],
-   "notes": "Critical on phones with flaky data: a dropped PDF fetch currently dead-ends the whole signing page. The copy promises \"try again\" but the only path is browser reload, which also drops any dialog state."
+   "notes": "Critical on phones with flaky data: a dropped PDF fetch currently dead-ends the whole signing page. The copy promises \"try again\" but the only path is browser reload, which also drops any dialog state.",
+   "consequence": "nuisance",
+   "consequence_reason": "The message is true and a browser refresh re-fetches the PDF on the same URL; inserted fields are already saved, so only an open dialog's unsaved entry is lost."
   },
   {
    "state_id": 17,
@@ -802,7 +806,9 @@
    "evidence": "Empty upload state: full-pad motion.button with UploadCloudIcon + \"Upload Signature\" and hidden <input type=file accept=image/*> in packages/ui/primitives/signature-pad/signature-pad-upload.tsx:378,430-450",
    "gap_label": null,
    "extends_from": null,
-   "notes": "No drag-and-drop: grep \"onDrop|onDragOver|useDropzone\" in signature-pad-upload.tsx returns nothing. Non-critical on a phone-first signing page (no drag on touch); react-dropzone is already used in packages/ui/primitives/document-dropzone.tsx:12 if desktop drop is wanted later."
+   "notes": "No drag-and-drop: grep \"onDrop|onDragOver|useDropzone\" in signature-pad-upload.tsx returns nothing. Non-critical on a phone-first signing page (no drag on touch); react-dropzone is already used in packages/ui/primitives/document-dropzone.tsx:12 if desktop drop is wanted later.",
+   "consequence": null,
+   "consequence_reason": "Missing drag-and-drop costs nothing: the tap-to-pick upload button works with mouse, touch and keyboard."
   },
   {
    "state_id": 62,
@@ -876,11 +882,13 @@
    "description": "Sender disables draw/type/upload: only enabled tabs render; single-method shows one tab. All disabled renders nothing (throws 'No signature enabled' in state init; ambiguity).",
    "required": true,
    "priority": "critical",
-   "status": "covered",
-   "evidence": "TabsTrigger for draw/text/image each gated by *SignatureEnabled in packages/ui/primitives/signature-pad/signature-pad.tsx:148-166; all-disabled guard returns null at :134-136",
-   "gap_label": null,
+   "status": "partial",
+   "evidence": "TabsTrigger for draw/text/image each gated by *SignatureEnabled in packages/ui/primitives/signature-pad/signature-pad.tsx:148-166; all-disabled guard returns null at :134-136 | Recovery check: The UI blocks it (signatureTypes .min(1) in add-settings.types.ts:35, envelope-editor-settings-dialog.tsx:110; team settings reject all-false at update-team-settings.ts:69), but the API does not: packages/api/v1/schema.ts:170-172 accepts three plain booleans passed straight through at implementation.ts:438-440, and ZDocumentMetaCreateSchema/UpdateSchema (packages/lib/types/document-meta.ts:113-139) have no cross-field check. signature-pad.tsx:82 throws 'No signature enabled' inside useState before the null guard at :134; SignaturePad mounts when the dialog opens (signature-pad-dialog.tsx:112-114) and the throw reaches root ErrorBoundary (root.tsx:207).",
+   "gap_label": "Extend [SignaturePad], move the all-disabled guard above the useState initializer; add server-side refine (at least one method true) to ZDocumentMetaCreateSchema and API v1 meta",
    "extends_from": null,
-   "notes": "Edge case: the useState initializer at signature-pad.tsx:58-83 throws \"No signature enabled\" before the null guard at :134 runs, so an envelope with all three methods disabled crashes to the route ErrorBoundary (GenericErrorLayout). Sender-side misconfiguration only; moving the guard above the hook is a one-line fix, not a new state."
+   "notes": "Edge case: the useState initializer at signature-pad.tsx:58-83 throws \"No signature enabled\" before the null guard at :134 runs, so an envelope with all three methods disabled crashes to the route ErrorBoundary (GenericErrorLayout). Sender-side misconfiguration only; moving the guard above the hook is a one-line fix, not a new state.",
+   "consequence": "blocker",
+   "consequence_reason": "A sender using the public API can turn off all three signature methods, and then the signature dialog crashes the page for every recipient on every retry, so nobody can sign."
   },
   {
    "state_id": 68,
@@ -967,11 +975,13 @@
    "description": "'# characters remaining' counter when fieldMeta.characterLimit > 0 and no error. Ambiguity: no client-side block when exceeded.",
    "required": false,
    "priority": "nice-to-have",
-   "status": "covered",
-   "evidence": "Plural \"# characters remaining\" rendered when characterLimit > 0 and no error at apps/remix/app/components/dialogs/sign-field-text-dialog.tsx:72-77",
-   "gap_label": null,
+   "status": "partial",
+   "evidence": "Plural \"# characters remaining\" rendered when characterLimit > 0 and no error at apps/remix/app/components/dialogs/sign-field-text-dialog.tsx:72-77 | Recovery check: V1 blocks it correctly: document-signing-text-field.tsx:106-116 validates before sending and :296-305 shows '(N characters over)'. V2 does not: sign-field-text-dialog.tsx:21-23 schema has no max, the counter at :72-77 just goes negative, text-field.ts:34-44 sends it, the server rejects via envelope-signing.ts:127-132 (with the wrong message 'Invalid email'), the renderer shows the generic toast at envelope-signer-page-renderer.tsx:527-531, and the dialog reopens empty (sign-field-text-dialog.tsx:35-38).",
+   "gap_label": "Reuse [validateTextField + 'N characters over' message from document-signing-text-field.tsx:106-116,296-305] in sign-field-text-dialog.tsx",
    "extends_from": null,
-   "notes": "Counter exists but nothing blocks going over: grep \"maxLength\" in sign-field-text-dialog.tsx returns nothing and the zod schema at :22 has no .max(). Over-limit text goes to the server and, if rejected, surfaces as the generic field sign toast (#48). Adding .max(characterLimit) with a FormMessage would close it; nice-to-have."
+   "notes": "Counter exists but nothing blocks going over: grep \"maxLength\" in sign-field-text-dialog.tsx returns nothing and the zod schema at :22 has no .max(). Over-limit text goes to the server and, if rejected, surfaces as the generic field sign toast (#48). Adding .max(characterLimit) with a FormMessage would close it; nice-to-have.",
+   "consequence": "misleading",
+   "consequence_reason": "On V2 envelopes the dialog lets you submit over-long text, then shows a generic 'error occurred while signing the field' toast and throws the text away, so the recipient retries the same thing without knowing it was too long."
   },
   {
    "state_id": 75,
@@ -1033,10 +1043,12 @@
    "required": false,
    "priority": "nice-to-have",
    "status": "covered",
-   "evidence": "CommandEmpty \"No results found.\" at apps/remix/app/components/dialogs/sign-field-dropdown-dialog.tsx:32 using packages/ui/primitives/command.tsx:109-114",
+   "evidence": "CommandEmpty \"No results found.\" at apps/remix/app/components/dialogs/sign-field-dropdown-dialog.tsx:32 using packages/ui/primitives/command.tsx:109-114 | Recovery check: sign-field-dropdown-dialog.tsx:32 literal 'No results found.' not wrapped in Trans.",
    "gap_label": null,
    "extends_from": null,
-   "notes": "String is a hard-coded literal, not wrapped in <Trans>; i18n defect only."
+   "notes": "String is a hard-coded literal, not wrapped in <Trans>; i18n defect only.",
+   "consequence": null,
+   "consequence_reason": "The empty-results message shows and the recipient can clear the search; only non-English recipients see it in English, which does not stop them."
   },
   {
    "state_id": 80,
@@ -1449,7 +1461,7 @@
    "required": false,
    "priority": "nice-to-have",
    "status": "partial",
-   "evidence": "Countdown turns text-destructive when millisecondsRemaining <= 0 at apps/remix/app/components/general/document-signing/access-auth-2fa-form.tsx:254-262 — missing: Verify & Complete stays enabled (disabled only by !form.formState.isValid at :274), no expiry message, and the server rejection then routes through #112 \"Invalid verification code\" which misdescribes the problem",
+   "evidence": "Countdown turns text-destructive when millisecondsRemaining <= 0 at apps/remix/app/components/general/document-signing/access-auth-2fa-form.tsx:254-262 — missing: Verify & Complete stays enabled (disabled only by !form.formState.isValid at :274), no expiry message, and the server rejection then routes through #112 \"Invalid verification code\" which misdescribes the problem | Recovery check: document-signing-complete-dialog.tsx:173-178 maps every TWO_FACTOR_AUTH_FAILED to 'Invalid verification code. Please try again.'; the server check validate-2fa-token-from-email.ts returns only true/false, so expiry and typos are indistinguishable. Resend exists (access-auth-2fa-form.tsx:111-121), so the path out is there but not pointed to.",
    "gap_label": "Reuse [Alert variant=warning, Button disabled, existing Resend code button]",
    "extends_from": [
     "Alert variant=warning (packages/ui/primitives/alert.tsx:16)",
@@ -1458,7 +1470,9 @@
     "--destructive",
     "--warning"
    ],
-   "notes": "Realistic on phones: recipient switches to the mail app, comes back after the window. Building blocks all exist in the same file; needs a millisecondsRemaining <= 0 branch that disables Verify and shows \"Code expired, resend a new one\"."
+   "notes": "Realistic on phones: recipient switches to the mail app, comes back after the window. Building blocks all exist in the same file; needs a millisecondsRemaining <= 0 branch that disables Verify and shows \"Code expired, resend a new one\".",
+   "consequence": "misleading",
+   "consequence_reason": "When the code has expired the screen says 'Invalid verification code. Please try again.', so the recipient re-enters the same dead code instead of pressing Resend."
   },
   {
    "state_id": 112,
@@ -1844,8 +1858,8 @@
    "description": "No offline banner. Field insert fails to generic toast (48), completion fails to generic toast (114), PDF fetch fails to error state (16). Mobile recipients on flaky data will hit this.",
    "required": true,
    "priority": "critical",
-   "status": "gap",
-   "evidence": "No offline detection anywhere: grep \"navigator.onLine|useOnlineStatus|useNetworkState|addEventListener('online'|addEventListener('offline'\" across apps/remix/app, packages/ui, packages/lib returns nothing; inventory state_patterns.offline is []. Field insert (#48), removal (#47), completion (#114) and PDF fetch (#16) each fall through to a generic destructive toast that never mentions connectivity.",
+   "status": "partial",
+   "evidence": "No offline detection anywhere: grep \"navigator.onLine|useOnlineStatus|useNetworkState|addEventListener('online'|addEventListener('offline'\" across apps/remix/app, packages/ui, packages/lib returns nothing; inventory state_patterns.offline is []. Field insert (#48), removal (#47), completion (#114) and PDF fetch (#16) each fall through to a generic destructive toast that never mentions connectivity. | Recovery check: Status corrected from gap: error handling exists, just not connectivity-specific (envelope-signer-page-renderer.tsx:527-531 'An error occurred while signing the field.'). A failed V2 signature insert skips setSignature (:396-407) so the drawing must be redone; the text dialog reopens empty (sign-field-text-dialog.tsx:35-38). Earlier inserted fields persist server-side.",
    "gap_label": "New offline banner + network detection needed",
    "extends_from": [
     "Alert variant=warning (packages/ui/primitives/alert.tsx:16)",
@@ -1855,7 +1869,9 @@
     "Button disabled:opacity-50 for Next Field / Complete (button.tsx:10)",
     "TOAST_LIMIT=1 (use-toast.ts:6) so offline toast must not fight field toasts"
    ],
-   "notes": "Collapses the offline sub-states that all need the same detector: PDF fetch offline, field insert/remove offline, completion offline, reconnect. Anonymous recipients on phones are the primary audience; today a dropped connection mid-signature reads as \"something went wrong\" with no cause and no cue to wait and retry. Minimum viable: window online/offline listeners + persistent warning banner + disable mutating buttons while offline."
+   "notes": "Collapses the offline sub-states that all need the same detector: PDF fetch offline, field insert/remove offline, completion offline, reconnect. Anonymous recipients on phones are the primary audience; today a dropped connection mid-signature reads as \"something went wrong\" with no cause and no cue to wait and retry. Minimum viable: window online/offline listeners + persistent warning banner + disable mutating buttons while offline.",
+   "consequence": "nuisance",
+   "consequence_reason": "Offline, a failed insert or Complete shows a generic error toast that doesn't mention the connection, but everything already inserted is saved, and retrying once back online works; only the one signature or text entry being inserted has to be redone."
   },
   {
    "state_id": 142,
@@ -1874,7 +1890,9 @@
     "--muted-foreground",
     "--primary"
    ],
-   "notes": "On mobile data a multi-MB PDF behind a silent spinner for 20-40s is indistinguishable from a hang and drives abandonment before the first field is reached. Blocks exist (Progress primitive, spinner); they are not assembled for the PDF fetch."
+   "notes": "On mobile data a multi-MB PDF behind a silent spinner for 20-40s is indistinguishable from a hang and drives abandonment before the first field is reached. Blocks exist (Progress primitive, spinner); they are not assembled for the PDF fetch.",
+   "consequence": "nuisance",
+   "consequence_reason": "A slow load only shows a spinner with no progress, but it finishes on its own and nothing is lost."
   },
   {
    "state_id": 143,
@@ -1897,7 +1915,7 @@
    "required": false,
    "priority": "nice-to-have",
    "status": "partial",
-   "evidence": "Specific destructive toasts for RECIPIENT_EXPIRED, ENVELOPE_COMPLETED, ENVELOPE_REJECTED, ENVELOPE_CANCELLED, NOT_FOUND exist in apps/remix/app/utils/toast-error-messages.ts:52-79, and the terminal pages for each exist (expired.tsx, rejected.tsx, cancelled card in _index.tsx; pre-classified #4-#6) — missing: after the toast the page stays in the signing layout with the confirm dialog still open (envelope-signing-complete-dialog.tsx:141-158 rethrows, dialog does not close or navigate); nothing on the signing page polls for status the way complete.tsx does every 3s",
+   "evidence": "Specific destructive toasts for RECIPIENT_EXPIRED, ENVELOPE_COMPLETED, ENVELOPE_REJECTED, ENVELOPE_CANCELLED, NOT_FOUND exist in apps/remix/app/utils/toast-error-messages.ts:52-79, and the terminal pages for each exist (expired.tsx, rejected.tsx, cancelled card in _index.tsx; pre-classified #4-#6) — missing: after the toast the page stays in the signing layout with the confirm dialog still open (envelope-signing-complete-dialog.tsx:141-158 rethrows, dialog does not close or navigate); nothing on the signing page polls for status the way complete.tsx does every 3s | Recovery check: Toast copy is specific and true (toast-error-messages.ts:52-79); field data is not at stake because the document is closed server-side.",
    "gap_label": "Reuse [terminal routes expired/rejected/cancelled + useRevalidator]",
    "extends_from": [
     "getSigningCompletionErrorMessage (toast-error-messages.ts:50-88)",
@@ -1906,7 +1924,9 @@
     "Document Cancelled SigningCard3D state (_index.tsx, pre-classified #6)",
     "toast variant=destructive"
    ],
-   "notes": "On RECIPIENT_EXPIRED / ENVELOPE_* codes, call revalidate() or navigate so the loader lands the recipient on the matching terminal page instead of leaving a dead signing form behind a toast. Nice-to-have because the toast copy is already accurate."
+   "notes": "On RECIPIENT_EXPIRED / ENVELOPE_* codes, call revalidate() or navigate so the loader lands the recipient on the matching terminal page instead of leaving a dead signing form behind a toast. Nice-to-have because the toast copy is already accurate.",
+   "consequence": "nuisance",
+   "consequence_reason": "The toast correctly says the link expired or the document was cancelled, and a refresh lands on the matching end page; the only cost is the dead form left open behind the toast."
   },
   {
    "state_id": 145,
@@ -1928,16 +1948,18 @@
    "description": "Field overlays are real buttons; dialogs trap focus; tabs have role=tab; PIN inputs autofocus. Gap: draw canvas has no keyboard alternative (Type tab is the fallback), color/zoom/undo buttons rely on focus-visible rings.",
    "required": true,
    "priority": "critical",
-   "status": "partial",
-   "evidence": "Field overlays are real <button> elements (document-signing-field-container.tsx:122-125,143), signature tabs use role=tablist/tab/tabpanel with aria-selected and focus-visible:ring-2 (packages/ui/primitives/signature-pad/signature-tabs.tsx:62,80-87,126), Radix Dialog traps focus, undo/zoom buttons carry focus-visible rings (signature-pad-draw.tsx:268,296) — missing: the draw <canvas> at signature-pad-draw.tsx:238-246 has no tabIndex or onKeyDown (pointer only), so when a sender disables the Type tab (#67) a keyboard-only recipient has no way to produce a signature; the Remove overlay button at field-container.tsx:143 is focusable but empty, so Tab lands on an unnamed control",
-   "gap_label": "Extend [SignaturePad tabs], add [guaranteed keyboard path: keep Type tab available for keyboard/AT users or expose a visible \"Use typed signature\" fallback when draw-only]; Reuse [sr-only label on Remove button]",
+   "status": "gap",
+   "evidence": "Field overlays are real <button> elements (document-signing-field-container.tsx:122-125,143), signature tabs use role=tablist/tab/tabpanel with aria-selected and focus-visible:ring-2 (packages/ui/primitives/signature-pad/signature-tabs.tsx:62,80-87,126), Radix Dialog traps focus, undo/zoom buttons carry focus-visible rings (signature-pad-draw.tsx:268,296) — missing: the draw <canvas> at signature-pad-draw.tsx:238-246 has no tabIndex or onKeyDown (pointer only), so when a sender disables the Type tab (#67) a keyboard-only recipient has no way to produce a signature; the Remove overlay button at field-container.tsx:143 is focusable but empty, so Tab lands on an unnamed control | Recovery check: Status corrected from partial: envelope-signer-page-renderer.tsx:419-420 binds only fieldGroup.on('pointerdown'); grep tabIndex|onKeyDown|aria-|role= in components/general/envelope-signing/ returns nothing. The 'next field' action only scrolls (envelope-signing-complete-dialog.tsx:54-82). V2 is what new envelopes use (trpc envelope-router/create-envelope.ts:174 internalVersion: 2; route switch _index.tsx:358,395). Draw canvas signature-pad-draw.tsx:238-248 is pointer-only; draw-only is a normal UI choice (signatureTypes min(1)).",
+   "gap_label": "Extend [V1 field overlay <button> pattern from document-signing-field-container.tsx:122-125] to V2: render a focusable, named DOM button over each Konva field that calls handleFieldGroupClick; keep a Type path for draw-only envelopes; Reuse [sr-only label on Remove button]",
    "extends_from": [
     "signature-tabs.tsx Tabs role=tablist (:62)",
     "SignaturePadType (signature-pad-type.tsx)",
     "focus-visible:ring-2 focus-visible:ring-ring (button.tsx:10)",
     "sr-only pattern (dialog.tsx:80)"
    ],
-   "notes": "Most of keyboard support is genuinely covered by the DS focus pattern; the hole is narrow but real for motor-impaired recipients on draw-only envelopes. Shares the field-button naming fix with #147."
+   "notes": "Most of keyboard support is genuinely covered by the DS focus pattern; the hole is narrow but real for motor-impaired recipients on draw-only envelopes. Shares the field-button naming fix with #147.",
+   "consequence": "blocker",
+   "consequence_reason": "On V2 envelopes the fields are drawn on a canvas that only responds to a pointer, so a keyboard-only recipient cannot insert any field at all and no refresh or retry changes that; on V1 the same happens for draw-only envelopes."
   },
   {
    "state_id": 147,
@@ -1946,9 +1968,9 @@
    "description": "Signature img has alt 'Signature for {name}'; undo/zoom have sr-only labels; widget chevron has aria-label; 2FA PinInput has aria-label. Gaps: field overlay buttons have no accessible name, remaining-count changes and toasts are not announced via live region, 'Signature is too small' is visual only.",
    "required": true,
    "priority": "critical",
-   "status": "partial",
-   "evidence": "Exists: img alt \"Signature for {name}\" (document-signing-signature-field.tsx:265), sr-only labels on Undo/Zoom (signature-pad-draw.tsx:300, signature-pad-upload.tsx:390,403), aria-label on sidebar toggle (page-view-v2.tsx:109,139), widget chevron (mobile-widget.tsx:46) and 2FA PinInput (access-auth-2fa-form.tsx:241); toasts pass through Radix Toast.Root (toast.tsx:46) which brings its own announcer — missing: the insert button (field-container.tsx:122-125) and Remove button (:143) are empty <button> elements with no text or aria-label, so every field announces as \"button\"; \"Signature is too small\" (signature-pad-draw.tsx:282) is a plain <Trans> in a div with no role=alert; the \"N Fields Remaining\" pill is not in a live region (grep \"aria-live|role=\"status\"\" across document-signing/ and envelope-signing/ returns nothing)",
-   "gap_label": "Extend [field overlay buttons], add [aria-label \"{field type} for {recipient}, press to insert\" / \"Remove {field type}\"]; Reuse [role=alert on too-small message, aria-live=polite on remaining count]",
+   "status": "gap",
+   "evidence": "Exists: img alt \"Signature for {name}\" (document-signing-signature-field.tsx:265), sr-only labels on Undo/Zoom (signature-pad-draw.tsx:300, signature-pad-upload.tsx:390,403), aria-label on sidebar toggle (page-view-v2.tsx:109,139), widget chevron (mobile-widget.tsx:46) and 2FA PinInput (access-auth-2fa-form.tsx:241); toasts pass through Radix Toast.Root (toast.tsx:46) which brings its own announcer — missing: the insert button (field-container.tsx:122-125) and Remove button (:143) are empty <button> elements with no text or aria-label, so every field announces as \"button\"; \"Signature is too small\" (signature-pad-draw.tsx:282) is a plain <Trans> in a div with no role=alert; the \"N Fields Remaining\" pill is not in a live region (grep \"aria-live|role=\"status\"\" across document-signing/ and envelope-signing/ returns nothing) | Recovery check: Status corrected from partial: V2 fields exist only as Konva shapes with pointerdown handlers (envelope-signer-page-renderer.tsx:419-420), no DOM or ARIA counterpart; V1 insert/remove buttons are empty (document-signing-field-container.tsx:122-125,143).",
+   "gap_label": "Extend [field overlay buttons], add [DOM overlay buttons for V2 Konva fields with aria-label '{field type} for {recipient}, press to insert' / 'Remove {field type}']; Reuse [role=alert on too-small message, aria-live=polite on remaining count]",
    "extends_from": [
     "sr-only pattern (packages/ui/primitives/dialog.tsx:80)",
     "role=alert (packages/ui/primitives/alert.tsx:35)",
@@ -1956,7 +1978,9 @@
     "Badge role=status (packages/ui/primitives/badge.tsx:36)",
     "alt text pattern (document-signing-signature-field.tsx:265)"
    ],
-   "notes": "Critical: a screen-reader recipient cannot tell which unnamed button is the signature field versus a date or checkbox, which blocks signing entirely. Building blocks are all in the DS; nothing new to design."
+   "notes": "Critical: a screen-reader recipient cannot tell which unnamed button is the signature field versus a date or checkbox, which blocks signing entirely. Building blocks are all in the DS; nothing new to design.",
+   "consequence": "blocker",
+   "consequence_reason": "A screen-reader user cannot find or identify fields: V2 fields are canvas shapes with nothing exposed to assistive tech, and V1 fields are unnamed buttons, and refreshing changes nothing."
   },
   {
    "state_id": 148,
@@ -1972,7 +1996,9 @@
     "useReducedMotion (apps/remix/app/components/general/settings-upsell/branding-upsell.tsx:47)",
     "tailwindcss-animate motion-reduce: variants (packages/tailwind-config/index.cjs:161)"
    ],
-   "notes": "Non-critical: animations are short, decorative and never gate an action; the pen-stroke hint and slide-ins complete in under a second. Worth a guard for vestibular users but nobody is blocked."
+   "notes": "Non-critical: animations are short, decorative and never gate an action; the pen-stroke hint and slide-ins complete in under a second. Worth a guard for vestibular users but nobody is blocked.",
+   "consequence": null,
+   "consequence_reason": "Short decorative animations; nothing is blocked or misrepresented."
   },
   {
    "state_id": 149,
@@ -1989,7 +2015,9 @@
     "recipient-colors.ts (packages/ui/lib/recipient-colors.ts:22-64)",
     "EnvelopeRecipientFieldTooltip (packages/ui/components/document/envelope-recipient-field-tooltip.tsx)"
    ],
-   "notes": "Non-critical: fields already carry a 2px ring and text placeholders, both of which survive Windows High Contrast, and the pending-field tooltip (#28) plus remaining-count text give non-colour cues. Only the orange-vs-green distinction is lost."
+   "notes": "Non-critical: fields already carry a 2px ring and text placeholders, both of which survive Windows High Contrast, and the pending-field tooltip (#28) plus remaining-count text give non-colour cues. Only the orange-vs-green distinction is lost.",
+   "consequence": null,
+   "consequence_reason": "Fields keep their outline and text in high-contrast mode; only the orange/green distinction is lost and the remaining-count text covers it."
   },
   {
    "state_id": 150,
@@ -2005,17 +2033,22 @@
     "print screen (packages/tailwind-config/index.cjs:156)",
     ".print-provider (packages/ui/styles/theme.css:212-217)"
    ],
-   "notes": "Non-critical: Download PDF during signing (#139) and on the complete page (#132) are the intended paths and produce a correct document; Cmd+P of the signing view is an edge case. A print:hidden on the widget/sidebar would be enough."
+   "notes": "Non-critical: Download PDF during signing (#139) and on the complete page (#132) are the intended paths and produce a correct document; Cmd+P of the signing view is an edge case. A print:hidden on the widget/sidebar would be enough.",
+   "consequence": null,
+   "consequence_reason": "Printing the signing view looks messy, but Download PDF gives the correct document."
   }
  ],
  "summary": {
   "total": 150,
-  "covered": 139,
-  "partial": 7,
-  "gap": 1,
+  "covered": 137,
+  "partial": 8,
+  "gap": 2,
   "recommendation": 3,
   "reuse": 3,
   "extend": 4,
-  "new": 1
+  "new": 1,
+  "blocker": 3,
+  "misleading": 3,
+  "nuisance": 4
  }
 }

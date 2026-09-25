@@ -43,7 +43,7 @@ code { font-family: var(--report-mono); font-size: 12px; }
 .score-lift { font-size: 14px; color: var(--report-text-secondary); }
 .score-lift strong { color: var(--report-text); }
 .score-how { font-size: 12px; color: var(--report-text-tertiary); margin-top: 12px; }
-.counts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 18px; }
+.counts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 18px; }
 .count { border-radius: var(--report-radius-sm); padding: 10px; }
 .count-value { font-size: 22px; font-weight: 650; line-height: 1.1; }
 .count-label { font-size: 11px; color: var(--report-text-secondary); }
