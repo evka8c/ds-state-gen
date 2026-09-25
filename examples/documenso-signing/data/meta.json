@@ -1,0 +1,7 @@
+{
+  "feature": "Recipient document signing page",
+  "description": "Documenso /sign/:token: link gating, access auth, PDF with assigned fields, signature pad, rejection, completion, terminal pages.",
+  "ds_name": "@documenso/ui (shadcn + Tailwind)",
+  "project_path": "documenso/documenso",
+  "summary": "A recipient who loses signal while signing gets a red \"Error\" toast that never says why, and nothing tells them the connection is the problem. Of the 36 states this page needs, 1 has no design and 7 are half-built, mostly on paths a first-time recipient on a phone will hit. Three fixes take the score from 45 to 76."
+}

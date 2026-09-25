@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>State coverage: Recipient document signing page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Caveat:wght@500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --report-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --report-mono: 'SF Mono', ui-monospace, Menlo, monospace;
+  --report-bg: #f6f6f3;
+  --report-surface: #ffffff;
+  --report-text: #18181b;
+  --report-text-secondary: #5f5f66;
+  --report-text-tertiary: #95959c;
+  --report-border: #e4e4e0;
+  --report-border-light: #efefec;
+  --report-radius: 14px;
+  --report-radius-sm: 8px;
+  --status-covered: #2a7d4f;  --status-covered-bg: #e8f5ec;
+  --status-partial: #a86f00;  --status-partial-bg: #fdf4de;
+  --status-gap: #c0392b;      --status-gap-bg: #fdecea;
+  --status-rec: #445468;      --status-rec-bg: #e6ebf1;
+}
+
+body { font-family: var(--report-font); background: var(--report-bg); color: var(--report-text); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+.report { max-width: 1100px; margin: 0 auto; padding: 48px 24px 96px; }
+code { font-family: var(--report-mono); font-size: 12px; }
+
+/* ---------- Header ---------- */
+.eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.9px; color: var(--report-text-tertiary); }
+.report-header { margin-bottom: 28px; }
+.report-header h1 { font-size: 30px; font-weight: 650; letter-spacing: -0.4px; margin: 6px 0 8px; }
+.report-meta { font-size: 13px; color: var(--report-text-tertiary); display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ---------- Hero ---------- */
+.hero { display: grid; grid-template-columns: 300px 1fr; gap: 16px; margin-bottom: 16px; }
+.card { background: var(--report-surface); border: 1px solid var(--report-border); border-radius: var(--report-radius); padding: 24px; }
+.score-card .score { display: flex; align-items: baseline; gap: 4px; margin: 8px 0 4px; }
+.score-card .score-value { font-size: 72px; font-weight: 700; letter-spacing: -2px; line-height: 1; }
+.score-card .score-max { font-size: 24px; font-weight: 500; color: var(--report-text-tertiary); }
+.score-band-gap .score-value { color: var(--status-gap); }
+.score-band-partial .score-value { color: var(--status-partial); }
+.score-band-covered .score-value { color: var(--status-covered); }
+.score-bar { height: 8px; border-radius: 99px; background: var(--report-border-light); overflow: hidden; position: relative; margin: 14px 0 8px; }
+.score-bar-now { position: absolute; inset: 0 auto 0 0; background: currentColor; border-radius: 99px; }
+.score-bar-lift { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(45deg, rgba(0,0,0,.12) 0 4px, transparent 4px 8px); border-radius: 0 99px 99px 0; }
+.score-lift { font-size: 14px; color: var(--report-text-secondary); }
+.score-lift strong { color: var(--report-text); }
+.score-how { font-size: 12px; color: var(--report-text-tertiary); margin-top: 12px; }
+.counts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 18px; }
+.count { border-radius: var(--report-radius-sm); padding: 10px; }
+.count-value { font-size: 22px; font-weight: 650; line-height: 1.1; }
+.count-label { font-size: 11px; color: var(--report-text-secondary); }
+.count-gap { background: var(--status-gap-bg); color: var(--status-gap); }
+.count-partial { background: var(--status-partial-bg); color: var(--status-partial); }
+.count-covered { background: var(--status-covered-bg); color: var(--status-covered); }
+.count-rec { background: var(--status-rec-bg); color: var(--status-rec); }
+.summary-card .summary-text { font-size: 22px; line-height: 1.45; font-weight: 550; letter-spacing: -0.2px; margin-top: 10px; }
+.summary-card .ai-label { font-size: 12px; color: var(--report-text-tertiary); margin-top: 14px; }
+
+/* ---------- Sections ---------- */
+.section { margin-top: 40px; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+.section-head h2 { font-size: 20px; font-weight: 650; letter-spacing: -0.2px; }
+.section-head p { font-size: 13px; color: var(--report-text-secondary); }
+
+/* ---------- Fixes (before / after) ---------- */
+.fix { background: var(--report-surface); border: 1px solid var(--report-border); border-radius: var(--report-radius); padding: 22px 24px; margin-bottom: 14px; }
+.fix-head { display: flex; gap: 14px; align-items: flex-start; }
+.fix-num { font-family: var(--report-mono); font-size: 12px; color: var(--report-text-tertiary); padding-top: 3px; }
+.fix-title { font-size: 16px; font-weight: 650; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.fix-points { font-size: 12px; font-weight: 600; color: var(--status-covered); background: var(--status-covered-bg); border-radius: 99px; padding: 1px 8px; }
+.fix-body { font-size: 14px; color: var(--report-text-secondary); margin-top: 4px; }
+.fix-actions { display: flex; gap: 12px; align-items: center; margin-top: 12px; font-size: 12px; color: var(--report-text-tertiary); flex-wrap: wrap; }
+.copy-btn { font: inherit; font-size: 13px; font-weight: 550; color: var(--report-text); background: var(--report-surface); border: 1px solid var(--report-border); border-radius: var(--report-radius-sm); padding: 6px 12px; cursor: pointer; }
+.fix-actions a { color: var(--report-text-secondary); text-decoration: underline; text-underline-offset: 2px; }
+.copy-btn:hover { border-color: var(--report-text-tertiary); }
+.copy-btn:focus-visible { outline: 2px solid var(--report-text); outline-offset: 2px; }
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
+.compare-col figcaption { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 8px; display: flex; gap: 6px; align-items: center; }
+.compare-today figcaption { color: var(--status-gap); }
+.compare-proposed figcaption { color: var(--status-covered); }
+.compare-note { font-size: 12px; color: var(--report-text-secondary); margin-top: 8px; }
+
+/* ---------- Mockup kit (project tokens live on .mock) ---------- */
+.mock { position: relative; height: 240px; border-radius: 10px; overflow: hidden; border: 1px solid var(--report-border); background: var(--m-bg); color: var(--m-fg); font-family: var(--m-font); font-size: 12px; line-height: 1.4; }
+.compare-today .mock { box-shadow: inset 0 0 0 2px var(--status-gap-bg); }
+.compare-proposed .mock { box-shadow: inset 0 0 0 2px var(--status-covered-bg); }
+.mk-bar { height: 34px; border-bottom: 1px solid var(--m-border); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-weight: 600; font-size: 12px; }
+.mk-body { display: flex; gap: 10px; padding: 10px 12px; }
+.mk-doc { flex: 1; height: 180px; background: #fff; border: 1px solid var(--m-border); border-radius: 4px; padding: 12px; position: relative; }
+.mk-line { height: 6px; border-radius: 3px; background: var(--m-muted); margin-bottom: 7px; }
+.mk-side { width: 120px; display: flex; flex-direction: column; gap: 8px; }
+.mk-field { border-radius: 2px; box-shadow: 0 0 0 2px var(--m-primary); background: color-mix(in srgb, var(--m-primary) 18%, white); padding: 8px 6px; font-size: 11px; color: var(--m-fg); }
+.mk-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: var(--m-radius); font-size: 11px; font-weight: 550; border: 1px solid transparent; white-space: nowrap; }
+.mk-btn-primary { background: var(--m-primary); color: var(--m-primary-fg); }
+.mk-btn-secondary { background: var(--m-muted); color: var(--m-fg); }
+.mk-btn-outline { background: var(--m-bg); border-color: var(--m-border); color: var(--m-fg); }
+.mk-btn[disabled], .mk-disabled { opacity: .5; }
+.mk-focus { outline: 2px solid var(--m-ring); outline-offset: 2px; }
+.mk-muted { color: var(--m-muted-fg); }
+.mk-center { position: absolute; inset: 34px 0 0 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 16px; gap: 6px; }
+.mk-toast { position: absolute; right: 10px; bottom: 10px; width: 200px; border-radius: var(--m-radius); padding: 10px 12px; box-shadow: 0 6px 18px rgba(0,0,0,.15); font-size: 11px; }
+.mk-toast-destructive { background: var(--m-destructive); color: var(--m-destructive-fg); }
+.mk-toast strong { display: block; font-size: 12px; }
+.mk-banner { display: flex; gap: 8px; align-items: flex-start; padding: 8px 12px; font-size: 11px; }
+.mk-banner-warning { background: color-mix(in srgb, var(--m-warning) 22%, white); color: #5c4400; border-bottom: 1px solid color-mix(in srgb, var(--m-warning) 45%, white); }
+.mk-icon { width: 14px; height: 14px; border-radius: 50%; flex: none; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+.mk-overlay { position: absolute; inset: 0; background: rgba(255,255,255,.7); backdrop-filter: blur(1px); }
+.mk-dialog { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 78%; background: var(--m-bg); border: 1px solid var(--m-border); border-radius: calc(var(--m-radius) + 2px); padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.15); }
+.mk-dialog-title { font-weight: 650; font-size: 13px; margin-bottom: 8px; }
+.mk-tabs { display: inline-flex; background: var(--m-muted); border-radius: var(--m-radius); padding: 3px; gap: 2px; margin-bottom: 8px; }
+.mk-tab { padding: 3px 10px; border-radius: calc(var(--m-radius) - 2px); font-size: 11px; color: var(--m-muted-fg); }
+.mk-tab-active { background: var(--m-bg); color: var(--m-fg); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.mk-pad { height: 64px; border: 1px dashed var(--m-border); border-radius: var(--m-radius); display: flex; align-items: center; justify-content: center; color: var(--m-muted-fg); font-size: 11px; }
+.mk-sig { font-family: 'Caveat', 'Bradley Hand', cursive; font-size: 26px; color: var(--m-fg); }
+.mk-row { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; }
+.mk-banner + .mk-body .mk-doc { height: 146px; }
+.mk-annot { position: absolute; font-size: 10px; font-weight: 600; background: #18181b; color: #fff; border-radius: 4px; padding: 3px 6px; line-height: 1.3; max-width: 180px; }
+
+/* ---------- State strip (tiles) ---------- */
+.strip-group { margin-bottom: 22px; }
+.strip-group-title { font-size: 12px; font-weight: 600; color: var(--report-text-secondary); margin-bottom: 10px; display: flex; gap: 8px; align-items: center; }
+.strip-group-title .pill { font-size: 11px; font-weight: 600; border-radius: 99px; padding: 0 7px; }
+.strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: 12px; }
+.tile { display: block; text-decoration: none; color: inherit; }
+.tile-frame { position: relative; height: 112px; border-radius: 10px; overflow: hidden; background: var(--report-surface); border: 2px solid var(--report-border); transition: transform .12s ease; }
+.tile:hover .tile-frame { transform: translateY(-2px); }
+.tile:focus-visible { outline: 2px solid var(--report-text); outline-offset: 3px; border-radius: 10px; }
+.tile-covered .tile-frame { border-color: #b9dcc6; }
+.tile-partial .tile-frame { border-color: #efc76a; }
+.tile-gap .tile-frame { border: 2px dashed var(--status-gap); background: repeating-linear-gradient(-45deg, #fff 0 8px, #fdf3f2 8px 16px); }
+.tile-recommendation .tile-frame { border: 2px dashed #b4c1d0; }
+.tile-gap .mini, .tile-recommendation .mini { opacity: .22; filter: grayscale(1); }
+.tile-flag { position: absolute; top: 6px; left: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; border-radius: 4px; padding: 2px 6px; }
+.tile-gap .tile-flag { background: var(--status-gap); color: #fff; }
+.tile-partial .tile-flag { background: #f3b43a; color: #3d2a00; }
+.tile-recommendation .tile-flag { background: var(--status-rec-bg); color: var(--status-rec); }
+.tile-gap .tile-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--status-gap); text-align: center; padding: 0 12px; }
+.tile-name { font-size: 13px; font-weight: 600; margin-top: 7px; line-height: 1.3; }
+.tile-miss { font-size: 12px; color: var(--report-text-secondary); margin-top: 2px; line-height: 1.35; }
+.tile-gap .tile-miss { color: var(--status-gap); }
+.tile-partial .tile-miss { color: var(--status-partial); }
+
+/* mini schematics, drawn with the project's tokens */
+.mini { position: absolute; inset: 0; background: var(--m-bg); font-family: var(--m-font); }
+.mini .bar { position: absolute; left: 0; right: 0; top: 0; height: 14px; border-bottom: 1px solid var(--m-border); }
+.mini .doc { position: absolute; left: 12px; right: 52px; top: 22px; bottom: 10px; background: #fff; border: 1px solid var(--m-border); border-radius: 2px; }
+.mini .doc i { display: block; height: 3px; border-radius: 2px; background: var(--m-muted); margin: 7px 8px 0; }
+.mini .side { position: absolute; right: 10px; top: 22px; width: 34px; bottom: 10px; display: flex; flex-direction: column; gap: 4px; }
+.mini .side b { display: block; height: 7px; border-radius: 2px; background: var(--m-muted); }
+.mini .side b.p { background: var(--m-primary); height: 10px; margin-top: auto; border-radius: var(--m-radius-mini); }
+.mini .fld { position: absolute; left: 30px; bottom: 22px; width: 44px; height: 14px; border-radius: 1px; box-shadow: 0 0 0 1.5px var(--m-primary); background: color-mix(in srgb, var(--m-primary) 20%, white); }
+.mini .fld.ring { outline: 2px solid var(--m-ring); outline-offset: 2px; }
+.mini .spin { position: absolute; left: 50%; top: 56%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; border: 3px solid var(--m-muted); border-top-color: var(--m-primary); }
+.mini .toast { position: absolute; right: 8px; bottom: 8px; width: 70px; height: 22px; border-radius: var(--m-radius-mini); background: var(--m-fg); }
+.mini .toast.err { background: var(--m-destructive); }
+.mini .banner { position: absolute; left: 0; right: 0; top: 14px; height: 10px; background: color-mix(in srgb, var(--m-warning) 45%, white); }
+.mini .errtext { position: absolute; left: 30%; right: 30%; top: 50%; height: 4px; border-radius: 2px; background: var(--m-muted-fg); opacity: .6; box-shadow: 0 8px 0 var(--m-muted); }
+.mini .erricon { position: absolute; left: 50%; top: 32%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--m-destructive); }
+.mini .pagecard { position: absolute; left: 50%; top: 50%; width: 92px; height: 70px; transform: translate(-50%, -44%); background: #fff; border: 1px solid var(--m-border); border-radius: var(--m-radius-mini); }
+.mini .pagecard::before { content: ''; position: absolute; left: 50%; top: 10px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--m-muted-fg); opacity: .5; }
+.mini .pagecard::after { content: ''; position: absolute; left: 18px; right: 18px; top: 32px; height: 4px; border-radius: 2px; background: var(--m-fg); opacity: .7; box-shadow: 0 9px 0 var(--m-muted), 0 22px 0 2px var(--m-primary); }
+.mini .dim { position: absolute; inset: 0; background: rgba(0,0,0,.18); }
+.mini .dlg { position: absolute; left: 22%; right: 22%; top: 22%; bottom: 18%; background: var(--m-bg); border-radius: var(--m-radius-mini); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+.mini .dlg::before { content: ''; position: absolute; left: 8px; right: 30%; top: 8px; height: 4px; border-radius: 2px; background: var(--m-fg); opacity: .7; }
+.mini .dlg::after { content: ''; position: absolute; right: 8px; bottom: 7px; width: 26px; height: 9px; border-radius: 2px; background: var(--m-primary); box-shadow: -30px 0 0 var(--m-muted); }
+.mini .pad { position: absolute; left: 8px; right: 8px; top: 18px; bottom: 22px; border: 1px dashed var(--m-border); border-radius: 2px; }
+.mini .inp { position: absolute; left: 22%; right: 22%; height: 11px; border: 1px solid var(--m-border); border-radius: var(--m-radius-mini); background: #fff; }
+.mini .inp.err { border-color: var(--m-destructive); box-shadow: 0 0 0 1px var(--m-destructive); }
+.mini .inp.a { top: 30%; } .mini .inp.b { top: 48%; }
+.mini .btnp { position: absolute; left: 22%; right: 22%; top: 68%; height: 12px; border-radius: var(--m-radius-mini); background: var(--m-primary); }
+.mini .empty { position: absolute; left: 20%; right: 20%; top: 26%; bottom: 20%; border: 1.5px dashed var(--m-border); border-radius: var(--m-radius-mini); }
+.mini .key { position: absolute; right: 10px; top: 20px; font: 600 9px/1 var(--report-mono); padding: 3px 5px; border-radius: 3px; background: var(--m-fg); color: var(--m-bg); }
+.mini .bubble { position: absolute; left: 14px; top: 22px; right: 60px; height: 22px; border-radius: 8px; background: var(--m-fg); opacity: .85; }
+.mini .bubble::after { content: '\201Cread aloud\201D'; position: absolute; left: 8px; top: 5px; font-size: 9px; color: var(--m-bg); }
+.mini .streaks { position: absolute; left: 30%; right: 30%; top: 36%; bottom: 30%; border-radius: var(--m-radius-mini); background: color-mix(in srgb, var(--m-primary) 30%, white); box-shadow: -10px 0 0 -2px color-mix(in srgb, var(--m-primary) 16%, white), -20px 0 0 -4px color-mix(in srgb, var(--m-primary) 8%, white); }
+.mini.hc { background: #000; }
+.mini.hc .doc { background: #000; border-color: #fff; }
+.mini.hc .doc i { background: #fff; }
+.mini .sheet { position: absolute; left: 34%; right: 34%; top: 14%; bottom: 10%; background: #fff; border: 1px solid var(--m-border); box-shadow: 2px 2px 0 var(--m-muted); }
+.mini .sheet i { display: block; height: 3px; background: var(--m-muted); margin: 7px 6px 0; }
+.mini .phone { position: absolute; left: 50%; top: 8px; bottom: 8px; width: 52px; margin-left: -26px; border: 2px solid var(--m-fg); border-radius: 8px; background: #fff; overflow: hidden; }
+.mini .phone::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 18px; background: var(--m-bg); border-top: 1px solid var(--m-border); box-shadow: inset 20px -5px 0 -2px var(--m-primary); }
+.mini .phone i { display: block; height: 3px; background: var(--m-muted); margin: 6px 5px 0; }
+
+/* ---------- Evidence matrix ---------- */
+.matrix-wrap { background: var(--report-surface); border: 1px solid var(--report-border); border-radius: var(--report-radius); overflow: hidden; }
+.matrix { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
+.matrix th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--report-text-tertiary); padding: 12px 16px; border-bottom: 1px solid var(--report-border); background: #fafaf8; }
+.matrix td { padding: 12px 16px; border-bottom: 1px solid var(--report-border-light); vertical-align: top; overflow-wrap: anywhere; }
+.state-name { font-weight: 600; }
+.state-component { font-size: 12px; color: var(--report-text-tertiary); margin-top: 2px; }
+.state-description { color: var(--report-text-secondary); }
+.file-ref { font-family: var(--report-mono); font-size: 11.5px; color: var(--report-text-secondary); line-height: 1.5; }
+.badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.badge-covered { background: var(--status-covered-bg); color: var(--status-covered); }
+.badge-partial { background: var(--status-partial-bg); color: var(--status-partial); }
+.badge-gap { background: var(--status-gap-bg); color: var(--status-gap); }
+.badge-rec { background: var(--status-rec-bg); color: var(--status-rec); }
+.badge-required { background: transparent; color: var(--report-text-secondary); border: 1px solid var(--report-border); font-weight: 500; }
+.section-divider { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; padding: 10px 16px !important; }
+.section-divider-gap { background: var(--status-gap-bg); color: var(--status-gap); }
+.section-divider-partial { background: var(--status-partial-bg); color: var(--status-partial); }
+.section-divider-rec { background: var(--status-rec-bg); color: var(--status-rec); }
+.section-divider-covered { background: var(--status-covered-bg); color: var(--status-covered); }
+tr.expandable { cursor: pointer; }
+tr.expandable:hover td { background: #fbfbf9; }
+tr.expandable .state-name::before { content: '\25B8'; display: inline-block; width: 14px; color: var(--report-text-tertiary); transition: transform .15s; }
+tr.expandable.open .state-name::before { transform: rotate(90deg); }
+tr.state-detail { display: none; }
+tr.state-detail.open { display: table-row; }
+tr.state-detail > td { background: #fbfbf9; }
+.suggestion { padding: 12px 16px; border-radius: var(--report-radius-sm); font-size: 13px; color: var(--report-text-secondary); margin-bottom: 14px; }
+.suggestion-gap { background: var(--status-gap-bg); border-left: 3px solid var(--status-gap); }
+.suggestion-partial { background: var(--status-partial-bg); border-left: 3px solid var(--status-partial); }
+.suggestion-recommendation { background: var(--status-rec-bg); border-left: 3px solid var(--status-rec); }
+.suggestion strong { font-weight: 650; }
+.detail-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 13px; }
+.note-group h4 { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--report-text-tertiary); margin-bottom: 6px; }
+.note-group ul { list-style: none; color: var(--report-text-secondary); }
+.note-group li { padding: 2px 0; }
+.note-group p { color: var(--report-text-secondary); }
+.note-group code { background: var(--report-surface); border: 1px solid var(--report-border-light); padding: 1px 6px; border-radius: 4px; }
+.mockup-container { margin-bottom: 16px; }
+
+details.exists { background: var(--report-surface); border: 1px solid var(--report-border); border-radius: var(--report-radius); padding: 16px 20px; margin-top: 14px; }
+details.exists summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+details.exists .exists-note { font-size: 13px; color: var(--report-text-secondary); margin: 8px 0 12px; }
+.exists-group { margin-bottom: 10px; }
+.exists-group h4 { font-size: 12px; font-weight: 600; color: var(--report-text-secondary); margin-bottom: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 12px; background: var(--status-covered-bg); color: var(--status-covered); border-radius: 99px; padding: 2px 9px; }
+
+.report-footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--report-border); font-size: 12px; color: var(--report-text-tertiary); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.toast-copied { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #18181b; color: #fff; font-size: 13px; padding: 8px 14px; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast-copied.show { opacity: 1; }
+
+@media (max-width: 820px) {
+  .hero { grid-template-columns: 1fr; }
+  .compare { grid-template-columns: 1fr; }
+  .detail-notes { grid-template-columns: 1fr; }
+  .matrix th:nth-child(2), .matrix td.state-description, .matrix th:nth-child(3), .matrix td.req-cell { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .tile-frame, tr.expandable .state-name::before { transition: none; } }
+@media print { body { background: #fff; } .report { padding: 0; max-width: none; } tr.state-detail { display: table-row !important; } .copy-btn { display: none; } }
+
+.mock, .mini {
+  --m-primary: #A2E771; --m-primary-fg: hsl(95.08 71.08% 10%);
+  --m-destructive: hsl(0 100% 50%); --m-destructive-fg: hsl(210 40% 98%);
+  --m-warning: hsl(54 96% 45%); --m-border: hsl(214.3 31.8% 91.4%); --m-muted: hsl(210 40% 96.1%); --m-muted-fg: hsl(215.4 16.3% 46.9%);
+  --m-bg: hsl(0 0% 100%); --m-fg: hsl(222.2 47.4% 11.2%); --m-ring: hsl(95.08 71.08% 67.45%);
+  --m-radius: 0.5rem; --m-radius-mini: 3.2px; --m-font: 'Inter variable', system-ui, sans-serif;
+}
+</style>
+</head>
+<body>
+<main class="report">
+  <header class="report-header">
+    <div class="eyebrow">UI state coverage</div>
+    <h1>Recipient document signing page</h1>
+    <div class="report-meta">
+      <span>September 25, 2026</span><span>&middot;</span><span>@documenso/ui (shadcn + Tailwind)</span>
+      <span>&middot;</span><span>documenso/documenso</span>
+    </div>
+  </header>
+  <div class="hero">
+  <div class="card score-card score-band-gap">
+    <div class="eyebrow">State coverage</div>
+    <div class="score"><span class="score-value">45</span><span class="score-max">/100</span></div>
+    <div class="score-bar" style="color:var(--status-gap)"><div class="score-bar-now" style="width:45%"></div><div class="score-bar-lift" style="left:45%;width:31%"></div></div>
+    <div class="score-lift"><strong>3 fixes lift it to 76.</strong></div>
+    <div class="counts">
+      <div class="count count-gap"><div class="count-value">1</div><div class="count-label">No design</div></div>
+      <div class="count count-partial"><div class="count-value">7</div><div class="count-label">Half-built</div></div>
+      <div class="count count-covered"><div class="count-value">28</div><div class="count-label">Designed</div></div>
+      <div class="count count-rec"><div class="count-value">3</div><div class="count-label">Optional</div></div>
+    </div>
+    <p class="score-how">Scored on the 36 states this page needs. Each missing state costs 15 points if users will hit it, 6 if not; half-built costs 8 or 4.</p>
+  </div>
+  <div class="card summary-card">
+    <div class="eyebrow">Summary</div>
+    <p class="summary-text">A recipient who loses signal while signing gets a red &quot;Error&quot; toast that never says why, and nothing tells them the connection is the problem. Of the 36 states this page needs, 1 has no design and 7 are half-built, mostly on paths a first-time recipient on a phone will hit. Three fixes take the score from 45 to 76.</p><p class="ai-label">Summary written by AI from the measured findings below.</p>
+  </div>
+</div>
+  <section class="section" id="fixes">
+  <div class="section-head"><h2>Where to start</h2><p>Ranked by how many points each fix is worth.</p></div>
+  <article class="fix">
+    <div class="fix-head"><span class="fix-num">01</span><div>
+      <div class="fix-title">Offline <span class="badge badge-gap">No design</span> <span class="fix-points">+15</span></div>
+      <p class="fix-body">No offline banner. Field insert fails to generic toast (48), completion fails to generic toast (114), PDF fetch fails to error state (16). Mobile recipients on flaky data will hit this.</p>
+      <div class="fix-actions"><button class="copy-btn" type="button" data-prompt="In documenso/documenso, the &quot;Recipient document signing page&quot; has a UI state that isn't fully designed: Offline.
+What happens today: No offline banner. Field insert fails to generic toast (48), completion fails to generic toast (114), PDF fetch fails to error state (16). Mobile recipients on flaky data will hit this.
+Evidence: No offline detection anywhere: grep &quot;navigator.onLine|useOnlineStatus|useNetworkState|addEventListener('online'|addEventListener('offline'&quot; across apps/remix/app, packages/ui, packages/lib returns nothing; inventory state_patterns.offline is []. Field insert (#48), removal (#47), completion (#114) and PDF fetch (#16) each fall through to a generic destructive toast that never mentions connectivity.
+What's needed: New offline banner + network detection needed.
+Build it from what the design system already has: Alert variant=warning (packages/ui/primitives/alert.tsx:16); root.tsx global banner pattern bg-destructive px-4 py-3 text-sm (apps/remix/app/root.tsx:163-164); --warning; toast variant=destructive (toast.tsx:33); Button disabled:opacity-50 for Next Field / Complete (button.tsx:10); TOAST_LIMIT=1 (use-toast.ts:6) so offline toast must not fight field toasts.
+Use existing tokens and components only. Cover loading, error and focus behaviour, and give anything announced to screen readers a role or aria-live.
+Show me the change before writing it.">Copy the fix prompt</button><span>New offline banner + network detection needed</span><a href="#state-141">Evidence</a></div>
+    </div></div>
+    <div class="compare">
+      <figure class="compare-col compare-today"><figcaption>Today</figcaption><div class="mock"><div class="mk-bar"><span>Service agreement.pdf</span><span class="mk-muted" style="font-weight:400">Sign as Jane Cooper</span></div><div class="mk-body"><div class="mk-doc"><div class="mk-line"></div><div class="mk-line"></div><div class="mk-line" style="width:70%"></div><div class="mk-line"></div><div class="mk-line" style="width:45%"></div><div class="mk-field" style="position:absolute;left:14px;bottom:18px;width:120px">Signature</div></div><div class="mk-side"><div style="font-weight:600;font-size:12px">Sign document</div><div class="mk-muted" style="font-size:11px">1 field remaining</div><div style="flex:1"></div><span class="mk-btn mk-btn-primary">Complete</span></div></div><div class="mk-toast mk-toast-destructive"><strong>Error</strong>An error occurred while signing the document.</div></div><p class="compare-note">The recipient lost signal. The toast says something failed, not why, and Complete still looks ready to press.</p></figure>
+      <figure class="compare-col compare-proposed"><figcaption>Proposed</figcaption><div class="mock"><div class="mk-bar"><span>Service agreement.pdf</span><span class="mk-muted" style="font-weight:400">Sign as Jane Cooper</span></div><div class="mk-banner mk-banner-warning"><span class="mk-icon" style="background:#5c4400;color:#fff">!</span><span><strong>You’re offline.</strong> Fields you fill in won’t save until your connection is back.</span></div><div class="mk-body"><div class="mk-doc"><div class="mk-line"></div><div class="mk-line"></div><div class="mk-line" style="width:70%"></div><div class="mk-line"></div><div class="mk-line" style="width:45%"></div><div class="mk-field" style="position:absolute;left:14px;bottom:18px;width:120px">Signature</div></div><div class="mk-side"><div style="font-weight:600;font-size:12px">Sign document</div><div class="mk-muted" style="font-size:11px">1 field remaining</div><div style="flex:1"></div><span class="mk-btn mk-btn-primary" disabled>Complete</span></div></div></div><p class="compare-note">Built from Alert variant=warning and the disabled Button. The banner appears on the browser’s offline event and clears itself on reconnect.</p></figure>
+    </div>
+  </article>
+<article class="fix">
+    <div class="fix-head"><span class="fix-num">02</span><div>
+      <div class="fix-title">PDF load error <span class="badge badge-partial">Half-built</span> <span class="fix-points">+8</span></div>
+      <p class="fix-body">'Something went wrong while loading the document. Please try again or contact our support.' plus error toast. No retry button exists.</p>
+      <div class="fix-actions"><button class="copy-btn" type="button" data-prompt="In documenso/documenso, the &quot;Recipient document signing page&quot; has a UI state that isn't fully designed: PDF load error.
+What happens today: 'Something went wrong while loading the document. Please try again or contact our support.' plus error toast. No retry button exists.
+Evidence: PdfViewerErrorState in apps/remix/app/components/general/pdf-viewer/pdf-viewer-states.tsx:12-25 (&quot;Please try again or contact our support&quot;) plus destructive toast in pdf-viewer.tsx:160-164 — missing: no retry affordance; grep &quot;retry|Retry|reload&quot; over apps/remix/app/components/general/pdf-viewer/ returns nothing, so &quot;try again&quot; means a manual full-page reload
+What's needed: Extend [PdfViewerErrorState], add [Retry button that re-runs the fetch/getDocument effect].
+Build it from what the design system already has: PdfViewerErrorState (pdf-viewer-states.tsx:12-25); Button variant=secondary (button.tsx:18); Button loading prop (button.tsx:36-47); GenericErrorLayout Go Back / Home footer pattern (generic-error-layout.tsx:91-107); --muted-foreground.
+Use existing tokens and components only. Cover loading, error and focus behaviour, and give anything announced to screen readers a role or aria-live.
+Show me the change before writing it.">Copy the fix prompt</button><span>Extend [PdfViewerErrorState], add [Retry button that re-runs the fetch/getDocument effect]</span><a href="#state-16">Evidence</a></div>
+    </div></div>
+    <div class="compare">
+      <figure class="compare-col compare-today"><figcaption>Today</figcaption><div class="mock"><div class="mk-bar"><span>Service agreement.pdf</span><span class="mk-muted" style="font-weight:400">Sign as Jane Cooper</span></div><div class="mk-center"><p>Something went wrong while loading the document.</p><p class="mk-muted" style="font-size:11px">Please try again or contact our support.</p></div></div><p class="compare-note">Word for word what Documenso shows today. There is nothing to click, so “try again” means knowing to reload the page.</p></figure>
+      <figure class="compare-col compare-proposed"><figcaption>Proposed</figcaption><div class="mock"><div class="mk-bar"><span>Service agreement.pdf</span><span class="mk-muted" style="font-weight:400">Sign as Jane Cooper</span></div><div class="mk-center"><p>Something went wrong while loading the document.</p><p class="mk-muted" style="font-size:11px">Check your connection and try again.</p><div style="display:flex;gap:8px;margin-top:8px"><span class="mk-btn mk-btn-primary">Try again</span><span class="mk-btn mk-btn-outline">Contact support</span></div></div></div><p class="compare-note">Same component, plus a Try again button from the existing Button. Retry re-runs the PDF fetch without losing fields already signed.</p></figure>
+    </div>
+  </article>
+<article class="fix">
+    <div class="fix-head"><span class="fix-num">03</span><div>
+      <div class="fix-title">Keyboard navigation <span class="badge badge-partial">Half-built</span> <span class="fix-points">+8</span></div>
+      <p class="fix-body">Field overlays are real buttons; dialogs trap focus; tabs have role=tab; PIN inputs autofocus. Gap: draw canvas has no keyboard alternative (Type tab is the fallback), color/zoom/undo buttons rely on focus-visible rings.</p>
+      <div class="fix-actions"><button class="copy-btn" type="button" data-prompt="In documenso/documenso, the &quot;Recipient document signing page&quot; has a UI state that isn't fully designed: Keyboard navigation.
+What happens today: Field overlays are real buttons; dialogs trap focus; tabs have role=tab; PIN inputs autofocus. Gap: draw canvas has no keyboard alternative (Type tab is the fallback), color/zoom/undo buttons rely on focus-visible rings.
+Evidence: Field overlays are real &lt;button&gt; elements (document-signing-field-container.tsx:122-125,143), signature tabs use role=tablist/tab/tabpanel with aria-selected and focus-visible:ring-2 (packages/ui/primitives/signature-pad/signature-tabs.tsx:62,80-87,126), Radix Dialog traps focus, undo/zoom buttons carry focus-visible rings (signature-pad-draw.tsx:268,296) — missing: the draw &lt;canvas&gt; at signature-pad-draw.tsx:238-246 has no tabIndex or onKeyDown (pointer only), so when a sender disables the Type tab (#67) a keyboard-only recipient has no way to produce a signature; the Remove overlay button at field-container.tsx:143 is focusable but empty, so Tab lands on an unnamed control
+What's needed: Extend [SignaturePad tabs], add [guaranteed keyboard path: keep Type tab available for keyboard/AT users or expose a visible &quot;Use typed signature&quot; fallback when draw-only]; Reuse [sr-only label on Remove button].
+Build it from what the design system already has: signature-tabs.tsx Tabs role=tablist (:62); SignaturePadType (signature-pad-type.tsx); focus-visible:ring-2 focus-visible:ring-ring (button.tsx:10); sr-only pattern (dialog.tsx:80).
+Use existing tokens and components only. Cover loading, error and focus behaviour, and give anything announced to screen readers a role or aria-live.
+Show me the change before writing it.">Copy the fix prompt</button><span>Extend [SignaturePad tabs], add [guaranteed keyboard path: keep Type tab available for keyboard/AT users or expose a visible &quot;Use typed signature&quot; fallback when draw-only]; Reuse [sr-only label on Remove button]</span><a href="#state-146">Evidence</a></div>
+    </div></div>
+    <div class="compare">
+      <figure class="compare-col compare-today"><figcaption>Today</figcaption><div class="mock"><div class="mk-bar"><span>Service agreement.pdf</span><span class="mk-muted" style="font-weight:400">Sign as Jane Cooper</span></div><div class="mk-body"><div class="mk-doc"><div class="mk-line"></div><div class="mk-line"></div><div class="mk-line" style="width:70%"></div><div class="mk-line"></div><div class="mk-line" style="width:45%"></div><div class="mk-field" style="position:absolute;left:14px;bottom:18px;width:120px">Signature</div></div><div class="mk-side"><div style="font-weight:600;font-size:12px">Sign document</div><div class="mk-muted" style="font-size:11px">1 field remaining</div><div style="flex:1"></div><span class="mk-btn mk-btn-primary">Complete</span></div></div><div class="mk-overlay"></div><div class="mk-dialog"><div class="mk-dialog-title">Sign Signature Field</div><div class="mk-tabs"><span class="mk-tab mk-tab-active">Draw</span></div><div class="mk-pad">Draw your signature</div><div class="mk-row"><span class="mk-btn mk-btn-secondary mk-focus">Cancel</span><span class="mk-btn mk-btn-primary" disabled>Sign</span></div></div><div class="mk-annot" style="right:10px;top:8px;max-width:none">Tab skips the pad. It can’t take focus.</div></div><p class="compare-note">When the sender allows only drawn signatures, someone using a keyboard or switch control has no way to sign at all.</p></figure>
+      <figure class="compare-col compare-proposed"><figcaption>Proposed</figcaption><div class="mock"><div class="mk-bar"><span>Service agreement.pdf</span><span class="mk-muted" style="font-weight:400">Sign as Jane Cooper</span></div><div class="mk-body"><div class="mk-doc"><div class="mk-line"></div><div class="mk-line"></div><div class="mk-line" style="width:70%"></div><div class="mk-line"></div><div class="mk-line" style="width:45%"></div><div class="mk-field" style="position:absolute;left:14px;bottom:18px;width:120px">Signature</div></div><div class="mk-side"><div style="font-weight:600;font-size:12px">Sign document</div><div class="mk-muted" style="font-size:11px">1 field remaining</div><div style="flex:1"></div><span class="mk-btn mk-btn-primary">Complete</span></div></div><div class="mk-overlay"></div><div class="mk-dialog"><div class="mk-dialog-title">Sign Signature Field</div><div class="mk-tabs"><span class="mk-tab">Draw</span><span class="mk-tab mk-tab-active mk-focus">Type</span></div><div class="mk-pad"><span class="mk-sig">Jane Cooper</span></div><div class="mk-row"><span class="mk-btn mk-btn-secondary">Cancel</span><span class="mk-btn mk-btn-primary">Sign</span></div></div><div class="mk-annot" style="right:10px;top:8px;max-width:none">Type stays reachable by keyboard.</div></div><p class="compare-note">Reuses the existing Type tab and signature font. Whether draw-only envelopes may allow it is a product call; today the answer is that nobody decided.</p></figure>
+    </div>
+  </article>
+</section>
+  <section class="section" id="states">
+  <div class="section-head"><h2>Every state this page needs</h2><p>Drawn with the project's own tokens. Dashed frames have no design. Click one for the evidence.</p></div>
+  <div class="strip-group"><div class="strip-group-title">Whole screen <span class="pill" style="background:var(--status-gap-bg);color:var(--status-gap)">5 to fix</span></div><div class="strip"><a class="tile tile-gap" href="#state-141" title="No offline banner. Field insert fails to generic toast (48), completion fails to generic toast (114), PDF fetch fails to error state (16). Mobile recipients on flaky data will hit this.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="banner"></div></div><span class="tile-flag">No design</span><div class="tile-empty">Nothing designed here</div></div>
+  <div class="tile-name">Offline</div><div class="tile-miss">New offline banner + network detection needed</div>
+</a>
+<a class="tile tile-partial" href="#state-146" title="Field overlays are real buttons; dialogs trap focus; tabs have role=tab; PIN inputs autofocus. Gap: draw canvas has no keyboard alternative (Type tab is the fallback), color/zoom/undo buttons rely on focus-visible rings.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="fld ring"></div><div class="key">Tab</div></div><span class="tile-flag">Half-built</span></div>
+  <div class="tile-name">Keyboard navigation</div><div class="tile-miss">Missing: the draw &lt;canvas&gt; at signature-pad-draw</div>
+</a>
+<a class="tile tile-partial" href="#state-147" title="Signature img has alt 'Signature for {name}'; undo/zoom have sr-only labels; widget chevron has aria-label; 2FA PinInput has aria-label. Gaps: field overlay buttons have no accessible name, remaining-count changes and toasts are not announced via live region, 'Signature is too small' is visual only.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="bubble"></div></div><span class="tile-flag">Half-built</span></div>
+  <div class="tile-name">Screen reader</div><div class="tile-miss">Missing: the insert button (field-container</div>
+</a>
+<a class="tile tile-partial" href="#state-142" title="Long PDF spinner with no progress; per-field spinner lingers; completion button spins until redirect. No timeouts or progress indicators.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="spin"></div></div><span class="tile-flag">Half-built</span></div>
+  <div class="tile-name">Slow connection</div><div class="tile-miss">Missing: no progress or slow-load messaging</div>
+</a>
+<a class="tile tile-partial" href="#state-144" title="Recipient deadline passes, or sender cancels/completes, while the tab is open: field/completion calls fail with RECIPIENT_EXPIRED / ENVELOPE_CANCELLED / ENVELOPE_COMPLETED toasts (113); reload lands on 5 or 6.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="fld"></div></div><span class="tile-flag">Half-built</span></div>
+  <div class="tile-name">Link expires mid-session</div><div class="tile-miss">Missing: after the toast the page stays in the signing layout with t…</div>
+</a>
+<a class="tile tile-recommendation" href="#state-148" title="framer-motion pen-stroke hint, spring hover, tab indicator, progress bar layout animation, widget slide-in and 3D signing card all animate regardless of prefers-reduced-motion.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="streaks"></div></div><span class="tile-flag">Optional</span></div>
+  <div class="tile-name">Reduced motion</div><div class="tile-miss">Extend [framer-motion usages], add [useReducedMotion guard as i…</div>
+</a>
+<a class="tile tile-recommendation" href="#state-149" title="Field state is conveyed by recipient color (green/orange/readOnly) and muted placeholder text; pending vs done relies on color plus tooltip only.">
+  <div class="tile-frame"><div class="mini hc"><div class="bar" style="border-color:#fff"></div><div class="doc"><i></i><i></i><i style="width:60%"></i></div></div><span class="tile-flag">Optional</span></div>
+  <div class="tile-name">High contrast</div><div class="tile-miss">Extend [FieldRootContainer], add [forced-colors outline + non-c…</div>
+</a>
+<a class="tile tile-recommendation" href="#state-150" title="No print stylesheet; fixed widget/sidebar and field overlays would print over the PDF. Download (132/139) is the intended path.">
+  <div class="tile-frame"><div class="mini"><div class="sheet"><i></i><i></i><i style="width:60%"></i><i></i></div></div><span class="tile-flag">Optional</span></div>
+  <div class="tile-name">Print</div><div class="tile-miss">Reuse [print: screen variant]</div>
+</a>
+<a class="tile tile-covered" href="#state-140" title="Almost every recipient is first-time and anonymous: no coach marks exist; orientation relies on sender line, field placeholders, Next Field and the legal disclosure paragraph shown in every signature/complete dialog.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="fld"></div></div></div>
+  <div class="tile-name">First-time recipient</div>
+</a>
+<a class="tile tile-covered" href="#state-143" title="ACCOUNT access/action auth docs: session lapses while filling; next signature click raises UNAUTHORIZED and the account reauth dialog (85) appears; completion would render the auth page on reload. Inserted fields persist server-side.">
+  <div class="tile-frame"><div class="mini"><div class="pagecard"></div></div></div>
+  <div class="tile-name">Session expired mid-sign</div>
+</a>
+<a class="tile tile-covered" href="#state-145" title="&lt;md (V1) / &lt;lg (V2): sidebar hidden, fixed bottom widget over the PDF with 7rem bottom padding; field text clamps 0.425-0.825rem via cqw; signature dialog pad shrinks; complete page stacks claim-account below. Desktop: sticky 350px / 320px sidebar.">
+  <div class="tile-frame"><div class="mini"><div class="phone"><i></i><i></i><i style="width:60%"></i><i></i></div></div></div>
+  <div class="tile-name">Responsive breakpoints</div>
+</a></div></div>
+<div class="strip-group"><div class="strip-group-title">Completion <span class="pill" style="background:var(--status-partial-bg);color:var(--status-partial)">1 to fix</span></div><div class="strip"><a class="tile tile-partial" href="#state-111" title="Countdown reaches 00:00 and turns destructive; Verify button remains enabled (ambiguity: server rejects, user must Resend).">
+  <div class="tile-frame"><div class="mini"><div class="inp a"></div><div class="inp b err"></div><div class="btnp" style="opacity:.5"></div></div><span class="tile-flag">Half-built</span></div>
+  <div class="tile-name">Access 2FA code expired</div><div class="tile-miss">Missing: Verify &amp; Complete stays enabled (disabled only by !form</div>
+</a>
+<a class="tile tile-covered" href="#state-102" title="'Are you sure?' with role copy ('You are about to complete signing the following document'), title card, disclosure, Cancel + Sign/Approve/Mark as Viewed. Only opens when all required fields are inserted.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="dim"></div><div class="dlg"></div></div></div>
+  <div class="tile-name">Complete confirmation</div>
+</a>
+<a class="tile tile-covered" href="#state-104" title="'Name is required' / 'Invalid email address' inline errors block submission.">
+  <div class="tile-frame"><div class="mini"><div class="inp a"></div><div class="inp b err"></div><div class="btnp" style="opacity:.5"></div></div></div>
+  <div class="tile-name">Next signer invalid</div>
+</a>
+<a class="tile tile-covered" href="#state-114" title="Fallback toast 'Something went wrong / We were unable to submit this document at this time. Please try again later.'">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="toast err"></div></div></div>
+  <div class="tile-name">Completion error, generic</div>
+</a></div></div>
+<div class="strip-group"><div class="strip-group-title">Document Rendering <span class="pill" style="background:var(--status-partial-bg);color:var(--status-partial)">1 to fix</span></div><div class="strip"><a class="tile tile-partial" href="#state-16" title="'Something went wrong while loading the document. Please try again or contact our support.' plus error toast. No retry button exists.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="toast err"></div></div><span class="tile-flag">Half-built</span></div>
+  <div class="tile-name">PDF load error</div><div class="tile-miss">Missing: no retry affordance</div>
+</a>
+<a class="tile tile-covered" href="#state-15" title="80vh centered spinner at 50% opacity while the PDF bytes are fetched and pdf.js initialises.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="spin"></div></div></div>
+  <div class="tile-name">PDF loading</div>
+</a>
+<a class="tile tile-covered" href="#state-17" title="Happy path: title, sender line ('{sender} has invited you to sign'), PDF pages, field overlays, side panel or mobile widget.">
+  <div class="tile-frame"><div class="mini"><div class="pagecard"></div></div></div>
+  <div class="tile-name">Document loaded</div>
+</a></div></div>
+<div class="strip-group"><div class="strip-group-title">Access Auth <span class="pill" style="background:var(--status-partial-bg);color:var(--status-partial)">1 to fix</span></div><div class="strip"><a class="tile tile-partial" href="#state-14" title="/complete, /expired, /rejected also render DocumentSigningAuthPageView (no emailHasAccount, so button says Sign up) when access auth fails. Ambiguity: label may be wrong for existing users.">
+  <div class="tile-frame"><div class="mini"><div class="pagecard"></div></div><span class="tile-flag">Half-built</span></div>
+  <div class="tile-name">Status page gated by auth</div><div class="tile-miss">Missing: loaders on the three terminal routes do not compute recipie…</div>
+</a></div></div>
+<div class="strip-group"><div class="strip-group-title">Signature Pad <span class="pill" style="background:var(--status-covered-bg);color:var(--status-covered)">all designed</span></div><div class="strip"><a class="tile tile-covered" href="#state-53" title="'Sign as {name} ({email})' / 'Sign Signature Field' dialog: Draw/Type/Upload tabs, aspect-ratio pad, legal disclosure text, Cancel + Sign.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="dim"></div><div class="dlg"><div class="pad"></div></div></div></div>
+  <div class="tile-name">Signature dialog open</div>
+</a>
+<a class="tile tile-covered" href="#state-61" title="Full-pad button with UploadCloud icon and 'Upload Signature'; hidden file input accept=image/*. No drag-and-drop zone exists (ambiguity: taxonomy drag-hover not implemented).">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="dim"></div><div class="dlg"><div class="pad"></div></div></div></div>
+  <div class="tile-name">Upload tab empty</div>
+</a>
+<a class="tile tile-covered" href="#state-62" title="Image aspect-fit on canvas, grab/grabbing cursor for drag, Zoom in/out buttons (0.25x-4x, disabled at bounds), 'Upload New Image' link.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="fld"></div></div></div>
+  <div class="tile-name">Upload loaded, zoom/pan</div>
+</a>
+<a class="tile tile-covered" href="#state-63" title="Destructive toast 'Unable to upload image / Please upload a valid image file.'">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="toast"></div></div></div>
+  <div class="tile-name">Upload wrong file type</div>
+</a>
+<a class="tile tile-covered" href="#state-64" title="Toast 'The image must be smaller than 5MB.'">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="toast"></div></div></div>
+  <div class="tile-name">Upload too large</div>
+</a></div></div>
+<div class="strip-group"><div class="strip-group-title">Signing Panel <span class="pill" style="background:var(--status-covered-bg);color:var(--status-covered)">all designed</span></div><div class="strip"><a class="tile tile-covered" href="#state-31" title="Fixed bottom bar (&lt;lg): chevron, role title, remaining count, small Complete/Next Field button, progress bar; form hidden.">
+  <div class="tile-frame"><div class="mini"><div class="phone"><i></i><i></i><i style="width:60%"></i><i></i></div></div></div>
+  <div class="tile-name">Mobile widget collapsed</div>
+</a>
+<a class="tile tile-covered" href="#state-33" title="V2 desktop sidebar collapses to 12px rail with PanelLeftOpen button; content invisible.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="fld"></div></div></div>
+  <div class="tile-name">Sidebar collapsed</div>
+</a>
+<a class="tile tile-covered" href="#state-34" title="Embed context isNameLocked/isEmailLocked or recipient.name already set: Full Name / email inputs rendered disabled.">
+  <div class="tile-frame"><div class="mini"><div class="inp a"></div><div class="inp b"></div><div class="btnp"></div></div></div>
+  <div class="tile-name">Name input locked</div>
+</a>
+<a class="tile tile-covered" href="#state-38" title="V1 fieldset disabled and signature slot at 50% opacity/pointer-events none while completion is pending.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="spin"></div></div></div>
+  <div class="tile-name">Panel disabled while submitting</div>
+</a></div></div>
+<div class="strip-group"><div class="strip-group-title">Rejection <span class="pill" style="background:var(--status-covered-bg);color:var(--status-covered)">all designed</span></div><div class="strip"><a class="tile tile-covered" href="#state-117" title="'Reject Document / Are you sure you want to reject this document? This action cannot be undone.' Reason textarea (optional), Cancel, destructive Reject Document.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="dim"></div><div class="dlg"></div></div></div>
+  <div class="tile-name">Reject dialog</div>
+</a>
+<a class="tile tile-covered" href="#state-119" title="Textarea disabled, Cancel disabled, Reject button loading.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="spin"></div></div></div>
+  <div class="tile-name">Reject submitting</div>
+</a>
+<a class="tile tile-covered" href="#state-120" title="Toast 'Document rejected / The document has been successfully rejected.' (5s), dialog closes, hard navigation to /rejected (or embed callback).">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="toast"></div></div></div>
+  <div class="tile-name">Reject success</div>
+</a>
+<a class="tile tile-covered" href="#state-121" title="Destructive toast 'An error occurred while rejecting the document. Please try again.' Dialog stays open with reason preserved.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="toast err"></div></div></div>
+  <div class="tile-name">Reject error</div>
+</a></div></div>
+<div class="strip-group"><div class="strip-group-title">Field Insertion <span class="pill" style="background:var(--status-covered-bg);color:var(--status-covered)">all designed</span></div><div class="strip"><a class="tile tile-covered" href="#state-40" title="group-hover changes placeholder text to recipient-green / primary.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="fld"></div></div></div>
+  <div class="tile-name">Field hover</div>
+</a>
+<a class="tile tile-covered" href="#state-47" title="Destructive toast 'Error / An error occurred while removing the signature.' Field stays inserted.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="toast err"></div></div></div>
+  <div class="tile-name">Field remove error</div>
+</a>
+<a class="tile tile-covered" href="#state-49" title="DATE fields are prefilled client-side with today's date in the document timezone/format, marked readOnly, rendered in the readOnly color with no click or remove affordance.">
+  <div class="tile-frame"><div class="mini"><div class="inp a"></div><div class="inp b"></div><div class="btnp"></div></div></div>
+  <div class="tile-name">Read-only prefilled date</div>
+</a></div></div>
+<div class="strip-group"><div class="strip-group-title">Field Dialogs <span class="pill" style="background:var(--status-covered-bg);color:var(--status-covered)">all designed</span></div><div class="strip"><a class="tile tile-covered" href="#state-72" title="Dialog titled by fieldMeta.label or 'Enter Text', textarea with placeholder, Cancel/Enter.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="doc"><i></i><i></i><i style="width:60%"></i><i></i><i style="width:40%"></i></div><div class="side"><b></b><b style="width:70%"></b><b class="p"></b></div><div class="dim"></div><div class="dlg"></div></div></div>
+  <div class="tile-name">Text dialog default</div>
+</a>
+<a class="tile tile-covered" href="#state-73" title="Submitting empty: red border + ring on textarea, FormMessage 'Text is required'.">
+  <div class="tile-frame"><div class="mini"><div class="inp a"></div><div class="inp b err"></div><div class="btnp" style="opacity:.5"></div></div></div>
+  <div class="tile-name">Text required error</div>
+</a>
+<a class="tile tile-covered" href="#state-79" title="CommandEmpty 'No results found.' (untranslated string in code).">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="empty"></div></div></div>
+  <div class="tile-name">Dropdown no results</div>
+</a></div></div>
+<div class="strip-group"><div class="strip-group-title">Action Auth <span class="pill" style="background:var(--status-covered-bg);color:var(--status-covered)">all designed</span></div><div class="strip"><a class="tile tile-covered" href="#state-101" title="fieldset disabled, Sign button loading, dialog cannot be closed while isCurrentlyAuthenticating.">
+  <div class="tile-frame"><div class="mini"><div class="bar"></div><div class="spin"></div></div></div>
+  <div class="tile-name">Reauth submitting locked</div>
+</a></div></div>
+</section>
+  <section class="section" id="evidence">
+  <div class="section-head"><h2>Evidence</h2><p>Every judgement cites a file and line. Click a row to expand.</p></div>
+  <div class="matrix-wrap"><table class="matrix">
+    <colgroup><col style="width:20%"><col style="width:24%"><col style="width:10%"><col style="width:11%"><col style="width:35%"></colgroup>
+    <thead><tr><th>State</th><th>Description</th><th>Required</th><th>Status</th><th>Evidence</th></tr></thead>
+    <tbody>
+<tr><td colspan="5" class="section-divider section-divider-gap">No design (1)</td></tr>
+<tr id="state-141" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">Offline</div><div class="state-component">screen</div></td>
+  <td class="state-description">No offline banner. Field insert fails to generic toast (48), completion fails to generic toast (114), PDF fetch fails to error state (16). Mobile recipients on flaky data will hit this.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-gap">No design</span></td>
+  <td class="file-ref">No offline detection anywhere: grep &quot;navigator.onLine|useOnlineStatus|useNetworkState|addEventListener('online'|addEventListener('offline'&quot; across apps/remix/app, packages/ui, packages/lib returns nothing; inventory state_patterns.offline is []. Field insert (#48), removal (#47), completion (#114) and PDF fetch (#16) each fall through to a generic destructive toast that never mentions connectivity.</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-gap"><strong>Users will hit this.</strong> New offline banner + network detection needed</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>Alert variant=warning (packages/ui/primitives/alert.tsx:16)</code></li><li><code>root.tsx global banner pattern bg-destructive px-4 py-3 text-sm (apps/remix/app/root.tsx:163-164)</code></li><li><code>--warning</code></li><li><code>toast variant=destructive (toast.tsx:33)</code></li><li><code>Button disabled:opacity-50 for Next Field / Complete (button.tsx:10)</code></li><li><code>TOAST_LIMIT=1 (use-toast.ts:6) so offline toast must not fight field toasts</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Collapses the offline sub-states that all need the same detector: PDF fetch offline, field insert/remove offline, completion offline, reconnect. Anonymous recipients on phones are the primary audience; today a dropped connection mid-signature reads as &quot;something went wrong&quot; with no cause and no cue to wait and retry. Minimum viable: window online/offline listeners + persistent warning banner + disable mutating buttons while offline.</p></div></div>
+</td></tr>
+<tr><td colspan="5" class="section-divider section-divider-partial">Half-built (7)</td></tr>
+<tr id="state-14" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">Status page gated by auth</div><div class="state-component">auth page</div></td>
+  <td class="state-description">/complete, /expired, /rejected also render DocumentSigningAuthPageView (no emailHasAccount, so button says Sign up) when access auth fails. Ambiguity: label may be wrong for existing users.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-partial">Half-built</span></td>
+  <td class="file-ref">DocumentSigningAuthPageView reused on complete.tsx:146, expired.tsx:84, rejected.tsx:91 but called without emailHasAccount, so document-signing-auth-page.tsx:73 always renders &quot;Sign up&quot; and :27 deep-links /signup#email= — missing: loaders on the three terminal routes do not compute recipientHasAccount the way _index.tsx:406,503 does</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-partial"><strong>Edge case.</strong> Reuse [DocumentSigningAuthPageView emailHasAccount prop, _index.tsx recipientHasAccount loader lookup]</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>DocumentSigningAuthPageView (document-signing-auth-page.tsx:15)</code></li><li><code>emailHasAccount prop (document-signing-auth-page.tsx:12,27,73)</code></li><li><code>recipientHasAccount loader value (_index.tsx:406)</code></li><li><code>Button loading prop (button.tsx:36-47)</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Existing users who reopen their completion or rejection link while logged out are told to Sign up and sent to /signup. All parts exist; the three loaders just need to pass the flag.</p></div></div>
+</td></tr>
+<tr id="state-16" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">PDF load error</div><div class="state-component">pdf viewer</div></td>
+  <td class="state-description">'Something went wrong while loading the document. Please try again or contact our support.' plus error toast. No retry button exists.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-partial">Half-built</span></td>
+  <td class="file-ref">PdfViewerErrorState in apps/remix/app/components/general/pdf-viewer/pdf-viewer-states.tsx:12-25 (&quot;Please try again or contact our support&quot;) plus destructive toast in pdf-viewer.tsx:160-164 — missing: no retry affordance; grep &quot;retry|Retry|reload&quot; over apps/remix/app/components/general/pdf-viewer/ returns nothing, so &quot;try again&quot; means a manual full-page reload</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-partial"><strong>Users will hit this.</strong> Extend [PdfViewerErrorState], add [Retry button that re-runs the fetch/getDocument effect]</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>PdfViewerErrorState (pdf-viewer-states.tsx:12-25)</code></li><li><code>Button variant=secondary (button.tsx:18)</code></li><li><code>Button loading prop (button.tsx:36-47)</code></li><li><code>GenericErrorLayout Go Back / Home footer pattern (generic-error-layout.tsx:91-107)</code></li><li><code>--muted-foreground</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Critical on phones with flaky data: a dropped PDF fetch currently dead-ends the whole signing page. The copy promises &quot;try again&quot; but the only path is browser reload, which also drops any dialog state.</p></div></div>
+</td></tr>
+<tr id="state-111" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">Access 2FA code expired</div><div class="state-component">form</div></td>
+  <td class="state-description">Countdown reaches 00:00 and turns destructive; Verify button remains enabled (ambiguity: server rejects, user must Resend).</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-partial">Half-built</span></td>
+  <td class="file-ref">Countdown turns text-destructive when millisecondsRemaining &lt;= 0 at apps/remix/app/components/general/document-signing/access-auth-2fa-form.tsx:254-262 — missing: Verify &amp; Complete stays enabled (disabled only by !form.formState.isValid at :274), no expiry message, and the server rejection then routes through #112 &quot;Invalid verification code&quot; which misdescribes the problem</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-partial"><strong>Edge case.</strong> Reuse [Alert variant=warning, Button disabled, existing Resend code button]</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>Alert variant=warning (packages/ui/primitives/alert.tsx:16)</code></li><li><code>Button disabled:opacity-50 (button.tsx:10)</code></li><li><code>Resend code button (access-auth-2fa-form.tsx:286-289)</code></li><li><code>--destructive</code></li><li><code>--warning</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Realistic on phones: recipient switches to the mail app, comes back after the window. Building blocks all exist in the same file; needs a millisecondsRemaining &lt;= 0 branch that disables Verify and shows &quot;Code expired, resend a new one&quot;.</p></div></div>
+</td></tr>
+<tr id="state-142" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">Slow connection</div><div class="state-component">screen</div></td>
+  <td class="state-description">Long PDF spinner with no progress; per-field spinner lingers; completion button spins until redirect. No timeouts or progress indicators.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-partial">Half-built</span></td>
+  <td class="file-ref">Indeterminate handling exists: PdfViewerLoadingState 80vh Spinner at apps/remix/app/components/general/pdf-viewer/pdf-viewer-states.tsx:4-10, per-field Loader overlay (#42), Button loading prop (#106) — missing: no progress or slow-load messaging; grep &quot;onProgress|AbortSignal.timeout&quot; in pdf-viewer.tsx returns nothing (the only setTimeout at :382,486 is an idle timer for page rendering), and getDocument at :114 receives already-fetched bytes so the fetch itself has no progress callback</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-partial"><strong>Edge case.</strong> Extend [PdfViewerLoadingState], add [determinate Progress fed by fetch/pdf.js onProgress + &quot;still loading&quot; hint after ~8s]</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>Spinner size=lg (packages/ui/primitives/spinner.tsx:7-18)</code></li><li><code>Progress (packages/ui/primitives/progress.tsx:6-20)</code></li><li><code>PdfViewerLoadingState (pdf-viewer-states.tsx:4-10)</code></li><li><code>--muted-foreground</code></li><li><code>--primary</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>On mobile data a multi-MB PDF behind a silent spinner for 20-40s is indistinguishable from a hang and drives abandonment before the first field is reached. Blocks exist (Progress primitive, spinner); they are not assembled for the PDF fetch.</p></div></div>
+</td></tr>
+<tr id="state-144" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">Link expires mid-session</div><div class="state-component">screen</div></td>
+  <td class="state-description">Recipient deadline passes, or sender cancels/completes, while the tab is open: field/completion calls fail with RECIPIENT_EXPIRED / ENVELOPE_CANCELLED / ENVELOPE_COMPLETED toasts (113); reload lands on 5 or 6.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-partial">Half-built</span></td>
+  <td class="file-ref">Specific destructive toasts for RECIPIENT_EXPIRED, ENVELOPE_COMPLETED, ENVELOPE_REJECTED, ENVELOPE_CANCELLED, NOT_FOUND exist in apps/remix/app/utils/toast-error-messages.ts:52-79, and the terminal pages for each exist (expired.tsx, rejected.tsx, cancelled card in _index.tsx; pre-classified #4-#6) — missing: after the toast the page stays in the signing layout with the confirm dialog still open (envelope-signing-complete-dialog.tsx:141-158 rethrows, dialog does not close or navigate); nothing on the signing page polls for status the way complete.tsx does every 3s</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-partial"><strong>Edge case.</strong> Reuse [terminal routes expired/rejected/cancelled + useRevalidator]</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>getSigningCompletionErrorMessage (toast-error-messages.ts:50-88)</code></li><li><code>useRevalidator (envelope-signing-complete-dialog.tsx:26,131)</code></li><li><code>expired.tsx / rejected.tsx terminal pages</code></li><li><code>Document Cancelled SigningCard3D state (_index.tsx, pre-classified #6)</code></li><li><code>toast variant=destructive</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>On RECIPIENT_EXPIRED / ENVELOPE_* codes, call revalidate() or navigate so the loader lands the recipient on the matching terminal page instead of leaving a dead signing form behind a toast. Nice-to-have because the toast copy is already accurate.</p></div></div>
+</td></tr>
+<tr id="state-146" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">Keyboard navigation</div><div class="state-component">screen</div></td>
+  <td class="state-description">Field overlays are real buttons; dialogs trap focus; tabs have role=tab; PIN inputs autofocus. Gap: draw canvas has no keyboard alternative (Type tab is the fallback), color/zoom/undo buttons rely on focus-visible rings.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-partial">Half-built</span></td>
+  <td class="file-ref">Field overlays are real &lt;button&gt; elements (document-signing-field-container.tsx:122-125,143), signature tabs use role=tablist/tab/tabpanel with aria-selected and focus-visible:ring-2 (packages/ui/primitives/signature-pad/signature-tabs.tsx:62,80-87,126), Radix Dialog traps focus, undo/zoom buttons carry focus-visible rings (signature-pad-draw.tsx:268,296) — missing: the draw &lt;canvas&gt; at signature-pad-draw.tsx:238-246 has no tabIndex or onKeyDown (pointer only), so when a sender disables the Type tab (#67) a keyboard-only recipient has no way to produce a signature; the Remove overlay button at field-container.tsx:143 is focusable but empty, so Tab lands on an unnamed control</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-partial"><strong>Users will hit this.</strong> Extend [SignaturePad tabs], add [guaranteed keyboard path: keep Type tab available for keyboard/AT users or expose a visible &quot;Use typed signature&quot; fallback when draw-only]; Reuse [sr-only label on Remove button]</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>signature-tabs.tsx Tabs role=tablist (:62)</code></li><li><code>SignaturePadType (signature-pad-type.tsx)</code></li><li><code>focus-visible:ring-2 focus-visible:ring-ring (button.tsx:10)</code></li><li><code>sr-only pattern (dialog.tsx:80)</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Most of keyboard support is genuinely covered by the DS focus pattern; the hole is narrow but real for motor-impaired recipients on draw-only envelopes. Shares the field-button naming fix with #147.</p></div></div>
+</td></tr>
+<tr id="state-147" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">Screen reader</div><div class="state-component">screen</div></td>
+  <td class="state-description">Signature img has alt 'Signature for {name}'; undo/zoom have sr-only labels; widget chevron has aria-label; 2FA PinInput has aria-label. Gaps: field overlay buttons have no accessible name, remaining-count changes and toasts are not announced via live region, 'Signature is too small' is visual only.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-partial">Half-built</span></td>
+  <td class="file-ref">Exists: img alt &quot;Signature for {name}&quot; (document-signing-signature-field.tsx:265), sr-only labels on Undo/Zoom (signature-pad-draw.tsx:300, signature-pad-upload.tsx:390,403), aria-label on sidebar toggle (page-view-v2.tsx:109,139), widget chevron (mobile-widget.tsx:46) and 2FA PinInput (access-auth-2fa-form.tsx:241); toasts pass through Radix Toast.Root (toast.tsx:46) which brings its own announcer — missing: the insert button (field-container.tsx:122-125) and Remove button (:143) are empty &lt;button&gt; elements with no text or aria-label, so every field announces as &quot;button&quot;; &quot;Signature is too small&quot; (signature-pad-draw.tsx:282) is a plain &lt;Trans&gt; in a div with no role=alert; the &quot;N Fields Remaining&quot; pill is not in a live region (grep &quot;aria-live|role=&quot;status&quot;&quot; across document-signing/ and envelope-signing/ returns nothing)</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-partial"><strong>Users will hit this.</strong> Extend [field overlay buttons], add [aria-label &quot;{field type} for {recipient}, press to insert&quot; / &quot;Remove {field type}&quot;]; Reuse [role=alert on too-small message, aria-live=polite on remaining count]</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>sr-only pattern (packages/ui/primitives/dialog.tsx:80)</code></li><li><code>role=alert (packages/ui/primitives/alert.tsx:35)</code></li><li><code>aria-live=polite (apps/remix/app/components/general/analytics/analytics-hydrate-fallback.tsx:10)</code></li><li><code>Badge role=status (packages/ui/primitives/badge.tsx:36)</code></li><li><code>alt text pattern (document-signing-signature-field.tsx:265)</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Critical: a screen-reader recipient cannot tell which unnamed button is the signature field versus a date or checkbox, which blocks signing entirely. Building blocks are all in the DS; nothing new to design.</p></div></div>
+</td></tr>
+<tr><td colspan="5" class="section-divider section-divider-rec">Optional (3)</td></tr>
+<tr id="state-148" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">Reduced motion</div><div class="state-component">screen</div></td>
+  <td class="state-description">framer-motion pen-stroke hint, spring hover, tab indicator, progress bar layout animation, widget slide-in and 3D signing card all animate regardless of prefers-reduced-motion.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-rec">Optional</span></td>
+  <td class="file-ref">No reduced-motion handling on the signing page: grep &quot;useReducedMotion|motion-reduce|prefers-reduced-motion|motion-safe&quot; across apps/remix/app and packages/ui hits only settings-upsell/*.tsx; framer-motion drives the tab indicator (signature-tabs.tsx:96-100), sidebar (page-view-v2.tsx:148), widget slide-in (mobile-widget.tsx:95) and pen-stroke hint (signature-pad-dialog.tsx:60-89)</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-recommendation"><strong>Edge case.</strong> Extend [framer-motion usages], add [useReducedMotion guard as in branding-upsell.tsx:47]</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>useReducedMotion (apps/remix/app/components/general/settings-upsell/branding-upsell.tsx:47)</code></li><li><code>tailwindcss-animate motion-reduce: variants (packages/tailwind-config/index.cjs:161)</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Non-critical: animations are short, decorative and never gate an action; the pen-stroke hint and slide-ins complete in under a second. Worth a guard for vestibular users but nobody is blocked.</p></div></div>
+</td></tr>
+<tr id="state-149" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">High contrast</div><div class="state-component">screen</div></td>
+  <td class="state-description">Field state is conveyed by recipient color (green/orange/readOnly) and muted placeholder text; pending vs done relies on color plus tooltip only.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-rec">Optional</span></td>
+  <td class="file-ref">No forced-colors / prefers-contrast handling: grep &quot;forced-colors|prefers-contrast|contrast-more|forced-color-adjust&quot; across apps/remix/app, packages/ui, packages/tailwind-config returns nothing. Field state is colour-driven via recipient-colors.ts:22-64 and envelope-signer-page-renderer.tsx:157 (readOnly / orange / green)</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-recommendation"><strong>Edge case.</strong> Extend [FieldRootContainer], add [forced-colors outline + non-colour pending marker]</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>field-root-container-classes.ts ring-2 (packages/ui/lib/field-root-container-classes.ts:1-6)</code></li><li><code>recipient-colors.ts (packages/ui/lib/recipient-colors.ts:22-64)</code></li><li><code>EnvelopeRecipientFieldTooltip (packages/ui/components/document/envelope-recipient-field-tooltip.tsx)</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Non-critical: fields already carry a 2px ring and text placeholders, both of which survive Windows High Contrast, and the pending-field tooltip (#28) plus remaining-count text give non-colour cues. Only the orange-vs-green distinction is lost.</p></div></div>
+</td></tr>
+<tr id="state-150" class="expandable" onclick="toggleDetail(this)">
+  <td><div class="state-name">Print</div><div class="state-component">screen</div></td>
+  <td class="state-description">No print stylesheet; fixed widget/sidebar and field overlays would print over the PDF. Download (132/139) is the intended path.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-rec">Optional</span></td>
+  <td class="file-ref">No print styles on the signing page: grep &quot;print:&quot; across document-signing/, envelope-signing/ and routes/_recipient+ returns nothing; the print screen exists in packages/tailwind-config/index.cjs:156 and .print-provider @page in packages/ui/styles/theme.css:212-217 but is only used by _internal+/[__htmltopdf]+ routes</td>
+</tr>
+<tr class="state-detail"><td colspan="5">
+  <div class="suggestion suggestion-recommendation"><strong>Edge case.</strong> Reuse [print: screen variant]</div>
+  
+  <div class="detail-notes"><div class="note-group"><h4>Build from</h4><ul><li><code>print screen (packages/tailwind-config/index.cjs:156)</code></li><li><code>.print-provider (packages/ui/styles/theme.css:212-217)</code></li></ul></div><div class="note-group"><h4>Notes</h4><p>Non-critical: Download PDF during signing (#139) and on the complete page (#132) are the intended paths and produce a correct document; Cmd+P of the signing view is an edge case. A print:hidden on the widget/sidebar would be enough.</p></div></div>
+</td></tr>
+<tr><td colspan="5" class="section-divider section-divider-covered">Designed (28)</td></tr>
+<tr id="state-15">
+  <td><div class="state-name">PDF loading</div><div class="state-component">pdf viewer</div></td>
+  <td class="state-description">80vh centered spinner at 50% opacity while the PDF bytes are fetched and pdf.js initialises.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Implemented in apps/remix/app/components/general/pdf-viewer/pdf-viewer-states.tsx (enumerator cited file)</td>
+</tr>
+<tr id="state-17">
+  <td><div class="state-name">Document loaded</div><div class="state-component">signing page</div></td>
+  <td class="state-description">Happy path: title, sender line ('{sender} has invited you to sign'), PDF pages, field overlays, side panel or mobile widget.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Implemented in apps/remix/app/components/general/document-signing/document-signing-page-view-v1.tsx (enumerator cited file)</td>
+</tr>
+<tr id="state-31">
+  <td><div class="state-name">Mobile widget collapsed</div><div class="state-component">mobile widget</div></td>
+  <td class="state-description">Fixed bottom bar (&lt;lg): chevron, role title, remaining count, small Complete/Next Field button, progress bar; form hidden.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Implemented in apps/remix/app/components/general/document-signing/document-signing-mobile-widget.tsx (enumerator cited file)</td>
+</tr>
+<tr id="state-33">
+  <td><div class="state-name">Sidebar collapsed</div><div class="state-component">sidebar</div></td>
+  <td class="state-description">V2 desktop sidebar collapses to 12px rail with PanelLeftOpen button; content invisible.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Implemented in apps/remix/app/components/general/document-signing/document-signing-page-view-v2.tsx (enumerator cited file)</td>
+</tr>
+<tr id="state-34">
+  <td><div class="state-name">Name input locked</div><div class="state-component">form</div></td>
+  <td class="state-description">Embed context isNameLocked/isEmailLocked or recipient.name already set: Full Name / email inputs rendered disabled.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Implemented in apps/remix/app/components/general/envelope-signing/envelope-signer-form.tsx (enumerator cited file)</td>
+</tr>
+<tr id="state-38">
+  <td><div class="state-name">Panel disabled while submitting</div><div class="state-component">form</div></td>
+  <td class="state-description">V1 fieldset disabled and signature slot at 50% opacity/pointer-events none while completion is pending.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Implemented in apps/remix/app/components/general/document-signing/document-signing-form.tsx (enumerator cited file)</td>
+</tr>
+<tr id="state-40">
+  <td><div class="state-name">Field hover</div><div class="state-component">field overlay</div></td>
+  <td class="state-description">group-hover changes placeholder text to recipient-green / primary.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Implemented in apps/remix/app/components/general/document-signing/document-signing-fields.tsx (enumerator cited file)</td>
+</tr>
+<tr id="state-47">
+  <td><div class="state-name">Field remove error</div><div class="state-component">toast</div></td>
+  <td class="state-description">Destructive toast 'Error / An error occurred while removing the signature.' Field stays inserted.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">catch block in apps/remix/app/components/general/document-signing/document-signing-signature-field.tsx:192-204 toasts variant destructive &quot;An error occurred while removing the signature.&quot;; isRemoveSignedFieldWithTokenLoading spinner :70-75</td>
+</tr>
+<tr id="state-49">
+  <td><div class="state-name">Read-only prefilled date</div><div class="state-component">field overlay</div></td>
+  <td class="state-description">DATE fields are prefilled client-side with today's date in the document timezone/format, marked readOnly, rendered in the readOnly color with no click or remove affordance.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">prefillDateFields sets readOnly: true on uninserted DATE fields in apps/remix/app/components/general/document-signing/envelope-signing-provider.tsx:82-102,130; renderer colours readOnly fields via envelope-signer-page-renderer.tsx:157 and ignores clicks :191; readOnly ring-neutral style in packages/ui/lib/recipient-colors.ts:23</td>
+</tr>
+<tr id="state-53">
+  <td><div class="state-name">Signature dialog open</div><div class="state-component">modal-dialog</div></td>
+  <td class="state-description">'Sign as {name} ({email})' / 'Sign Signature Field' dialog: Draw/Type/Upload tabs, aspect-ratio pad, legal disclosure text, Cancel + Sign.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Dialog with DialogTitle &quot;Sign Signature Field&quot;, SignaturePad, DocumentSigningDisclosure, Cancel + Sign disabled until localSignature in apps/remix/app/components/dialogs/sign-field-signature-dialog.tsx:27-49; &quot;Sign as {name} ({email})&quot; title variant in document-signing-signature-field.tsx:286</td>
+</tr>
+<tr id="state-61">
+  <td><div class="state-name">Upload tab empty</div><div class="state-component">file-upload</div></td>
+  <td class="state-description">Full-pad button with UploadCloud icon and 'Upload Signature'; hidden file input accept=image/*. No drag-and-drop zone exists (ambiguity: taxonomy drag-hover not implemented).</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Empty upload state: full-pad motion.button with UploadCloudIcon + &quot;Upload Signature&quot; and hidden &lt;input type=file accept=image/*&gt; in packages/ui/primitives/signature-pad/signature-pad-upload.tsx:378,430-450</td>
+</tr>
+<tr id="state-62">
+  <td><div class="state-name">Upload loaded, zoom/pan</div><div class="state-component">file-upload</div></td>
+  <td class="state-description">Image aspect-fit on canvas, grab/grabbing cursor for drag, Zoom in/out buttons (0.25x-4x, disabled at bounds), 'Upload New Image' link.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Implemented in packages/ui/primitives/signature-pad/signature-pad-upload.tsx (enumerator cited file)</td>
+</tr>
+<tr id="state-63">
+  <td><div class="state-name">Upload wrong file type</div><div class="state-component">toast</div></td>
+  <td class="state-description">Destructive toast 'Unable to upload image / Please upload a valid image file.'</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">file.type.startsWith(&quot;image/&quot;) check at packages/ui/primitives/signature-pad/signature-pad-upload.tsx:30, mapped to &quot;Please upload a valid image file.&quot; at :285 and toasted at :293</td>
+</tr>
+<tr id="state-64">
+  <td><div class="state-name">Upload too large</div><div class="state-component">toast</div></td>
+  <td class="state-description">Toast 'The image must be smaller than 5MB.'</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">file.size &gt; 5*1024*1024 check at packages/ui/primitives/signature-pad/signature-pad-upload.tsx:34, mapped to &quot;The image must be smaller than 5MB.&quot; at :286 and toasted at :293</td>
+</tr>
+<tr id="state-72">
+  <td><div class="state-name">Text dialog default</div><div class="state-component">form</div></td>
+  <td class="state-description">Dialog titled by fieldMeta.label or 'Enter Text', textarea with placeholder, Cancel/Enter.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">DialogTitle fieldMeta?.label || &quot;Enter Text&quot; at apps/remix/app/components/dialogs/sign-field-text-dialog.tsx:45; Textarea with placeholder :61-63; Cancel/Enter footer</td>
+</tr>
+<tr id="state-73">
+  <td><div class="state-name">Text required error</div><div class="state-component">form</div></td>
+  <td class="state-description">Submitting empty: red border + ring on textarea, FormMessage 'Text is required'.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">z.string().min(1, &quot;Text is required&quot;) at apps/remix/app/components/dialogs/sign-field-text-dialog.tsx:22 rendered via FormMessage :71; destructive ring from Input/Textarea aria-invalid pattern (packages/ui/primitives/input.tsx:15)</td>
+</tr>
+<tr id="state-79">
+  <td><div class="state-name">Dropdown no results</div><div class="state-component">search</div></td>
+  <td class="state-description">CommandEmpty 'No results found.' (untranslated string in code).</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">CommandEmpty &quot;No results found.&quot; at apps/remix/app/components/dialogs/sign-field-dropdown-dialog.tsx:32 using packages/ui/primitives/command.tsx:109-114</td>
+</tr>
+<tr id="state-101">
+  <td><div class="state-name">Reauth submitting locked</div><div class="state-component">modal-dialog</div></td>
+  <td class="state-description">fieldset disabled, Sign button loading, dialog cannot be closed while isCurrentlyAuthenticating.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Implemented in apps/remix/app/components/general/document-signing/document-signing-auth-dialog.tsx (enumerator cited file)</td>
+</tr>
+<tr id="state-102">
+  <td><div class="state-name">Complete confirmation</div><div class="state-component">modal-dialog</div></td>
+  <td class="state-description">'Are you sure?' with role copy ('You are about to complete signing the following document'), title card, disclosure, Cancel + Sign/Approve/Mark as Viewed. Only opens when all required fields are inserted.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Implemented in apps/remix/app/components/general/document-signing/document-signing-complete-dialog.tsx (enumerator cited file)</td>
+</tr>
+<tr id="state-104">
+  <td><div class="state-name">Next signer invalid</div><div class="state-component">form</div></td>
+  <td class="state-description">'Name is required' / 'Invalid email address' inline errors block submission.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">ZNextSignerFormSchema name.min(1, &quot;Name is required&quot;) and zEmail(&quot;Invalid email address&quot;) at apps/remix/app/components/general/document-signing/document-signing-complete-dialog.tsx:62-64; FormMessage under each input :294,316,342,363</td>
+</tr>
+<tr id="state-114">
+  <td><div class="state-name">Completion error, generic</div><div class="state-component">toast</div></td>
+  <td class="state-description">Fallback toast 'Something went wrong / We were unable to submit this document at this time. Please try again later.'</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">otherwise() fallback &quot;Something went wrong / We were unable to submit this document at this time. Please try again later.&quot; in apps/remix/app/utils/toast-error-messages.ts:84-87; envelope-signing-complete-dialog.tsx:141-158 rethrows so the dialog toasts it and stays open for retry</td>
+</tr>
+<tr id="state-117">
+  <td><div class="state-name">Reject dialog</div><div class="state-component">modal-dialog</div></td>
+  <td class="state-description">'Reject Document / Are you sure you want to reject this document? This action cannot be undone.' Reason textarea (optional), Cancel, destructive Reject Document.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Implemented in apps/remix/app/components/general/document-signing/document-signing-reject-dialog.tsx (enumerator cited file)</td>
+</tr>
+<tr id="state-119">
+  <td><div class="state-name">Reject submitting</div><div class="state-component">modal-dialog</div></td>
+  <td class="state-description">Textarea disabled, Cancel disabled, Reject button loading.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Implemented in apps/remix/app/components/general/document-signing/document-signing-reject-dialog.tsx (enumerator cited file)</td>
+</tr>
+<tr id="state-120">
+  <td><div class="state-name">Reject success</div><div class="state-component">toast</div></td>
+  <td class="state-description">Toast 'Document rejected / The document has been successfully rejected.' (5s), dialog closes, hard navigation to /rejected (or embed callback).</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Implemented in apps/remix/app/components/general/document-signing/document-signing-reject-dialog.tsx (enumerator cited file)</td>
+</tr>
+<tr id="state-121">
+  <td><div class="state-name">Reject error</div><div class="state-component">modal-dialog</div></td>
+  <td class="state-description">Destructive toast 'An error occurred while rejecting the document. Please try again.' Dialog stays open with reason preserved.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">catch in apps/remix/app/components/general/document-signing/document-signing-reject-dialog.tsx:80-89 toasts &quot;An error occurred while rejecting the document. Please try again.&quot; with variant destructive; dialog and reason textarea remain mounted</td>
+</tr>
+<tr id="state-140">
+  <td><div class="state-name">First-time recipient</div><div class="state-component">screen</div></td>
+  <td class="state-description">Almost every recipient is first-time and anonymous: no coach marks exist; orientation relies on sender line, field placeholders, Next Field and the legal disclosure paragraph shown in every signature/complete dialog.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Orientation is carried by implemented UI: sender line &quot;{sender} has invited you to sign this document&quot; (document-signing-page-view-v1.tsx:213-220, per-role variants :196-254), &quot;Next Field&quot; primary button (document-signing-complete-dialog.tsx:225) that scrolls to and highlights the first pending field (#28 covered), &quot;Click to insert field&quot; tooltip (direct-template-signing-form.tsx:257), and DocumentSigningDisclosure in every signature/complete dialog (document-signing-disclosure.tsx:9-27)</td>
+</tr>
+<tr id="state-143">
+  <td><div class="state-name">Session expired mid-sign</div><div class="state-component">screen</div></td>
+  <td class="state-description">ACCOUNT access/action auth docs: session lapses while filling; next signature click raises UNAUTHORIZED and the account reauth dialog (85) appears; completion would render the auth page on reload. Inserted fields persist server-side.</td>
+  <td class="req-cell"></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">Field click routes through executeActionAuthProcedure at apps/remix/app/components/general/envelope-signing/envelope-signer-page-renderer.tsx:398-405; UNAUTHORIZED opens DocumentSigningAuthAccount with Alert variant=warning &quot;you need to be logged in as {email}&quot; and Login that signs out with redirectPath back to this URL (document-signing-auth-account.tsx:37-38,56-57,161); on reload the loader renders DocumentSigningAuthPageView (_index.tsx:406,503)</td>
+</tr>
+<tr id="state-145">
+  <td><div class="state-name">Responsive breakpoints</div><div class="state-component">screen</div></td>
+  <td class="state-description">&lt;md (V1) / &lt;lg (V2): sidebar hidden, fixed bottom widget over the PDF with 7rem bottom padding; field text clamps 0.425-0.825rem via cqw; signature dialog pad shrinks; complete page stacks claim-account below. Desktop: sticky 350px / 320px sidebar.</td>
+  <td class="req-cell"><span class="badge badge-required">Required</span></td>
+  <td><span class="badge badge-covered">Designed</span></td>
+  <td class="file-ref">V2 sidebar hidden lg:flex at apps/remix/app/components/general/document-signing/document-signing-page-view-v2.tsx:100, mobile block pb-28 lg:hidden :280, fixed bottom widget in document-signing-mobile-widget.tsx:34 (fixed right-0 bottom-0 left-0 z-50, sm:px-4 sm:pb-6); Input text-base md:text-sm iOS zoom guard (packages/ui/primitives/input.tsx:12); dialog full-width below sm (dialog.tsx:63-68)</td>
+</tr>
+
+    </tbody>
+  </table></div>
+  <details class="exists"><summary>What already exists: 111 states found in the feature code</summary>
+  <p class="exists-note">The enumerator discovered these by reading the feature. They are shown for context and do not count toward the score, because a state existing in code is not proof that it is designed well.</p>
+  <div class="exists-group"><h4>Link Resolution</h4><div class="chips"><span class="chip" title="Token missing, unknown, recipient missing, or document still DRAFT. Loader throws 404; generic not-found page.">Link not found</span><span class="chip" title="Sequential signing and it is not this recipient's turn. 'Waiting for Your Turn' copy, Return Home link.">Waiting for turn</span><span class="chip" title="Logged-in user is document owner/team member: link 'Were you trying to edit this document instead?' replaces Return Home.">Waiting, owner edit link</span><span class="chip" title="Recipient previously rejected. Title badge, XCircle, 'You have rejected this document', owner notified copy, Return Home if logged in.">Rejected terminal page</span><span class="chip" title="Recipient expiry passed. TimerOff icon, 'Signing Deadline Expired', contact-owner copy.">Deadline expired page</span><span class="chip" title="Document deleted or status REJECTED (by another recipient). SigningCard3D with recipient name, red Clock8 'Document Cancelled', '&quot;{title}&quot; is no longer available to sign'. Logged-in: Go Back Home; anonymous: Documenso promo link.">Document cancelled</span><span class="chip" title="Recipient already SIGNED or document COMPLETED: loader redirects straight to /complete. Reopening the email link after signing is common.">Already signed redirect</span><span class="chip" title="Sender configured documentMeta.redirectUrl: after completion (or when already signed) recipient is sent off-site instead of /complete. No Documenso confirmation shown; ambiguity: no interstitial exists.">Custom redirect URL</span><span class="chip" title="V1 renders AuthenticatedHeader above the signing page when a session exists; anonymous recipients get no header.">Logged-in app header</span></div></div><div class="exists-group"><h4>Access Auth</h4><div class="chips"><span class="chip" title="Access auth ACCOUNT required and viewer is anonymous or logged in as a different email. 'You need to be logged in as {email}', Login button. Also covers wrong-account case.">Auth required, has account</span><span class="chip" title="Same gate but recipient email has no account: button reads 'Sign up' and deep-links /signup#email=.">Auth required, no account</span><span class="chip" title="Login/Sign up button in loading state while authClient.signOut runs before redirect.">Switching account</span><span class="chip" title="Destructive toast 'Something went wrong / We were unable to log you out at this time' (10s).">Sign-out failed toast</span></div></div><div class="exists-group"><h4>Document Rendering</h4><div class="chips"><span class="chip" title="V2 fallback 'No document selected' when currentEnvelopeItem is null.">No document selected</span><span class="chip" title="A single page image fails to render (imageLoadingState 'error') while the rest of the doc is fine.">Page render error</span><span class="chip" title="V2 envelopes with more than one file show a horizontal scrollable file tab strip with per-file remaining-field counts and selected state.">Multi-file selector</span><span class="chip" title="Team branding enabled: custom logo above title, RecipientBranding CSS applied; 'Powered by' badge toggled by hidePoweredBy.">Branded header</span><span class="chip" title="Title truncates at 20rem/30rem with title attribute; sender name truncates; completed-page badge truncates at 10rem/20rem.">Long title truncated</span><span class="chip" title="Fields already completed by other recipients render read-only with recipient tooltip; this recipient cannot interact.">Other signers' fields shown</span></div></div><div class="exists-group"><h4>Signing Panel</h4><div class="chips"><span class="chip" title="Sidebar/widget shows role title, 'N Fields Remaining' pill, Full Name input, Signature slot, and a 'Next Field' primary button.">Panel fields remaining</span><span class="chip" title="Button flips to 'Complete' (or Approve / Mark as viewed), helper copy 'Please complete the document once reviewed', progress bar full.">All required fields done</span><span class="chip" title="VIEWER (View Document / Mark as viewed, no form, no progress bar), APPROVER (Approve Document / Approve), ASSISTANT (Assist Document / Complete). Sender line and confirm dialog copy change per role.">Role copy variants</span><span class="chip" title="V1 passes disabled={!isRecipientsTurn} to the Complete button as a defensive state (loader normally redirects to /waiting first).">Not your turn, disabled</span><span class="chip" title="Clicking 'Next Field' with required fields empty: page scrolls to the first pending field, orange 'Click to insert field' tooltip appears; confirm dialog will not open.">Next Field pending tooltip</span><span class="chip" title="Next pending field lives in a different envelope item: file switches, then scroll after 150ms; falls back to data-scroll-to-page when page is virtualised.">Next field on another file</span><span class="chip" title="4px bar width = completed required / total required; 100% when no required fields. Hidden for VIEWER and ASSISTANT on mobile widget.">Progress bar partial</span><span class="chip" title="Chevron toggles slide-in panel with Full Name + Signature form (max-height calc(100dvh-2rem) on V1). Pre-expanded for assistants.">Mobile widget expanded</span><span class="chip" title="V1 Cancel button (navigate(-1)) disabled when window.history.length &lt;= 1, i.e. link opened in a fresh tab, which is the normal case.">Cancel back disabled</span><span class="chip" title="Panel signature box shows animated pen-stroke SVG (pathLength draws over 2s, spring scale on hover) inviting a click.">Signature slot empty</span><span class="chip" title="SignatureRender canvas draws the typed (Caveat font, auto-fit) or image signature; clicking reopens the pad with value preloaded.">Signature slot filled</span></div></div><div class="exists-group"><h4>Field Insertion</h4><div class="chips"><span class="chip" title="Uninserted field: recipient-colored box with placeholder text (e.g. 'Signature' in signature font, field label). Full-size invisible submit button on top.">Field empty</span><span class="chip" title="Validation pass: unsigned required fields recolor to orange ('isValidating') so the user can spot what is left.">Field flagged required</span><span class="chip" title="Absolute overlay with spinning Loader covering the field while signFieldWithToken / envelope.field.sign is pending.">Field inserting</span><span class="chip" title="Value rendered (text, number, date, name, email, initials, selected options) with left/center/right alignment from fieldMeta.">Field inserted</span><span class="chip" title="Hovering an inserted (non-checkbox, non-readonly) field shows orange tooltip 'Remove' (plus optional tooltipText); click clears the field.">Inserted hover Remove</span><span class="chip" title="Inserted checkbox field shows a dark X button below on hover (opacity 0 -&gt; 100) to clear all values.">Checkbox clear button</span><span class="chip" title="Same Loader overlay while removeSignedFieldWithToken is pending.">Field removing</span><span class="chip" title="Destructive toast 'An error occurred while signing the document/field.' Field reverts to empty. UNAUTHORIZED is rethrown to the reauth dialog instead.">Field sign error</span><span class="chip" title="Radio and checkbox fields with fieldMeta.label show a label pill above the field; border/bg changes when inserted (primary border, documenso-200 bg).">Radio/checkbox label pill</span><span class="chip" title="Typed signature text shrinks from 2rem down to 0.8rem via ResizeObserver until it fits; break-all for very long names.">Typed signature auto-shrink</span><span class="chip" title="Three-state field: 'empty' placeholder, 'signed-image' (object-contain img with alt 'Signature for {name}'), 'signed-text' (Caveat font centered).">Signature signed image vs text</span></div></div><div class="exists-group"><h4>Signature Pad</h4><div class="chips"><span class="chip" title="While pointer is pressed, color picker, Clear and Undo fade to opacity 0 / pointer-events none; strokes render live via perfect-freehand. touch-action none.">Drawing in progress</span><span class="chip" title="checkSignatureValidity fails: red 'Signature is too small' bottom-left, value not emitted, Sign stays disabled. Common on phones with a tiny scribble.">Signature too small</span><span class="chip" title="Valid signature with lines present: Undo (last stroke) button appears bottom-left, Clear Signature bottom-right.">Valid drawing with Undo</span><span class="chip" title="Clear Signature wipes canvas, resets lines, emits '' so Sign disables again.">Pad cleared</span><span class="chip" title="Top-right Select with Black/Red/Blue/Green swatches; only black gets dark-mode inversion. Typed tab has no color (commented out).">Ink color picker</span><span class="chip" title="Type tab auto-fills the recipient's full name in 7xl Caveat once (until dirty). Value trims leading spaces.">Type tab prefilled</span><span class="chip" title="No name known: 'Type your signature' placeholder at 4xl.">Type tab empty</span><span class="chip" title="Zero-dimension SVG -&gt; 'This image is invalid'; decode failure -&gt; 'The image could not be loaded. Please try again.'">Upload invalid or failed</span><span class="chip" title="After zooming out or panning off-canvas, validity check fails: 'Signature is too small', value cleared.">Uploaded image too small</span><span class="chip" title="Sender disables draw/type/upload: only enabled tabs render; single-method shows one tab. All disabled renders nothing (throws 'No signature enabled' in state init; ambiguity).">Signature methods restricted</span><span class="chip" title="Sign / Next button disabled until a valid non-empty signature exists on the active tab.">Sign button disabled</span><span class="chip" title="Stored typed signature applied to a doc where typed is disabled: toast 'Typed signatures are not allowed. Please draw your signature.'">Typed signature not allowed</span><span class="chip" title="Signature already in context (account signature, prior field, or panel slot): clicking a signature field inserts immediately without the dialog.">Reuse existing signature</span><span class="chip" title="Canvases use dark:hue-rotate-180 dark:invert so black ink reads on dark backgrounds; colored ink is not inverted.">Dark mode canvas inversion</span></div></div><div class="exists-group"><h4>Field Dialogs</h4><div class="chips"><span class="chip" title="'# characters remaining' counter when fieldMeta.characterLimit &gt; 0 and no error. Ambiguity: no client-side block when exceeded.">Characters remaining</span><span class="chip" title="'Please enter a valid number', too_small/too_big against minValue/maxValue, or 'Number needs to be formatted as {format}'. Red input styling.">Number validation errors</span><span class="chip" title="Options list with preselected indices; description states rule ('Select at least/exactly/at most N options').">Checkbox rule dialog</span><span class="chip" title="Rule not met on Confirm: description text turns destructive; unselecting all is allowed for optional fields.">Checkbox rule violated</span><span class="chip" title="Top-anchored CommandDialog with search input 'Select an option' and Options group; selecting an item inserts.">Dropdown picker</span><span class="chip" title="Cancel, Esc, or backdrop resolves null; field stays empty, no toast.">Dialog dismissed</span></div></div><div class="exists-group"><h4>Auto-sign</h4><div class="chips"><span class="chip" title="On load, if more than 5 auto-signable fields (name, initials, email, date) and action auth is not passkey/password/2FA: dialog listing counts per type, disclosure, Cancel/Sign.">Auto-sign offer</span><span class="chip" title="Sign button loading while all fields sign in parallel via Promise.allSettled.">Auto-sign submitting</span><span class="chip" title="Toast 'some fields may not be signed. Please review and manually sign any remaining fields.'; page revalidates showing mixed results.">Auto-sign partial failure</span></div></div><div class="exists-group"><h4>Action Auth</h4><div class="chips"><span class="chip" title="Multiple action-auth methods: 'Choose your preferred authentication method' list (Account/Passkey/2FA/Password); selected method shows a back chevron in the title.">Reauth method chooser</span><span class="chip" title="Warning alert 'To sign this field, you need to be logged in as {email}' (role/target variants), Cancel + Login that signs out and returns to this URL.">Account login required</span><span class="chip" title="Spinner while auth.getAuthMethods loads to decide if the user even has a password.">Password loading methods</span><span class="chip" title="'Reauthentication is required to sign this field': password input (autocomplete current-password), Cancel/Sign.">Password reauth form</span><span class="chip" title="Destructive alert 'Unauthorized / We were unable to verify your details. Please try again or contact support'. Form stays open.">Password unauthorized</span><span class="chip" title="OAuth/passkey-only user: neutral alert 'No password set' with PasswordSetupRequest to email a link, then come back. Close only.">No password set</span><span class="chip" title="Instance has email/password sign-in disabled: warning 'Password authentication unavailable', contact sender.">Password auth unavailable</span><span class="chip" title="Warning 'Your browser does not support passkeys, which is required to sign this field.' Close only.">Passkey unsupported browser</span><span class="chip" title="h-28 spinner while passkey list loads (also shown when error and list empty, before retry state).">Passkeys loading</span><span class="chip" title="Destructive alert 'Something went wrong while loading your passkeys.' with Cancel/Retry.">Passkeys load error</span><span class="chip" title="Warning 'You need to setup a passkey to sign this field.' with Cancel and Setup (opens PasskeyCreateDialog, refetches on success).">No passkeys, setup</span><span class="chip" title="Select of passkeys (preferred preselected), Cancel/Sign; Sign triggers WebAuthn prompt with loading button.">Passkey select form</span><span class="chip" title="User dismisses the OS passkey sheet (NotAllowedError): silently returns to the form, no alert.">Passkey prompt cancelled</span><span class="chip" title="Destructive 'Unauthorized' alert under the select after a non-cancel failure.">Passkey verification failed</span><span class="chip" title="Warning 'You need to setup 2FA to sign this field' plus explanation, Close and EnableAuthenticatorAppDialog; on success switches to PIN form.">2FA not enabled</span><span class="chip" title="6-slot PinInput labelled '2FA token', Cancel/Sign.">2FA PIN form</span><span class="chip" title="Destructive 'Unauthorized' alert below PIN; length validation 4-10 chars via FormMessage.">2FA code rejected</span></div></div><div class="exists-group"><h4>Completion</h4><div class="chips"><span class="chip" title="Sequential + allowDictateNextSigner: Next Recipient Name/Email inputs prefilled with the default next recipient inside the confirm dialog.">Dictate next signer</span><span class="chip" title="Direct-link templates with no recipient email: 'Your Name' / 'Your Email' inputs shown in the confirm dialog; email locked when provided by embed.">Direct template identity</span><span class="chip" title="Submit button loading, fieldset disabled, dialog locked; loading intentionally persists after success (isPending || isSuccess) until the full-page redirect lands.">Completing, redirecting</span><span class="chip" title="Access auth TWO_FACTOR_AUTH: confirm dialog swaps to 'Choose verification method' (Email verification; Authenticator app only if user has it enabled).">Access 2FA choose method</span><span class="chip" title="Method buttons disabled while request2FAEmail is pending; Resend code button shows loading later.">Access 2FA requesting code</span><span class="chip" title="Toast 'An error occurred / We encountered an unknown error while attempting to request the two-factor authentication code.' Stays on method step.">Access 2FA request failed</span><span class="chip" title="Back arrow, 'Enter verification code', 6 large PIN slots (autofocus, numeric), 'Expires in mm:ss' countdown, Verify &amp; Complete (disabled until 6 digits), Resend code for email.">Access 2FA code entry</span><span class="chip" title="TWO_FACTOR_AUTH_FAILED: form returns to method-selection with destructive alert 'Invalid verification code. Please try again.'">Access 2FA code invalid</span><span class="chip" title="Destructive toast keyed by AppErrorCode: NOT_FOUND (link revoked), RECIPIENT_HAS_UNSIGNED_FIELDS (refresh and complete), RECIPIENT_OUT_OF_TURN, RECIPIENT_EXPIRED, ENVELOPE_COMPLETED, ENVELOPE_REJECTED, ENVELOPE_CANCELLED, ENVELOPE_DRAFT. Dialog stays open.">Completion error, specific</span><span class="chip" title="Result status ALREADY_SIGNED (retry, stale tab, double submit): neutral toast 'Document already signed', then continues to complete page.">Already signed toast</span><span class="chip" title="Certified (TSP) envelopes: completion returns status REDIRECT and the browser leaves for the credential-scope OAuth URL; no in-app feedback before navigation.">TSP OAuth redirect</span></div></div><div class="exists-group"><h4>Rejection</h4><div class="chips"><span class="chip" title="Over 500 chars: FormMessage 'Reason must be less than 500 characters', submit disabled via !isValid.">Reject reason too long</span><span class="chip" title="Email 'reject' link lands on /sign/:token?reject=true and the dialog opens on mount.">Reject auto-opened</span><span class="chip" title="Reject action hidden for direct templates and when embed sets allowDocumentRejection false; Actions block absent for templates.">Rejection unavailable</span></div></div><div class="exists-group"><h4>CSC Remote Signing</h4><div class="chips"><span class="chip" title="Terminal page with AlertTriangle and variant copy: no signing credentials, certificate invalid, algorithm not supported, or generic 'Unable to start the signing flow'; 'Try again' restarts service-scope OAuth.">CSC blocked</span><span class="chip" title="Spinner, 'Applying your signature', 'Please don't close this tab. The signing provider is finalising your signature.' Auto-fires signEnvelope once on mount, then redirects to /complete.">CSC applying signature</span><span class="chip" title="'Signing failed' with TSP timeout / SAD expired pre-sign / generic copy and 'Reauthorise and retry' link to credential-scope OAuth.">CSC signing failed</span></div></div><div class="exists-group"><h4>Completed Page</h4><div class="chips"><span class="chip" title="Title badge, SigningCard3D with signature, 'Document Signed', blue Clock8 'Waiting for others to sign', email-copy copy, Share button. Status polls every 3s.">Signed, waiting for others</span><span class="chip" title="Green CheckCircle 'Everyone has signed', 'You will receive an email copy', Download button appears. Can transition live from 127 via polling.">Everyone has signed</span><span class="chip" title="Orange spinner 'Processing document', 'All recipients have signed. The document is being processed...' between last signature and sealed PDF.">Processing document</span><span class="chip" title="Red Clock8 'Document no longer available to sign', 'cancelled by the owner and is no longer available for others to sign.'">Cancelled after signing</span><span class="chip" title="Non-user recipients get a second column 'Need to sign documents?' with ClaimAccount form prefilled with name/email; layout switches to two-column with divider at lg.">Claim account CTA</span><span class="chip" title="Download button opens EnvelopeDownloadDialog once the document is completed; absent while pending.">Download available</span><span class="chip" title="DocumentShareButton always present after signing (social share card).">Share button</span><span class="chip" title="Heading 'Document Signed' / 'Document Viewed' / 'Document Approved' by role; logged-in users get 'Go Back Home' to their folder or /.">Role heading and home link</span></div></div><div class="exists-group"><h4>Assistant Role</h4><div class="chips"><span class="chip" title="Radio list of downstream signers with field counts and '(You)' tag; only the selected signer's non-signature fields are shown on the PDF.">Assistant signer selection</span><span class="chip" title="V1 'Continue' opens AssistantConfirmationDialog warning when uninserted fields remain; submitting state and completion error toast.">Assistant confirmation</span><span class="chip" title="Mobile widget mounts expanded for assistants so the signer picker is discoverable.">Assistant widget pre-expanded</span></div></div><div class="exists-group"><h4>Attachments and Download</h4><div class="chips"><span class="chip" title="'Attachments (N)' button only when the envelope has attachments; popover lists external links with paperclip icon and hover ExternalLink. Nothing rendered while loading or empty.">Attachments popover</span><span class="chip" title="V2 Actions 'Download PDF' opens EnvelopeDownloadDialog for the unsigned copy.">Download PDF during signing</span></div></div>
+</details>
+</section>
+  <footer class="report-footer">
+    <span>ds-state-gen</span>
+    <span>1 no design &middot; 7 half-built &middot; 28 designed &middot; score 45/100</span>
+  </footer>
+</main>
+<div class="toast-copied" role="status" aria-live="polite"></div>
+<script>
+function toggleDetail(row) {
+  row.classList.toggle('open');
+  const d = row.nextElementSibling;
+  if (d && d.classList.contains('state-detail')) d.classList.toggle('open');
+}
+function openFromHash() {
+  const row = document.getElementById(location.hash.slice(1));
+  if (row && row.classList.contains('expandable') && !row.classList.contains('open')) toggleDetail(row);
+}
+window.addEventListener('hashchange', openFromHash);
+openFromHash();
+document.querySelectorAll('.copy-btn').forEach((b) => b.addEventListener('click', async () => {
+  const t = b.dataset.prompt;
+  try { await navigator.clipboard.writeText(t); }
+  catch { const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); a.remove(); }
+  const n = document.querySelector('.toast-copied'); n.textContent = 'Fix prompt copied. Paste it into your agent.'; n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 2200);
+}));
+</script>
+</body>
+</html>

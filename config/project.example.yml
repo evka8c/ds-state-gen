@@ -23,6 +23,19 @@ product:
   # Primary users and what they do
   audience: ""
 
+# How bad a missing state is depends on the app. These two answers decide
+# whether network and session states are blockers or just nuisances.
+context:
+  # Can users lose work they haven't saved? (e.g. an editor without autosave)
+  # yes | no | partly
+  unsaved_work: no
+  # Is a poor or absent connection normal for your users? (field work, in flight,
+  # travel, rural) yes | no
+  poor_connectivity_is_normal: no
+  # Optional: anything else that raises the stakes (legal signatures, payments,
+  # accessibility obligations, medical)
+  stakes: ""
+
 # Report preferences
 reports:
   # Max width for mockup frames in report

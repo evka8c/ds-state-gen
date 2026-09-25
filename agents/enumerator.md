@@ -95,4 +95,4 @@ Return a JSON object:
 - If you read feature files, cite which file revealed each feature-specific state.
 - Don't guess at business logic. If something is ambiguous, include the state but flag the ambiguity in the description.
 - Keep state names short and descriptive (2-4 words).
-- Assign priority: "critical" means this state WILL happen in production. "nice-to-have" means it's an edge case or polish item.
+- Assign priority by LIKELIHOOD only: "critical" means real users WILL reach this state in production, "nice-to-have" means it is an edge case. Priority is not severity: how bad a missing state is (blocker, misleading, nuisance) is judged later by the Auditor, which can check in the code whether refreshing recovers it.

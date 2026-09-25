@@ -163,16 +163,22 @@ Plus screen-level states: first-time experience, offline, slow connection, permi
 
 ## Report Output
 
-Reports are self-contained HTML files in `reports/`. Each includes:
+Reports are HTML files in `reports/`, plus a 1200x630 share card (`{slug}-card.svg`). Each report has:
 
-- **Coverage matrix** with four statuses:
-  - **Covered** (green) — DS pattern exists, with file:line evidence
-  - **Partial** (yellow) — building blocks exist but need assembly
-  - **Gap** (red) — genuinely missing, would be filed as a bug
-  - **Recommendation** (blue) — nice-to-have, excluded from coverage score
-- **Actionable labels** per finding (reuse existing components, extend a pattern, or build new)
-- **Implementation notes** per finding (timing, transitions, retry logic, accessibility)
-- **Visual mockups** for promoted findings, built from real DS tokens and components
+- **A score out of 100** for the states the page needs. It starts at 100 and loses points for every missing or half-built state, weighted by what happens to the user, not by how often it happens:
+  - **Blocker**: they can't finish, and refreshing doesn't help.
+  - **Misleading**: the screen tells them something false, so they do the wrong thing.
+  - **Nuisance**: refresh or retry recovers it and nothing is lost.
+
+  Your app's context moves states between levels. Offline is a nuisance on a page that saves as you go, and a blocker in an editor without autosave or an app used in the field. Two setup questions capture this.
+- **Where to start:** the three costliest fixes, each with a *today* and *proposed* mockup drawn in the project's own tokens, and a button that copies a fix prompt for your coding agent.
+- **Every state this page needs,** as thumbnails grouped worst first: blockers, misleading, nuisances, optional, designed. Dashed frames have no design, yellow frames are half-built.
+- **Evidence:** every judgement with a file and line, and what to build it from.
+- **What already exists:** states found in the feature code, shown for context. They don't count toward the score, because existing is not the same as needed.
+
+Statuses: **No design** (gap), **Half-built** (partial), **Designed** (covered), **Optional** (recommendation, costs nothing).
+
+Example: [Documenso's recipient signing page](examples/documenso-signing/report.html) scores 45/100; three fixes (offline, PDF load error, keyboard signing) lift it to 76.
 
 ## Using the Report
 

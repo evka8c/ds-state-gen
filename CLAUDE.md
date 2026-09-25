@@ -41,6 +41,11 @@ On every session start, check silently:
 >
 > Which works for you?"
 
+**Then ask about context** (two quick questions, they decide severity later):
+> "Two things about how people use it: can they lose work they haven't saved? And is a bad or missing connection normal for them (field work, travel, in flight)?"
+
+Store the answers under `context` in `config/project.yml` (see `config/project.example.yml`), plus anything that raises the stakes (legal signatures, payments, accessibility obligations).
+
 **If option 1:** Ask for the path. Create `config/project.yml`. Then proceed to the pipeline — the Scanner agent will do the actual reading.
 
 **If option 2:** Create `config/project.yml` with just the product info. This is Scenario C (day zero) — no Scanner or Auditor needed, only the Enumerator.
@@ -126,22 +131,36 @@ State list: [FILTERED list — only states that need auditing]
 Pre-classified states: [list of state IDs auto-marked as Covered with reason]
 DS inventory: [JSON from Scanner or cache]
 Project path: [path]
-Return the JSON coverage matrix (include both audited and pre-classified states).
+App context: [the `context` block from config/project.yml, verbatim]
+Return the JSON coverage matrix (include both audited and pre-classified states), with consequence + consequence_reason on every Partial and Gap.
 ```
 
 ### Phase 3: Report (script, not agent)
 
 **Do NOT spawn the Report Builder agent.** Use the `generate-report.mjs` script instead.
 
-1. Save the Auditor's JSON output to a temp file
-2. Run: `node generate-report.mjs <auditor.json> <inventory.json>`
-3. Script generates the HTML report in <1 second
+1. Save the Enumerator's JSON and the Auditor's JSON to files.
+2. Write `meta.json`: `{ "feature", "description", "ds_name", "project_path", "context", "summary" }` (`context` is copied from config so the report can show it). `summary` is 2-3 plain sentences a designer would say out loud: the worst thing a real user hits, the counts, and the score lift. It is labelled in the report as written by AI.
+3. Write `mockups.json` for the **top 3 fixes** (see below).
+4. Run:
+   ```
+   node generate-report.mjs auditor.json cache/{slug}-inventory.json \
+     --enumerator enumerator.json --mockups mockups.json --meta meta.json \
+     --out reports/{slug}.html
+   ```
+   It writes the report and `reports/{slug}-card.svg` (a 1200x630 share card) in under a second. The status line goes to stderr and includes the score.
 
-For **Tier 2 mockups** (visual mockups for genuinely novel findings): the orchestrator writes the mockup HTML directly into the auditor JSON's `tier2_html` field for the relevant states before running the script. Only promote findings that are genuinely ambiguous without a visual — max 3-5.
+**Always pass `--enumerator`.** The score only counts states the page *needs* (taxonomy + screen-level + anything the auditor found not covered). States the enumerator merely discovered in the feature code are shown as "what already exists" and never raise the score. Without the enumerator the script can't tell them apart.
+
+**Score:** starts at 100 and deducts by **consequence**, not by how often a state happens. Blocker (can't finish; refresh doesn't help) costs 20, or 12 if half-built. Misleading (the screen says something false) costs 10 or 6. Nuisance (refresh or retry recovers it) costs 4 or 2. Recommendations cost nothing. The top 3 fixes are the biggest deductions, and "N fixes lift it to X" is their sum. Weights live in `WEIGHTS` at the top of the script. The Auditor sets consequence using section 3b of `agents/auditor.md` and the app context; check its calls against the refresh test before generating.
+
+**Mockups (before / after):** after the auditor returns, run the script once without `--mockups` and read which 3 states lead "Where to start". For each, write `{ "<state_id>": { "today", "today_caption", "proposed", "proposed_caption" } }`. `today` must reproduce what the product shows now, using the real copy from the code (grep for it). `proposed` must use only components and tokens from the inventory. Build both from the mockup kit in `templates/report.css` (`mk-bar`, `mk-body`, `mk-doc`, `mk-line`, `mk-side`, `mk-field`, `mk-btn mk-btn-primary|secondary|outline`, `mk-focus`, `mk-center`, `mk-toast mk-toast-destructive`, `mk-banner mk-banner-warning`, `mk-overlay`, `mk-dialog`, `mk-dialog-title`, `mk-tabs`/`mk-tab`/`mk-tab-active`, `mk-pad`, `mk-sig`, `mk-row`, `mk-annot`). The script fills in the project's own colours, radius and font. Frames are 240px tall; keep content inside them and check with a screenshot.
+
+Every other state gets an automatic thumbnail in the state strip, drawn from the project's tokens. No work needed for those.
 
 ### Phase 3a: Classify Severity
 
-Before generating the report, review the Auditor's output and reclassify over-flagged gaps:
+Before generating the report, review the Auditor's output. Every Partial and Gap must have a consequence (blocker, misleading, nuisance) that passes the refresh test: if refreshing or retrying recovers it and nothing is lost, it is a nuisance, however often it happens. Then reclassify over-flagged gaps:
 
 **Gap (red) — must actually matter:**
 - The state affects real users on this page type
@@ -162,7 +181,7 @@ Before generating the report, review the Auditor's output and reclassify over-fl
 
 After the report is generated, present the findings concisely:
 
-> "**{Feature}** — {N} states, {pct}% covered.
+> "**{Feature}** scores {score}/100 on the {N} states it needs. {k} fixes lift it to {lifted}.
 >
 > **Needs work ({gap+partial count}):**
 > - Offline banner — Critical, new component
