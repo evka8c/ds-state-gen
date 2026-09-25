@@ -1,0 +1,22 @@
+{
+  "name": "plan-invoice-table",
+  "mode": "plan",
+  "description": "An invoice table for a small-business billing app: columns for number, customer, status, due date and amount. Users can search by customer or number, filter by status and date range, paginate, select rows and bulk delete them.",
+  "expected_states": [
+    { "id": "loading", "keywords": ["loading", "skeleton"] },
+    { "id": "empty-first-use", "keywords": ["no invoices yet", "first use", "first-time", "empty (no data)", "zero data", "empty state"] },
+    { "id": "empty-filtered", "keywords": ["no results", "no matches", "filtered empty", "empty-filtered", "no invoices match", "clear filters"], "distinct_from": "empty-first-use" },
+    { "id": "load-error", "keywords": ["error", "failed to load", "fetch failed"] },
+    { "id": "bulk-delete-confirm", "keywords": ["confirm", "confirmation"] },
+    { "id": "bulk-delete-in-progress", "keywords": ["deleting", "in progress", "pending delete"] },
+    { "id": "bulk-delete-failed", "keywords": ["delete failed", "partial failure", "rollback", "could not delete"] },
+    { "id": "no-selection", "keywords": ["no selection", "nothing selected", "disabled"] },
+    { "id": "select-all-across-pages", "keywords": ["select all", "all pages", "across pages"], "required": false },
+    { "id": "pagination-last-page-emptied", "keywords": ["last page", "page empty", "pagination"], "required": false }
+  ],
+  "must_not": [
+    { "id": "upload", "keywords": ["file too large", "upload"] },
+    { "id": "email-verification", "keywords": ["verification link", "verify email"] },
+    { "id": "webgl", "keywords": ["webgl"] }
+  ]
+}

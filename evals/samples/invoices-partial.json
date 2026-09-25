@@ -1,0 +1,10 @@
+{
+  "findings": [
+    { "title": "Double submit on Create invoice", "state_id": "submitting", "consequence": "nuisance", "where": [{ "file": "src/features/invoices/CreateInvoiceForm.tsx", "line": 111 }], "repro": "Double-click", "today": "Two requests" },
+    { "title": "Fetch error renders empty state", "state_id": "list-error", "consequence": "misleading", "where": [{ "file": "src/features/invoices/useInvoices.ts", "line": 14 }], "repro": "Fail GET", "today": "'No invoices yet'" },
+    { "title": "Search with no results needs a clear search action", "state_id": "search-empty", "consequence": "nuisance", "where": [{ "file": "src/features/invoices/InvoicesPage.tsx", "line": 77 }], "repro": "Search 'zzz'", "today": "Empty" },
+    { "title": "Offline banner missing", "state_id": "offline", "consequence": "nuisance", "where": [{ "file": "src/App.tsx", "line": 1 }], "repro": "Go offline", "today": "No banner" },
+    { "title": "Upload too large not handled", "state_id": "upload-too-large", "consequence": "nuisance", "where": [{ "file": "src/features/invoices/AttachmentUpload.tsx", "line": 21 }], "repro": "Big file", "today": "Upload failed" }
+  ],
+  "checked_ok": []
+}

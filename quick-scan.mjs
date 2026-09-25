@@ -33,23 +33,23 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // ---------------------------------------------------------------------------
 // Files
 // ---------------------------------------------------------------------------
-const SKIP_DIRS = new Set([
+export const SKIP_DIRS = new Set([
   'node_modules', '.git', 'dist', 'build', 'out', '.next', '.nuxt', '.svelte-kit', '.turbo', '.cache',
   'coverage', 'vendor', 'storybook-static', '__tests__', '__mocks__', 'e2e', 'test', 'tests', 'cypress',
   'playwright', 'fixtures', '.vercel', '.output', 'target', 'migrations', 'builds',
 ]);
 // Documentation sites, examples and test packages aren't the product.
 const SKIP_DIR_RE = /^(docs|documentation|website|examples?|storybook|[a-z-]*-?tests?)$/i;
-const CODE_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.vue', '.svelte', '.astro', '.html']);
-const STYLE_EXT = new Set(['.css', '.scss', '.sass', '.less']);
-const MARKUP_EXT = new Set(['.jsx', '.tsx', '.vue', '.svelte', '.astro', '.html']);
+export const CODE_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.vue', '.svelte', '.astro', '.html']);
+export const STYLE_EXT = new Set(['.css', '.scss', '.sass', '.less']);
+export const MARKUP_EXT = new Set(['.jsx', '.tsx', '.vue', '.svelte', '.astro', '.html']);
 const SKIP_FILE = /\.(test|spec|stories|story|d)\.[a-z]+$|\.min\.(js|css)$/i;
 const MAX_BYTES = 1_000_000;
 // Native code we can't read yet. If a repo is mostly this, a score would be meaningless.
 const NATIVE_EXT = new Set(['.swift', '.kt', '.dart', '.java', '.m']);
-const native = { count: 0, exts: {} };
+export const native = { count: 0, exts: {} };
 // Config files needed to resolve imports (tsconfig paths, workspace package names).
-const configs = { packages: [], tsconfigs: [], shadcn: false };
+export const configs = { packages: [], tsconfigs: [], shadcn: false };
 // Theme CSS inside skipped build folders (some design systems check generated tokens in, e.g. packages/ui/build/css/themes/light.css).
 const THEME_CSS = /(^|[-_.\/])(theme|themes|tokens?|variables|vars|semantic|light|dark|colors?|palette)([-_.\/]|$)/i;
 const buildCss = [];
@@ -65,7 +65,7 @@ function collectThemeCss(dir, root, depth = 0) {
   }
 }
 
-function walk(dir, root, out) {
+export function walk(dir, root, out) {
   let entries;
   try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return out; }
   for (const e of entries) {
@@ -95,14 +95,14 @@ function walk(dir, root, out) {
   return out;
 }
 
-function lineOf(text, idx) {
+export function lineOf(text, idx) {
   let n = 1;
   for (let i = 0; i < idx; i++) if (text.charCodeAt(i) === 10) n++;
   return n;
 }
 
 // The full JSX/HTML opening tag starting at `i` ('<'), skipping over {...} expressions.
-function openTag(text, i) {
+export function openTag(text, i) {
   let depth = 0;
   for (let j = i; j < text.length && j < i + 3000; j++) {
     const ch = text[j];
@@ -190,7 +190,7 @@ const GROUPS = [
   ['access', 'Different ways of using it'],
 ];
 
-const CHECKS = [
+export const CHECKS = [
   // Waiting
   { id: 'loading', group: 'waiting', name: 'Loading', weight: 2, need: 2,
     hurts: 'A blank or frozen screen while data loads.',
@@ -456,7 +456,7 @@ function readJsonLoose(p) {
   } catch { return null; }
 }
 
-function resolver(repo, files) {
+export function resolver(repo, files) {
   const fileSet = new Set(files.map((f) => f.path));
   const packages = configs.packages.map((p) => ({ dir: dirname(p), name: readJsonLoose(join(repo, p))?.name }))
     .filter((p) => p.name).sort((a, b) => b.name.length - a.name.length);
@@ -530,7 +530,7 @@ function resolver(repo, files) {
 // can't show the user anything. App-shell layouts that aren't about this
 // feature are listed but not followed, or one DefaultLayout pulls in the whole app.
 const GENERIC_WORDS = new Set(['app', 'apps', 'src', 'pages', 'page', 'routes', 'route', 'index', 'layout', 'project', 'ref', 'id', 'slug', 'token', 'studio', 'remix', 'web', 'www', 'tsx', 'jsx', 'vue', 'svelte']);
-const SHELL = /(^|\/)(layouts?|shell|app-shell)(\/|$)|Layout\.(tsx|jsx|vue|svelte)$/;
+export const SHELL = /(^|\/)(layouts?|shell|app-shell)(\/|$)|Layout\.(tsx|jsx|vue|svelte)$/;
 
 export function featureFiles(repo, files, entries, maxDepth = 6) {
   const byPath = new Map(files.map((f) => [f.path, f]));
@@ -633,7 +633,7 @@ function topKeys(block) {
   return keys;
 }
 
-const DS_DIR = /(^|\/)(ui|primitives|design-system|ds|components\/ui|components\/common|components\/base)(\/|$)/i;
+export const DS_DIR = /(^|\/)(ui|primitives|design-system|ds|components\/ui|components\/common|components\/base)(\/|$)/i;
 
 function components(files) {
   const out = [];
@@ -713,7 +713,7 @@ export function inventory(repo, files, res, name) {
 function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-function slug(s) { return String(s || 'project').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+export function slug(s) { return String(s || 'project').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
 function trunc(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s; }
 
 const STATUS = {

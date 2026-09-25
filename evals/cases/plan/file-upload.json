@@ -1,0 +1,24 @@
+{
+  "name": "plan-file-upload",
+  "mode": "plan",
+  "description": "Upload files to a project: drag and drop or pick files, see per-file progress, then the files appear in the project's file list. Max 50 MB per file; images, PDFs and CSVs only.",
+  "expected_states": [
+    { "id": "idle-dropzone", "keywords": ["idle", "dropzone", "empty", "default"] },
+    { "id": "drag-over", "keywords": ["drag over", "dragover", "drag active", "hover"] },
+    { "id": "uploading-progress", "keywords": ["progress", "uploading"] },
+    { "id": "too-large", "keywords": ["too large", "file size", "exceeds", "50 mb", "size limit"] },
+    { "id": "wrong-type", "keywords": ["file type", "unsupported", "not allowed", "invalid type"] },
+    { "id": "upload-failed-retry", "keywords": ["upload failed", "retry", "failed"] },
+    { "id": "cancel-upload", "keywords": ["cancel"] },
+    { "id": "multiple-mixed-results", "keywords": ["partial", "some failed", "mixed", "multiple files"] },
+    { "id": "upload-complete", "keywords": ["complete", "success", "uploaded"] },
+    { "id": "duplicate-name", "keywords": ["duplicate", "same name", "already exists", "overwrite"], "required": false },
+    { "id": "offline-mid-upload", "keywords": ["offline", "connection lost", "network"], "required": false },
+    { "id": "no-permission", "keywords": ["permission", "read-only", "not allowed to upload"], "required": false }
+  ],
+  "must_not": [
+    { "id": "email-verification", "keywords": ["verification link"] },
+    { "id": "bulk-delete", "keywords": ["bulk delete"] },
+    { "id": "password", "keywords": ["weak password"] }
+  ]
+}

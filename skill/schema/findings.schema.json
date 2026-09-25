@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "findings.schema.json",
+  "title": "/states check output",
+  "description": "Output of skill/prompts/check.md. Only judged states appear; 'handled' states from the scan are trusted and omitted. findings are sorted blocker > misleading > nuisance > recommendation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "coverage",
+    "feature_summary",
+    "context_assumed",
+    "findings",
+    "checked_ok",
+    "not_checked",
+    "reads_used"
+  ],
+  "properties": {
+    "feature_summary": {
+      "type": "string",
+      "description": "One sentence on what the scoped code does."
+    },
+    "context_assumed": {
+      "type": "boolean",
+      "description": "true when no app context was given and defaults were used (no unsaved work, connectivity normal, no special stakes)."
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "state_id",
+          "kind",
+          "consequence",
+          "consequence_reason",
+          "where",
+          "repro",
+          "today",
+          "fix",
+          "confidence"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^F[0-9]+$"
+          },
+          "title": {
+            "type": "string",
+            "description": "Plain-language problem, <= 80 chars."
+          },
+          "state_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Scan state or screen_level id; null for discovered."
+          },
+          "kind": {
+            "enum": [
+              "taxonomy",
+              "screen",
+              "discovered"
+            ]
+          },
+          "consequence": {
+            "enum": [
+              "blocker",
+              "misleading",
+              "nuisance",
+              "recommendation"
+            ]
+          },
+          "consequence_reason": {
+            "type": "string",
+            "description": "One sentence naming the recovery fact checked (refresh test)."
+          },
+          "where": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "file",
+                "line"
+              ],
+              "properties": {
+                "file": {
+                  "type": "string"
+                },
+                "line": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "repro": {
+            "type": "string",
+            "minLength": 10,
+            "description": "Steps a person can follow."
+          },
+          "today": {
+            "type": "string",
+            "description": "What the user sees now, real copy from the code in quotes."
+          },
+          "fix": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "summary",
+              "components",
+              "sketch"
+            ],
+            "properties": {
+              "summary": {
+                "type": "string"
+              },
+              "components": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Exact inventory names; 'new: <base>' if none fits."
+              },
+              "behaviour": {
+                "type": "string",
+                "description": "What the user sees, when, and how they get out."
+              },
+              "sketch": {
+                "type": "string",
+                "description": "Diff-like snippet, <= 15 lines, project idioms."
+              }
+            }
+          },
+          "also_covers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "State ids collapsed into this finding (same missing piece)."
+          },
+          "confidence": {
+            "enum": [
+              "high",
+              "medium"
+            ]
+          }
+        }
+      }
+    },
+    "checked_ok": {
+      "type": "array",
+      "description": "Doubtful/no_signal states that turned out fine.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "state_id",
+          "evidence"
+        ],
+        "properties": {
+          "state_id": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string",
+            "description": "file:line + what handles it, one line."
+          }
+        }
+      }
+    },
+    "not_checked": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "state_id",
+          "why"
+        ],
+        "properties": {
+          "state_id": {
+            "type": "string"
+          },
+          "why": {
+            "type": "string",
+            "description": "'budget', 'optional, no signal', or 'needs runtime check: <what to try>'."
+          }
+        }
+      }
+    },
+    "reads_used": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 25,
+      "description": "File reads spent (cap 25)."
+    },
+    "coverage": {
+      "type": "array",
+      "description": "One verdict per top-10 action, sibling screen, guard and a11y hint.",
+      "items": {
+        "type": "object",
+        "required": [
+          "target",
+          "verdict",
+          "ref"
+        ],
+        "properties": {
+          "target": {
+            "type": "string"
+          },
+          "verdict": {
+            "enum": [
+              "finding",
+              "ok",
+              "not_checked"
+            ]
+          },
+          "ref": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
