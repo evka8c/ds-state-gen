@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // states-scan.mjs — the script half of the /states skill. No agents, no dependencies.
 //
-//   node states-scan.mjs check <repo> [--base <branch>] [--paths a b ...] [--depth 1] [--out scope.json] [--verbose]
+//   node states-scan.mjs check <repo> [--base <branch>] [--paths a b ...] [--depth 1] [--include <path> ...] [--out scope.json] [--verbose]
 //     default base: origin/HEAD, else main, else master, else HEAD~1. Output is compact
 //     (handled states as {id, at}); --verbose keeps every state and the full inventory.
 //   node states-scan.mjs plan "<feature description>" [--repo <repo>] [--out plan.json]
@@ -227,6 +227,7 @@ function scopeFiles(repo, all, o, notes) {
   const byPath = new Map(all.map((f) => [f.path, f]));
   let entries = [];
   const named = new Set();
+  const forced = new Set();
   let source;
   if (o.paths.length) {
     source = 'paths';
@@ -249,11 +250,21 @@ function scopeFiles(repo, all, o, notes) {
     entries.forEach((p) => named.add(p));
   }
   entries = [...new Set(entries)].filter((p) => byPath.has(p) && CODE_EXT.has(extname(p)) && !NON_UI.test(p));
-  if (!entries.length) return { source, list: [], named };
+  if (!entries.length) return { source, list: [], named, forced };
   // Follow imports a shallow depth; design-system files and app shells are covered by the inventory.
-  const followed = featureFiles(repo, all, entries, o.depth);
+  // One extra hop, but only for files that hold actions (a thin component often
+  // hands its submit/retry work to a queue or client module).
+  const followed = featureFiles(repo, all, entries, Math.max(o.depth, 2))
+    .filter(({ f, depth }) => depth <= o.depth || ACTION_FILE.test(basename(f.path)));
   const list = followed.filter(({ f, depth }) => depth === 0 || (!DS_DIR.test(dirname(f.path)) && !SHELL.test(f.path) && !NON_UI.test(f.path) && CODE_EXT.has(f.ext)));
-  return { source, list, named };
+  // --include: forced into scope, never dropped by the cap.
+  for (const p of o.include || []) {
+    const rel = relative(repo, resolve(repo, p)).replaceAll('\\', '/');
+    const hits = all.filter((f) => f.path === rel || f.path.startsWith(rel + '/'));
+    for (const f of hits) if (!list.some((x) => x.f.path === f.path)) list.push({ f, depth: 0 });
+    hits.forEach((f) => forced.add(f.path));
+  }
+  return { source, list, named, forced };
 }
 
 // Relevance: files named explicitly (or changed) beat files found by expanding a
@@ -262,14 +273,27 @@ const ROUTE = /(^|\/)(routes|pages)\/|(^|\/)(page|route)\.(tsx|jsx|vue|svelte)$|
 
 const ASYNC_CALL = /\b(mutateAsync|mutate|fetch|fetcher\.submit|submit)\s*\(|\baxios(\.\w+)?\(|\bawait\s+[\w.]+\(|\.useMutation\(|\buseMutation\(/;
 
+const ACTION_FILE = /queue|retry|submit|api|client|mutation|action/i;
+const ACTION_TEXT = /\b(mutateAsync|mutate|fetch|axios|fetcher\.submit|useMutation|retry\w*|enqueue|queue\w*|onSubmit|handleSubmit)\b|\bawait\s+[\w.]+\(/;
+const LOW_PATH = /(^|\/)(types?|schemas?|constants?|config|i18n|locales?|translations?|emails?|mail|templates?\/emails?)(\/|\.|$)|\.(types|schema|d|config|constants)\.\w+$/i;
+
+// Type/schema-only file: no JSX, no calls, mostly type/interface/zod declarations.
+function declarationsOnly(f) {
+  if (/<[A-Za-z][\w.]*[\s/>]/.test(f.text) && f.markup) return false;
+  const lines = f.text.split('\n').filter((l) => l.trim() && !/^\s*(\/\/|\*|\/\*|import\b)/.test(l));
+  const decl = lines.filter((l) => /^\s*(export\s+)?(type|interface|enum|declare)\b|\bz\.\w+\(|^\s*[\w?]+\s*:\s*[\w<\[|'"{]/.test(l)).length;
+  return lines.length > 0 && decl / lines.length > 0.6;
+}
+
 function relevance(f, depth, named, routeDirs) {
-  let r = (routeDirs.has(dirname(f.path)) ? 4 : 0) + (/(field|dialog)/i.test(basename(f.path)) && ASYNC_CALL.test(f.text) ? 3 : 0) + (named.has(f.path) ? 4 : depth === 0 ? 2 : 0) + (ROUTE.test(f.path) ? 3 : 0) + (/^(_?index|page|\[[^\]]+\])\.\w+$/.test(basename(f.path)) ? 2 : 0) + (/(page|view|screen)/i.test(basename(f.path)) && depth <= 1 ? 4 : 0) + (f.markup ? 1 : 0) - depth * 2;
+  if (depth > 0 && (LOW_PATH.test(f.path) || declarationsOnly(f))) return -20;
+  let r = (ACTION_TEXT.test(f.text) ? 3 : 0) + (ACTION_FILE.test(basename(f.path)) && ACTION_TEXT.test(f.text) ? 5 : 0) + (routeDirs.has(dirname(f.path)) ? 4 : 0) + (/(field|dialog)/i.test(basename(f.path)) && ASYNC_CALL.test(f.text) ? 3 : 0) + (named.has(f.path) ? 4 : depth === 0 ? 2 : 0) + (ROUTE.test(f.path) ? 3 : 0) + (/^(_?index|page|\[[^\]]+\])\.\w+$/.test(basename(f.path)) ? 2 : 0) + (/(page|view|screen)/i.test(basename(f.path)) && depth <= 1 ? 7 : 0) + (f.markup ? 1 : 0) - depth * 2;
   for (const re of Object.values(TYPE_RE)) if (re.test(f.text)) r++;
   for (const re of [LOADING, FETCH_ERR, EMPTY, /\bonError\b|toast\.error/, /\bdisabled=\{/]) if (re.test(f.text)) r++;
   return r;
 }
 
-function capLines(list, named) {
+function capLines(list, named, forced = new Set()) {
   // Sibling files of a named route file (complete.tsx, expired.tsx...) are states of the same page.
   const routeDirs = new Set([...named].filter((p) => ROUTE.test(p)).map((p) => dirname(p)));
   const scored = list.map(({ f, depth }) => ({ f, depth, lines: f.text.split('\n').length, rel: relevance(f, depth, named, routeDirs) }));
@@ -288,7 +312,7 @@ function capLines(list, named) {
   const keep = [], dropped = [];
   let total = 0;
   for (const x of ranked) {
-    if (total + x.lines <= MAX_LINES || !keep.length) { keep.push(x); total += x.lines; }
+    if (forced.has(x.f.path) || total + x.lines <= MAX_LINES || !keep.length) { keep.push(x); total += x.lines; }
     else dropped.push({ path: x.f.path, lines: x.lines, depth: x.depth, reason: 'line cap' });
   }
   keep.sort((a, b) => a.depth - b.depth || a.f.path.localeCompare(b.f.path));
@@ -454,8 +478,8 @@ function check(repo, o) {
   const t0 = performance.now();
   const all = walk(repo, repo, []);
   const notes = [];
-  const { source, list, named } = scopeFiles(repo, all, o, notes);
-  const { keep, dropped, total } = capLines(list, named);
+  const { source, list, named, forced } = scopeFiles(repo, all, o, notes);
+  const { keep, dropped, total } = capLines(list, named, forced);
   const files = keep.map((x) => x.f);
   const tax = taxonomy();
 
@@ -585,7 +609,7 @@ function plan(feature, o) {
 // CLI
 // ---------------------------------------------------------------------------
 function flags(argv) {
-  const o = { base: null, paths: [], depth: 1, positional: [] };
+  const o = { base: null, paths: [], include: [], depth: 1, positional: [] };
   for (let i = 3; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--paths') { while (argv[i + 1] && !argv[i + 1].startsWith('--')) o.paths.push(argv[++i]); }
@@ -594,6 +618,7 @@ function flags(argv) {
     else if (a === '--verbose') o.verbose = true;
     else if (a === '--out') o.out = argv[++i];
     else if (a === '--repo') o.repo = argv[++i];
+    else if (a === '--include') o.include.push(argv[++i]);
     else o.positional.push(a);
   }
   return o;
@@ -608,7 +633,7 @@ function compactJson(obj) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const USAGE = 'Usage:\n  node states-scan.mjs check <repo> [--base <branch>] [--paths a b ...] [--depth 1] [--out scope.json] [--verbose]\n  node states-scan.mjs plan "<feature>" [--repo <repo>] [--out plan.json]';
+  const USAGE = 'Usage:\n  node states-scan.mjs check <repo> [--base <branch>] [--paths a b ...] [--depth 1] [--include <path> ...] [--out scope.json] [--verbose]\n  node states-scan.mjs plan "<feature>" [--repo <repo>] [--out plan.json]';
   try {
     const mode = process.argv[2];
     const o = flags(process.argv);

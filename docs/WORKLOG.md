@@ -167,3 +167,22 @@ Top 3 fixes unchanged on both, so the mockups still hold. Documenso's three bloc
 - [ ] Likelihood now moves the score, so the Enumerator's `priority` needs the same scrutiny as the Auditor's consequence.
 - [ ] Auditor cost: 134K for 33 states. Try splitting by cluster or pre-classifying more.
 - [ ] Publish: the Documenso report as a public example, and a short write-up in the shape of "states are where interfaces stop being finished".
+
+## /states skill (branch `states-skill`, 2026-09-25)
+
+Direction: a Claude Code skill for people shipping UI with code + AI. Plan mode (describe a feature → states to build) and check mode (audit changed files/paths → findings with repro + fix). Check mode always runs three lens reviewers (actions, screens, a11y) in parallel; a single pass missed too much.
+
+| Case | Single pass | Three lenses | Tokens (lenses) |
+|---|---|---|---|
+| Invoices fixture (8 planted) | 8/8 | — | 72K single |
+| Documenso signing | 2/10 | 6/10 (4–5/6 must-find) | ~222K |
+| Supabase SQL editor | 1–2/17 | 9/17 (4/10 must-find) | ~229K |
+| Formbricks link survey (held out, no key) | — | 10 unique bugs; verifier: 8 confirmed, 2 plausible, 0 wrong | ~300K incl. rerun |
+
+Plan mode: 26/27 required states across 3 cases, ~16K each.
+
+Caveat: Documenso and Supabase answer keys are AI findings from earlier pipeline runs, not human-verified. Disputed items listed for manual repro (Sign up on end screens, destructive query severity, session expiry losing SQL).
+
+Scan fixes found by the evals: rank files with actions above type/email/config files; follow one more hop to queue/api/submit files; `--include` to force files.
+
+Open: session-expiry input loss still missed on Supabase; human verification of answer keys; cost ~225K per feature.
