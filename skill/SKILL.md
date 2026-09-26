@@ -70,13 +70,33 @@ Lenses: `actions` (every action and guard: double submit, failure in every mode,
 >
 > Not checked: offline (needs a runtime check).
 
-Then ask which to fix (default: all blockers and misleading).
+Then ask one question (AskUserQuestion) with these options:
+- **Fix and show report (recommended)** — fix the chosen findings, then build the visual report with before/after screenshots.
+- **Fix only** — fix, then summarise what changed.
+- **Report only** — build the report with "today" screenshots and the proposed fix, change no code.
+- **Not now.**
+Also let them narrow which findings (default: all blockers and misleading).
 
-**4e. Fix.** For each chosen finding, implement the fix in the project using the named components and the sketch as a starting point. Match the file's conventions (imports, i18n wrapper, class style). Keep diffs minimal. After editing, run the project's type check or lint if one is obvious (`tsc --noEmit`, `npm run lint`) and report the result honestly.
+**4e. Capture "today" (if a report was chosen).** Find the dev server: ask for the URL if one isn't obviously running; start it only if the user agrees (`npm run dev` or the project's script). Write recipes following `$SKILL_DIR/prompts/show.md` into `<scratch>/recipes.json`, then:
+```
+node $SKILL_DIR/../show-states.mjs <scratch>/recipes.json --base <url> --out <scratch>/shots --label before
+```
+Look at each screenshot. If one doesn't show the bug, fix the recipe once; if it still doesn't, drop that screenshot (the report falls back to a drawn mockup). If there is no dev server, skip screenshots and say so.
+
+**4f. Fix.** For each chosen finding, implement the fix using the named components and the sketch as a starting point. Match the file's conventions (imports, i18n wrapper, class style). Keep diffs minimal. Run the project's type check or lint if one is obvious (`tsc --noEmit`, `npm run lint`) and report the result honestly.
+
+**4g. Capture "after" and verify.** Rerun the same recipes with `--label after`. Look at each: the fixed state must now show what the finding's fix describes. If it still shows the bug, say so plainly and fix again once. A fix you couldn't confirm on screen is reported as "fixed in code, not verified on screen".
+
+**4h. Report.**
+```
+node $SKILL_DIR/../generate-report.mjs --findings <scratch>/merged.json --shots <scratch>/shots \
+  --meta <scratch>/meta.json --out reports/<slug>.html
+```
+`meta.json`: `{ feature, description, project_path, context, summary }`, where `summary` is 2–3 plain sentences: the worst thing a user hits, the counts, and what was fixed. Open the report, check the frames at a glance, and give the path.
 
 ## Rules
 
 - Never scan the whole repo in check mode. Scope is the diff or the paths given.
 - Don't list handled states one by one; give the count.
-- Don't write the old HTML report unless asked. If asked for a shareable report, use `generate-report.mjs` as described in the repo's CLAUDE.md.
+- Always offer the HTML report (4d), but only build it when asked (4e). Use `generate-report.mjs`, never the Report Builder agent.
 - Say what wasn't checked. Never present "not found" as "fine".

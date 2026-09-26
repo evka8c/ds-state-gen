@@ -13,13 +13,21 @@
 //        [--out report.html]              default: reports/<feature-slug>.html
 //        [--no-card]                      skip the share card SVG
 //
+//   /states input (skill/schema/findings.schema.json):
+//   node generate-report.mjs --findings merged.json [inventory.json]
+//        [--shots <dir>]                  reads <dir>/shots-before.json and shots-after.json (from
+//                                         show-states.mjs); real screenshots replace the mockups.
+//                                         A finding with an ok after shot counts as fixed.
+//        [--fix-notes notes.json]         { "F1": "caveat" } shown under the after frame
+//        [--meta meta.json] [--out report.html] [--mockups mockups.json keyed by finding id]
+//
 //   Or pipe one JSON object to stdin (only when no auditor path is given):
 //   { "auditor": {...}, "inventory": {...}, "enumerator": {...}, "mockups": {...}, "meta": {...} }
 //
 // Status goes to stderr, so stdout never mixes with anything you redirect.
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { resolve, dirname, basename } from 'path';
+import { resolve, dirname, basename, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -91,7 +99,7 @@ function flag(name) {
 
 function loadInput() {
   const positional = [];
-  const valueFlags = new Set(['--enumerator', '--preclassified', '--mockups', '--meta', '--out', '--tier2']);
+  const valueFlags = new Set(['--enumerator', '--preclassified', '--mockups', '--meta', '--out', '--tier2', '--findings', '--shots', '--fix-notes']);
   for (let i = 2; i < process.argv.length; i++) {
     const a = process.argv[i];
     if (valueFlags.has(a)) { i++; continue; }
@@ -100,7 +108,14 @@ function loadInput() {
   }
 
   let data;
-  if (positional.length) {
+  if (flag('--findings')) {
+    // /states path: findings replace auditor + enumerator; the one positional is the inventory.
+    const findings = readJson(flag('--findings'));
+    data = { auditor: { coverage: findingsToCoverage(findings) }, inventory: positional[0] ? readJson(positional[0]) : null };
+    data.meta = { description: findings.feature_summary || '' };
+    if (flag('--shots')) data.shots = loadShots(flag('--shots'));
+    if (flag('--fix-notes')) data.fixNotes = readJson(flag('--fix-notes'));
+  } else if (positional.length) {
     data = { auditor: readJson(positional[0]), inventory: positional[1] ? readJson(positional[1]) : null };
   } else if (!process.stdin.isTTY) {
     const raw = readFileSync(0, 'utf8');
@@ -120,6 +135,62 @@ function loadInput() {
   return data;
 }
 
+// /states findings -> the report's internal state list. Every finding is a state
+// the page needs; checked_ok states count as designed.
+function findingsToCoverage(f) {
+  const where = (w) => (w || []).map((x) => `${x.file}:${x.line}`).join(', ');
+  const out = (f.findings || []).map((x) => ({
+    state_id: x.id,
+    name: x.title,
+    status: x.consequence === 'recommendation' ? 'recommendation' : 'gap',
+    consequence: x.consequence === 'recommendation' ? undefined : x.consequence,
+    consequence_reason: x.consequence_reason,
+    priority: 'critical',
+    required: x.consequence === 'blocker',
+    component: x.state_id || x.kind,
+    description: x.today,
+    repro: x.repro,
+    evidence: where(x.where),
+    gap_label: x.fix?.summary,
+    behaviour: x.fix?.behaviour,
+    extends_from: x.fix?.components || [],
+    implementation: [x.repro && `Repro: ${x.repro}`, x.fix?.behaviour && `After the fix: ${x.fix.behaviour}`, x.also_covers?.length && `Also covers: ${x.also_covers.join(', ')}`].filter(Boolean),
+  }));
+  for (const ok of f.checked_ok || []) {
+    out.push({ state_id: ok.state_id, name: ok.state_id, status: 'covered', evidence: ok.evidence, component: ok.state_id.split('.')[0] });
+  }
+  return out;
+}
+
+// shots-<label>.json from show-states.mjs, with each ok PNG inlined as a data URI.
+function loadShots(dir) {
+  const shots = { before: {}, after: {} };
+  for (const label of ['before', 'after']) {
+    const p = join(resolve(dir), `shots-${label}.json`);
+    if (!existsSync(p)) continue;
+    for (const [id, r] of Object.entries(readJson(p))) {
+      const file = r.ok && r.file && join(resolve(dir), r.file);
+      if (file && existsSync(file)) shots[label][id] = `data:image/png;base64,${readFileSync(file).toString('base64')}`;
+    }
+  }
+  return shots;
+}
+
+// Screenshots are embedded once (SHOTS map in the page script) and referenced by key.
+function shotImg(id, label, alt) {
+  return `<img data-shot="${esc(id)}|${label}" alt="${esc(alt)}">`;
+}
+function shotFrame(id, label, alt) {
+  return `<button type="button" class="shot" data-open="${esc(id)}|${label}" aria-label="Enlarge: ${esc(alt)}">${shotImg(id, label, alt)}</button>`;
+}
+
+// Numeric ids sort numerically; finding ids (F1, F10) by their number.
+function idOrder(a, b) {
+  const n = (x) => (typeof x === 'number' ? x : Number(String(x).replace(/^\D+/, '')));
+  const d = n(a.state_id) - n(b.state_id);
+  return Number.isNaN(d) ? String(a.state_id).localeCompare(String(b.state_id)) : d;
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -130,10 +201,10 @@ function slug(s) { return String(s || 'report').toLowerCase().replace(/[^a-z0-9]
 function trunc(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s; }
 function plural(n, one, many) { return `${n} ${n === 1 ? one : many}`; }
 
-const STATUS_LABEL = { covered: 'Designed', partial: 'Half-built', gap: 'No design', recommendation: 'Optional' };
+const STATUS_LABEL = { fixed: 'Fixed', covered: 'Designed', partial: 'Half-built', gap: 'No design', recommendation: 'Optional' };
 
 function badge(status) {
-  const cls = { covered: 'badge-covered', partial: 'badge-partial', gap: 'badge-gap', recommendation: 'badge-rec' }[status] || 'badge-gap';
+  const cls = { fixed: 'badge-fixed', covered: 'badge-covered', partial: 'badge-partial', gap: 'badge-gap', recommendation: 'badge-rec' }[status] || 'badge-gap';
   return `<span class="badge ${cls}">${STATUS_LABEL[status] || status}</span>`;
 }
 
@@ -176,8 +247,11 @@ function pickColor(colors, patterns) {
 
 function palette(inventory) {
   const colors = inventory?.tokens?.colors || [];
-  const radii = inventory?.tokens?.radii || [];
-  const typo = inventory?.tokens?.typography || [];
+  // Script inventories give token lists; hand-written ones may give a summary string or object.
+  const list = (v) => (Array.isArray(v) ? v : []);
+  const radii = list(inventory?.tokens?.radii);
+  const typoRaw = inventory?.tokens?.typography;
+  const typo = Array.isArray(typoRaw) ? typoRaw : typoRaw?.font_family ? [{ name: 'font-family', value: typoRaw.font_family }] : [];
   const p = {
     primary: pickColor(colors, [/^--primary$/, /^--(color-)?(primary|brand|accent)(-500|-default)?$/i, /primary|brand/i]) || '#3b6fe0',
     'primary-fg': pickColor(colors, [/^--primary-foreground$/, /(primary|brand).*(fg|foreground|on|text)/i]) || '#ffffff',
@@ -264,8 +338,18 @@ function mini(kind) {
   }
 }
 
-function tile(c) {
+function tile(c, shots) {
   const kind = kindOf(c);
+  const before = shots?.before?.[c.state_id];
+  if (c.fixed || before) {
+    // Real screenshot: the fixed state if there is one, else today. Click compares both.
+    const label = c.fixed ? 'after' : 'before';
+    const k = consequenceOf(c);
+    return `<a class="tile tile-shot ${c.fixed ? 'tile-fixed' : `tile-${c.status}`}" href="#state-${c.state_id}" data-compare="${esc(c.state_id)}" title="Click to compare today and after the fix">
+  <div class="tile-frame">${shotImg(c.state_id, label, `${c.fixed ? 'After fix' : 'Today'}: ${c.name}`)}<span class="tile-flag">${c.fixed ? 'Fixed' : { gap: 'No design', partial: 'Half-built', recommendation: 'Optional' }[c.status] || ''}</span></div>
+  <div class="tile-name">${esc(c.name)}</div><div class="tile-miss">${k ? `<span class="cons cons-${k}">${CONS_LABEL[k]}</span> ` : ''}${c.fixed ? 'Was: ' : ''}${esc(trunc(c.consequence_reason || missingText(c), 80))}</div>
+</a>`;
+  }
   const cls = `tile tile-${c.status}`;
   const flagText = { gap: 'No design', partial: 'Half-built', recommendation: 'Optional' }[c.status];
   const empty = c.status === 'gap' ? '<div class="tile-empty">Nothing designed here</div>' : '';
@@ -286,6 +370,7 @@ function fixPrompt(c, meta) {
     `In ${meta.project_label || 'this project'}, the "${meta.feature}" has a UI state that isn't fully designed: ${c.name}.`,
     c.description ? `What happens today: ${c.description}` : '',
     c.evidence ? `Evidence: ${c.evidence}` : '',
+    c.repro ? `To reproduce: ${c.repro}` : '',
     c.gap_label ? `What's needed: ${c.gap_label}.` : '',
     from ? `Build it from what the design system already has: ${from}.` : '',
     'Use existing tokens and components only. Cover loading, error and focus behaviour, and give anything announced to screen readers a role or aria-live.',
@@ -297,7 +382,7 @@ function fixPrompt(c, meta) {
 // Sections
 // ---------------------------------------------------------------------------
 function heroSection(ctx) {
-  const { score, lifted, counts, cons, needsCount, meta } = ctx;
+  const { score, lifted, counts, cons, needsCount, meta, fixedCount, afterScore } = ctx;
   const cx = meta.context || {};
   const ctxBits = [cx.unsaved_work && `unsaved work: ${cx.unsaved_work}`, cx.poor_connectivity_is_normal && `poor connectivity normal: ${cx.poor_connectivity_is_normal}`, cx.stakes && `stakes: ${cx.stakes}`].filter(Boolean);
   const ctxLine = ctxBits.length ? ` App context: ${ctxBits.join('; ')}.` : '';
@@ -309,9 +394,9 @@ function heroSection(ctx) {
   return `<div class="hero">
   <div class="card score-card score-band-${band}">
     <div class="eyebrow">State coverage</div>
-    <div class="score"><span class="score-value">${score}</span><span class="score-max">/100</span></div>
-    <div class="score-bar" style="color:${color}"><div class="score-bar-now" style="width:${score}%"></div>${lifted > score ? `<div class="score-bar-lift" style="left:${score}%;width:${lifted - score}%"></div>` : ''}</div>
-    <div class="score-lift">${ctx.fixes.length ? `<strong>${plural(ctx.fixes.length, 'fix', 'fixes')} lift it to ${lifted}.</strong>` : '<strong>Nothing left to fix.</strong>'}</div>
+    <div class="score"><span class="score-value">${score}</span><span class="score-max">/100</span>${fixedCount ? `<span class="score-after">&rarr; ${afterScore}</span>` : ''}</div>
+    <div class="score-bar" style="color:${color}"><div class="score-bar-now" style="width:${score}%"></div>${fixedCount && afterScore > score ? `<div class="score-bar-lift" style="left:${score}%;width:${afterScore - score}%"></div>` : lifted > score ? `<div class="score-bar-lift" style="left:${score}%;width:${lifted - score}%"></div>` : ''}</div>
+    <div class="score-lift">${fixedCount ? `<strong>${score} &rarr; ${afterScore} after fixes.</strong> ${plural(fixedCount, 'fix', 'fixes')} verified in the browser.` : ctx.fixes.length ? `<strong>${plural(ctx.fixes.length, 'fix', 'fixes')} lift it to ${lifted}.</strong>` : '<strong>Nothing left to fix.</strong>'}</div>
     <div class="counts">
       <div class="count count-blocker"><div class="count-value">${cons.blocker}</div><div class="count-label">Blockers</div></div>
       <div class="count count-misleading"><div class="count-value">${cons.misleading}</div><div class="count-label">Misleading</div></div>
@@ -340,12 +425,43 @@ function autoSummary({ counts, cons, needsCount, fixes, score, lifted }) {
   return parts.join(' ');
 }
 
+// Today / After fix (or Proposed) pair from real screenshots; null when there is no before shot.
+function compareShots(c, shots, notes, m) {
+  const before = shots?.before?.[c.state_id];
+  if (!before) return null;
+  const after = shots?.after?.[c.state_id];
+  const note = notes?.[c.state_id];
+  return `<div class="compare compare-shots">
+      <figure class="compare-col compare-today"><figcaption>Today</figcaption>${shotFrame(c.state_id, 'before', `Today: ${c.name}`)}${c.description ? `<p class="compare-note">${esc(c.description)}</p>` : ''}</figure>
+      ${after
+        ? `<figure class="compare-col compare-proposed"><figcaption>After fix</figcaption>${shotFrame(c.state_id, 'after', `After fix: ${c.name}`)}${c.behaviour || c.gap_label ? `<p class="compare-note">${esc(c.behaviour || c.gap_label)}</p>` : ''}${note ? `<p class="compare-caveat"><strong>Still to check:</strong> ${esc(note)}</p>` : ''}</figure>`
+        : `<figure class="compare-col compare-proposed"><figcaption>Proposed</figcaption>${m?.proposed ? `<div class="mock">${m.proposed}</div>` : `<div class="mock mock-text"><p>${esc(c.gap_label || '')}</p>${c.behaviour ? `<p class="mock-text-sub">${esc(c.behaviour)}</p>` : ''}</div>`}${m?.proposed_caption ? `<p class="compare-note">${esc(m.proposed_caption)}</p>` : ''}</figure>`}
+    </div>`;
+}
+
+// Every finding with screenshots, not just the top 3.
+function allFixesSection(ctx) {
+  const { needs, shots } = ctx;
+  const list = needs.filter((c) => shots?.before?.[c.state_id]).sort((a, b) => deduction(b) - deduction(a) || idOrder(a, b));
+  if (!list.length) return '';
+  const items = list.map((c) => `<article class="fix fix-compact" id="shots-${esc(c.state_id)}">
+    <div class="fix-title">${esc(c.name)} ${consBadge(c)} ${c.fixed ? badge('fixed') : badge(c.status)}</div>
+    ${c.repro ? `<p class="fix-repro"><strong>Repro:</strong> ${esc(c.repro)}</p>` : ''}
+    ${compareShots(c, shots, ctx.fixNotes, ctx.mockups?.[String(c.state_id)])}
+  </article>`).join('\n');
+  return `<section class="section" id="all-fixes">
+  <div class="section-head"><h2>All fixes</h2><p>Every finding, captured in a real browser. Click a screenshot to enlarge it.</p></div>
+  ${items}
+</section>`;
+}
+
 function fixesSection(ctx) {
-  const { fixes, mockups, meta } = ctx;
+  const { fixes, mockups, meta, shots } = ctx;
   if (!fixes.length) return '';
   const items = fixes.map((c, i) => {
     const m = mockups?.[String(c.state_id)];
-    const compare = m ? `<div class="compare">
+    const shotCompare = compareShots(c, shots, ctx.fixNotes, m);
+    const compare = shotCompare ? shotCompare : m ? `<div class="compare">
       <figure class="compare-col compare-today"><figcaption>Today</figcaption><div class="mock">${m.today}</div>${m.today_caption ? `<p class="compare-note">${esc(m.today_caption)}</p>` : ''}</figure>
       <figure class="compare-col compare-proposed"><figcaption>Proposed</figcaption><div class="mock">${m.proposed}</div>${m.proposed_caption ? `<p class="compare-note">${esc(m.proposed_caption)}</p>` : ''}</figure>
     </div>` : '';
@@ -367,13 +483,14 @@ function fixesSection(ctx) {
 function stripSection(ctx) {
   const { needs } = ctx;
   const groups = [
-    ...CONSEQUENCES.map((k) => ({ key: k, name: CONS_GROUP[k], list: needs.filter((c) => consequenceOf(c) === k) })),
+    { key: 'fixed', name: 'Fixed, verified in the browser', list: needs.filter((c) => c.fixed) },
+    ...CONSEQUENCES.map((k) => ({ key: k, name: CONS_GROUP[k], list: needs.filter((c) => !c.fixed && consequenceOf(c) === k) })),
     { key: 'recommendation', name: 'Optional', list: needs.filter((c) => c.status === 'recommendation') },
     { key: 'covered', name: 'Designed', list: needs.filter((c) => c.status === 'covered') },
   ].filter((g) => g.list.length);
   const html = groups.map(({ key, name, list }) => {
-    list.sort((a, b) => deduction(b) - deduction(a) || a.state_id - b.state_id);
-    return `<div class="strip-group strip-${key}"><div class="strip-group-title"><span class="pill pill-${key}">${list.length}</span> ${esc(name)}</div><div class="strip">${list.map(tile).join('\n')}</div></div>`;
+    list.sort((a, b) => deduction(b) - deduction(a) || idOrder(a, b));
+    return `<div class="strip-group strip-${key}"><div class="strip-group-title"><span class="pill pill-${key}">${list.length}</span> ${esc(name)}</div><div class="strip">${list.map((c) => tile(c, ctx.shots)).join('\n')}</div></div>`;
   }).join('\n');
   return `<section class="section" id="states">
   <div class="section-head"><h2>Every state this page needs</h2><p>Drawn with the project's own tokens. Dashed frames have no design. Click one for the evidence.</p></div>
@@ -388,7 +505,7 @@ function matrixRow(c, tier2) {
   <td><div class="state-name">${esc(c.name)}</div><div class="state-component">${esc(c.component || 'screen-level')}</div></td>
   <td class="state-description">${esc(c.description || '')}</td>
   <td class="req-cell">${c.required ? '<span class="badge badge-required">Required</span>' : ''}</td>
-  <td>${badge(c.status)}${consBadge(c) ? `<div style="margin-top:4px">${consBadge(c)}</div>` : ''}</td>
+  <td>${c.fixed ? badge('fixed') : badge(c.status)}${consBadge(c) ? `<div style="margin-top:4px">${consBadge(c)}</div>` : ''}</td>
   <td class="file-ref">${esc(c.evidence || '')}</td>
 </tr>\n`;
   if (expandable) {
@@ -411,12 +528,13 @@ function matrixRow(c, tier2) {
 
 function matrixSection(ctx) {
   const { needs, exists, clusterOf, tier2 } = ctx;
-  const order = ['gap', 'partial', 'recommendation', 'covered'];
-  const titles = { gap: 'No design', partial: 'Half-built', recommendation: 'Optional', covered: 'Designed' };
-  const dividers = { gap: 'gap', partial: 'partial', recommendation: 'rec', covered: 'covered' };
+  const order = ['gap', 'partial', 'fixed', 'recommendation', 'covered'];
+  const titles = { gap: 'No design', partial: 'Half-built', fixed: 'Fixed', recommendation: 'Optional', covered: 'Designed' };
+  const dividers = { gap: 'gap', partial: 'partial', fixed: 'covered', recommendation: 'rec', covered: 'covered' };
+  const statusOf = (c) => (c.fixed ? 'fixed' : c.status);
   let rows = '';
   for (const s of order) {
-    const list = needs.filter((c) => c.status === s).sort((a, b) => deduction(b) - deduction(a) || a.state_id - b.state_id);
+    const list = needs.filter((c) => statusOf(c) === s).sort((a, b) => deduction(b) - deduction(a) || idOrder(a, b));
     if (!list.length) continue;
     rows += `<tr><td colspan="5" class="section-divider section-divider-${dividers[s]}">${titles[s]} (${list.length})</td></tr>\n`;
     rows += list.map((c) => matrixRow(c, tier2)).join('');
@@ -456,7 +574,7 @@ function shareCard(ctx) {
   const { score, lifted, fixes, meta, date } = ctx;
   const band = score < 50 ? '#c0392b' : score < 75 ? '#a86f00' : '#2a7d4f';
   const worst = ctx.needs.filter((c) => deduction(c) > 0)
-    .sort((a, b) => deduction(b) - deduction(a) || a.state_id - b.state_id).slice(0, 3);
+    .sort((a, b) => deduction(b) - deduction(a) || idOrder(a, b)).slice(0, 3);
   const rows = worst.map((c, i) => {
     const y = 250 + i * 88;
     const col = { blocker: '#b42318', misleading: '#c4620a', nuisance: '#7a8595' }[consequenceOf(c)];
@@ -531,12 +649,16 @@ function build(data) {
   const cons = { blocker: 0, misleading: 0, nuisance: 0 };
   for (const c of needs) { const k = consequenceOf(c); if (k) cons[k]++; }
   const findings = needs.filter((c) => deduction(c) > 0);
+  const afterIds = new Set(Object.keys(data.shots?.after || {}));
+  for (const c of findings) if (afterIds.has(String(c.state_id))) c.fixed = true;
+  const fixedCount = findings.filter((c) => c.fixed).length;
+  const afterScore = Math.round(scoreOf(findings.filter((c) => !c.fixed)));
   const raw = scoreOf(findings);
   const score = Math.round(raw);
 
   const srcRank = { taxonomy: 0, 'screen-level': 1, 'feature-specific': 2 };
   const fixes = needs.filter((c) => deduction(c) > 0)
-    .sort((a, b) => deduction(b) - deduction(a) || (b.required ? 1 : 0) - (a.required ? 1 : 0) || (srcRank[a.source] ?? 3) - (srcRank[b.source] ?? 3) || a.state_id - b.state_id)
+    .sort((a, b) => deduction(b) - deduction(a) || (b.required ? 1 : 0) - (a.required ? 1 : 0) || (srcRank[a.source] ?? 3) - (srcRank[b.source] ?? 3) || idOrder(a, b))
     .slice(0, 3);
   const lifted = Math.round(scoreOf(findings.filter((c) => !fixes.includes(c))));
   // What each fix adds. The top fixes count in order, so their gains add up to the lift.
@@ -550,7 +672,7 @@ function build(data) {
 
   const clusterOf = (c) => c.cluster || (c.source === 'screen-level' ? 'Whole screen' : null);
   const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  const ctx = { needs, exists, counts, cons, score, lifted, fixes, needsCount: needs.length - counts.recommendation, meta, mockups, tier2, clusterOf, date };
+  const ctx = { needs, exists, counts, cons, score, lifted, fixes, needsCount: needs.length - counts.recommendation, meta, mockups, tier2, clusterOf, date, shots: data.shots, fixNotes: data.fixNotes || {}, fixedCount, afterScore };
 
   const cssPath = resolve(__dirname, 'templates', 'report.css');
   const css = readFileSync(cssPath, 'utf8');
@@ -581,6 +703,7 @@ ${paletteCss(pal)}
   </header>
   ${heroSection(ctx)}
   ${fixesSection(ctx)}
+  ${allFixesSection(ctx)}
   ${stripSection(ctx)}
   ${matrixSection(ctx)}
   <footer class="report-footer">
@@ -589,7 +712,32 @@ ${paletteCss(pal)}
   </footer>
 </main>
 <div class="toast-copied" role="status" aria-live="polite"></div>
+<dialog class="lightbox" id="lightbox" aria-label="Screenshot"><form method="dialog"><button class="lightbox-close" aria-label="Close">&times;</button></form><div class="lightbox-body"></div></dialog>
 <script>
+const SHOTS = ${JSON.stringify(Object.fromEntries(['before', 'after'].flatMap((l) => Object.entries(data.shots?.[l] || {}).map(([id, uri]) => [`${id}|${l}`, uri]))))};
+document.querySelectorAll('img[data-shot]').forEach((i) => { if (SHOTS[i.dataset.shot]) i.src = SHOTS[i.dataset.shot]; });
+const lb = document.getElementById('lightbox');
+function openShots(keys) {
+  const body = lb.querySelector('.lightbox-body');
+  body.innerHTML = '';
+  body.classList.toggle('lightbox-pair', keys.length > 1);
+  for (const k of keys) {
+    const f = document.createElement('figure');
+    const cap = document.createElement('figcaption');
+    cap.textContent = k.endsWith('|after') ? 'After fix' : 'Today';
+    const img = document.createElement('img'); img.src = SHOTS[k]; img.alt = cap.textContent;
+    f.append(cap, img); body.append(f);
+  }
+  lb.showModal();
+}
+lb.addEventListener('click', (e) => { if (e.target === lb) lb.close(); });
+document.querySelectorAll('[data-open]').forEach((b) => b.addEventListener('click', () => openShots([b.dataset.open])));
+document.querySelectorAll('[data-compare]').forEach((a) => a.addEventListener('click', (e) => {
+  const id = a.dataset.compare;
+  const keys = [id + '|before', id + '|after'].filter((k) => SHOTS[k]);
+  if (!keys.length) return;
+  e.preventDefault(); openShots(keys);
+}));
 function toggleDetail(row) {
   row.classList.toggle('open');
   const d = row.nextElementSibling;
@@ -611,7 +759,7 @@ document.querySelectorAll('.copy-btn').forEach((b) => b.addEventListener('click'
 </script>
 </body>
 </html>`;
-  return { html, card: shareCard(ctx), score, lifted, counts, cons, needsCount: ctx.needsCount, exists: exists.length };
+  return { html, card: shareCard(ctx), score, lifted, fixed: fixedCount, after: fixedCount ? afterScore : undefined, counts, cons, needsCount: ctx.needsCount, exists: exists.length };
 }
 
 // ---------------------------------------------------------------------------
@@ -629,7 +777,7 @@ try {
     cardPath = resolve(dirname(outPath), basename(outPath).replace(/\.html?$/i, '') + '-card.svg');
     writeFileSync(cardPath, out.card);
   }
-  console.error(JSON.stringify({ status: 'ok', report: outPath, card: cardPath, score: out.score, lifted: out.lifted, needs: out.needsCount, exists: out.exists, ...out.counts, ...out.cons }));
+  console.error(JSON.stringify({ status: 'ok', report: outPath, card: cardPath, score: out.score, lifted: out.lifted, fixed: out.fixed, after: out.after, needs: out.needsCount, exists: out.exists, ...out.counts, ...out.cons }));
 } catch (e) {
   console.error(e.message);
   process.exit(1);
