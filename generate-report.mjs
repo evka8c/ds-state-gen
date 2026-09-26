@@ -17,7 +17,11 @@
 //   node generate-report.mjs --findings merged.json [inventory.json]
 //        [--shots <dir>]                  reads <dir>/shots-before.json and shots-after.json (from
 //                                         show-states.mjs); real screenshots replace the mockups.
-//                                         A finding with an ok after shot counts as fixed.
+//                                         Also reads <dir>/verify.json, written after looking
+//                                         at the shots: { "<id>": { before_shows_bug,
+//                                         after_shows_fix, note } }. Only after_shows_fix:true
+//                                         counts as fixed (verified); an after shot without it
+//                                         is "fixed in code, not verified".
 //        [--fix-notes notes.json]         { "F1": "caveat" } shown under the after frame
 //        [--meta meta.json] [--out report.html] [--mockups mockups.json keyed by finding id]
 //
@@ -150,6 +154,7 @@ function findingsToCoverage(f) {
     component: x.state_id || x.kind,
     description: x.today,
     repro: x.repro,
+    verdict: x.verdict,
     evidence: where(x.where),
     gap_label: x.fix?.summary,
     behaviour: x.fix?.behaviour,
@@ -173,6 +178,8 @@ function loadShots(dir) {
       if (file && existsSync(file)) shots[label][id] = `data:image/png;base64,${readFileSync(file).toString('base64')}`;
     }
   }
+  const v = join(resolve(dir), 'verify.json');
+  shots.verify = existsSync(v) ? readJson(v) : null;
   return shots;
 }
 
@@ -201,12 +208,15 @@ function slug(s) { return String(s || 'report').toLowerCase().replace(/[^a-z0-9]
 function trunc(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s; }
 function plural(n, one, many) { return `${n} ${n === 1 ? one : many}`; }
 
-const STATUS_LABEL = { fixed: 'Fixed', covered: 'Designed', partial: 'Half-built', gap: 'No design', recommendation: 'Optional' };
+const STATUS_LABEL = { fixed: 'Fixed, verified on screen', fixedcode: 'Fixed in code, not verified', covered: 'Designed', partial: 'Half-built', gap: 'No design', recommendation: 'Optional' };
 
 function badge(status) {
-  const cls = { fixed: 'badge-fixed', covered: 'badge-covered', partial: 'badge-partial', gap: 'badge-gap', recommendation: 'badge-rec' }[status] || 'badge-gap';
+  const cls = { fixed: 'badge-fixed', fixedcode: 'badge-rec', covered: 'badge-covered', partial: 'badge-partial', gap: 'badge-gap', recommendation: 'badge-rec' }[status] || 'badge-gap';
   return `<span class="badge ${cls}">${STATUS_LABEL[status] || status}</span>`;
 }
+
+// Fixed findings never carry their old status badge.
+function statusBadge(c) { return badge(c.fixed ? 'fixed' : c.fixState === 'code' ? 'fixedcode' : c.status); }
 
 // What is missing, in a few words, for a tile caption.
 function missingText(c) {
@@ -341,13 +351,14 @@ function mini(kind) {
 function tile(c, shots) {
   const kind = kindOf(c);
   const before = shots?.before?.[c.state_id];
-  if (c.fixed || before) {
+  const done = c.fixed || c.fixState === 'code';
+  if (done || before) {
     // Real screenshot: the fixed state if there is one, else today. Click compares both.
-    const label = c.fixed ? 'after' : 'before';
+    const label = done ? 'after' : 'before';
     const k = consequenceOf(c);
-    return `<a class="tile tile-shot ${c.fixed ? 'tile-fixed' : `tile-${c.status}`}" href="#state-${c.state_id}" data-compare="${esc(c.state_id)}" title="Click to compare today and after the fix">
-  <div class="tile-frame">${shotImg(c.state_id, label, `${c.fixed ? 'After fix' : 'Today'}: ${c.name}`)}<span class="tile-flag">${c.fixed ? 'Fixed' : { gap: 'No design', partial: 'Half-built', recommendation: 'Optional' }[c.status] || ''}</span></div>
-  <div class="tile-name">${esc(c.name)}</div><div class="tile-miss">${k ? `<span class="cons cons-${k}">${CONS_LABEL[k]}</span> ` : ''}${c.fixed ? 'Was: ' : ''}${esc(trunc(c.consequence_reason || missingText(c), 80))}</div>
+    return `<a class="tile tile-shot ${done ? 'tile-fixed' : `tile-${c.status}`}" href="#state-${c.state_id}" data-compare="${esc(c.state_id)}" title="Click to compare today and after the fix">
+  <div class="tile-frame">${shotImg(c.state_id, label, `${done ? 'After fix' : 'Today'}: ${c.name}`)}<span class="tile-flag">${c.fixed ? 'Fixed' : done ? 'Fixed in code' : { gap: 'No design', partial: 'Half-built', recommendation: 'Optional' }[c.status] || ''}</span></div>
+  <div class="tile-name">${esc(c.name)}</div><div class="tile-miss">${k ? `<span class="cons cons-${k}">${CONS_LABEL[k]}</span> ` : ''}${done ? 'Was: ' : ''}${esc(trunc(c.consequence_reason || missingText(c), 80))}</div>
 </a>`;
   }
   const cls = `tile tile-${c.status}`;
@@ -382,7 +393,8 @@ function fixPrompt(c, meta) {
 // Sections
 // ---------------------------------------------------------------------------
 function heroSection(ctx) {
-  const { score, lifted, counts, cons, needsCount, meta, fixedCount, afterScore } = ctx;
+  const { score, lifted, counts, cons, needsCount, meta, fixedCount, afterScore, codeFixedCount } = ctx;
+  const codeLine = codeFixedCount ? ` ${plural(codeFixedCount, 'more is', 'more are')} fixed in code but not verified on screen, and not counted.` : '';
   const cx = meta.context || {};
   const ctxBits = [cx.unsaved_work && `unsaved work: ${cx.unsaved_work}`, cx.poor_connectivity_is_normal && `poor connectivity normal: ${cx.poor_connectivity_is_normal}`, cx.stakes && `stakes: ${cx.stakes}`].filter(Boolean);
   const ctxLine = ctxBits.length ? ` App context: ${ctxBits.join('; ')}.` : '';
@@ -396,13 +408,14 @@ function heroSection(ctx) {
     <div class="eyebrow">State coverage</div>
     <div class="score"><span class="score-value">${score}</span><span class="score-max">/100</span>${fixedCount ? `<span class="score-after">&rarr; ${afterScore}</span>` : ''}</div>
     <div class="score-bar" style="color:${color}"><div class="score-bar-now" style="width:${score}%"></div>${fixedCount && afterScore > score ? `<div class="score-bar-lift" style="left:${score}%;width:${afterScore - score}%"></div>` : lifted > score ? `<div class="score-bar-lift" style="left:${score}%;width:${lifted - score}%"></div>` : ''}</div>
-    <div class="score-lift">${fixedCount ? `<strong>${score} &rarr; ${afterScore} after fixes.</strong> ${plural(fixedCount, 'fix', 'fixes')} verified in the browser.` : ctx.fixes.length ? `<strong>${plural(ctx.fixes.length, 'fix', 'fixes')} lift it to ${lifted}.</strong>` : '<strong>Nothing left to fix.</strong>'}</div>
+    <div class="score-lift">${fixedCount ? `<strong>${score} &rarr; ${afterScore} after fixes.</strong> ${plural(fixedCount, 'fix', 'fixes')} verified on screen.${codeLine}` : ctx.fixes.length ? `<strong>${plural(ctx.fixes.length, 'fix', 'fixes')} lift it to ${lifted}.</strong>${codeLine}` : `<strong>Nothing left to fix.</strong>${codeLine}`}</div>
     <div class="counts">
       <div class="count count-blocker"><div class="count-value">${cons.blocker}</div><div class="count-label">Blockers</div></div>
       <div class="count count-misleading"><div class="count-value">${cons.misleading}</div><div class="count-label">Misleading</div></div>
       <div class="count count-nuisance"><div class="count-value">${cons.nuisance}</div><div class="count-label">Nuisances</div></div>
       <div class="count count-covered"><div class="count-value">${counts.covered}</div><div class="count-label">Designed</div></div>
     </div>
+    <p class="score-how"><strong>How points come off:</strong> each finding takes a share of what's left: a blocker ${WEIGHTS.consequence.blocker}, misleading ${WEIGHTS.consequence.misleading}, a nuisance ${WEIGHTS.consequence.nuisance} points if fully missing; half-built costs ${WEIGHTS.status.partial * 100}% of that, and an edge case ${WEIGHTS.likelihood['nice-to-have'] * 100}%.</p>
     <p class="score-how">Scored on the ${needsCount} states this page needs, by whether the user can still finish and how many people will hit it. A common blocker takes ${WEIGHTS.consequence.blocker}% of the score, misleading ${WEIGHTS.consequence.misleading}%, a nuisance ${WEIGHTS.consequence.nuisance}%. Half-built counts ${WEIGHTS.status.partial * 100}%, an edge case ${WEIGHTS.likelihood['nice-to-have'] * 100}%.${ctxLine}</p>
   </div>
   <div class="card summary-card">
@@ -428,13 +441,15 @@ function autoSummary({ counts, cons, needsCount, fixes, score, lifted }) {
 // Today / After fix (or Proposed) pair from real screenshots; null when there is no before shot.
 function compareShots(c, shots, notes, m) {
   const before = shots?.before?.[c.state_id];
-  if (!before) return null;
+  if (!before && !c.noRepro) return null;
   const after = shots?.after?.[c.state_id];
-  const note = notes?.[c.state_id];
+  const note = notes?.[c.state_id] || c.verifyNote;
+  const today = before ? shotFrame(c.state_id, 'before', `Today: ${c.name}`) : `<div class="mock mock-text"><p>Couldn't reproduce this on screen; the finding rests on the code.</p>${typeof c.noRepro === 'string' ? `<p class="mock-text-sub">${esc(c.noRepro)}</p>` : ''}</div>`;
+  const afterCap = c.fixed ? 'After fix, verified' : 'After fix, not verified';
   return `<div class="compare compare-shots">
-      <figure class="compare-col compare-today"><figcaption>Today</figcaption>${shotFrame(c.state_id, 'before', `Today: ${c.name}`)}${c.description ? `<p class="compare-note">${esc(c.description)}</p>` : ''}</figure>
+      <figure class="compare-col compare-today"><figcaption>Today</figcaption>${today}${c.description ? `<p class="compare-note">${esc(c.description)}</p>` : ''}</figure>
       ${after
-        ? `<figure class="compare-col compare-proposed"><figcaption>After fix</figcaption>${shotFrame(c.state_id, 'after', `After fix: ${c.name}`)}${c.behaviour || c.gap_label ? `<p class="compare-note">${esc(c.behaviour || c.gap_label)}</p>` : ''}${note ? `<p class="compare-caveat"><strong>Still to check:</strong> ${esc(note)}</p>` : ''}</figure>`
+        ? `<figure class="compare-col compare-proposed"><figcaption>${afterCap}</figcaption>${shotFrame(c.state_id, 'after', `After fix: ${c.name}`)}${c.behaviour || c.gap_label ? `<p class="compare-note">${esc(c.behaviour || c.gap_label)}</p>` : ''}${note ? `<p class="compare-caveat"><strong>Note:</strong> ${esc(note)}</p>` : ''}</figure>`
         : `<figure class="compare-col compare-proposed"><figcaption>Proposed</figcaption>${m?.proposed ? `<div class="mock">${m.proposed}</div>` : `<div class="mock mock-text"><p>${esc(c.gap_label || '')}</p>${c.behaviour ? `<p class="mock-text-sub">${esc(c.behaviour)}</p>` : ''}</div>`}${m?.proposed_caption ? `<p class="compare-note">${esc(m.proposed_caption)}</p>` : ''}</figure>`}
     </div>`;
 }
@@ -442,10 +457,10 @@ function compareShots(c, shots, notes, m) {
 // Every finding with screenshots, not just the top 3.
 function allFixesSection(ctx) {
   const { needs, shots } = ctx;
-  const list = needs.filter((c) => shots?.before?.[c.state_id]).sort((a, b) => deduction(b) - deduction(a) || idOrder(a, b));
+  const list = needs.filter((c) => shots?.before?.[c.state_id] || (c.noRepro && shots?.after?.[c.state_id])).sort((a, b) => deduction(b) - deduction(a) || idOrder(a, b));
   if (!list.length) return '';
   const items = list.map((c) => `<article class="fix fix-compact" id="shots-${esc(c.state_id)}">
-    <div class="fix-title">${esc(c.name)} ${consBadge(c)} ${c.fixed ? badge('fixed') : badge(c.status)}</div>
+    <div class="fix-title">${esc(c.name)} ${consBadge(c)} ${statusBadge(c)}</div>
     ${c.repro ? `<p class="fix-repro"><strong>Repro:</strong> ${esc(c.repro)}</p>` : ''}
     ${compareShots(c, shots, ctx.fixNotes, ctx.mockups?.[String(c.state_id)])}
   </article>`).join('\n');
@@ -467,7 +482,7 @@ function fixesSection(ctx) {
     </div>` : '';
     return `<article class="fix">
     <div class="fix-head"><span class="fix-num">0${i + 1}</span><div>
-      <div class="fix-title">${esc(c.name)} ${consBadge(c)} ${badge(c.status)} <span class="fix-points">+${c.gain}</span></div>
+      <div class="fix-title">${esc(c.name)} ${consBadge(c)} ${statusBadge(c)} <span class="fix-points">+${c.gain}</span></div>
       ${c.consequence_reason ? `<p class="fix-why">${esc(c.consequence_reason)}</p>` : `<p class="fix-body">${esc(c.description || '')}</p>`}
       <div class="fix-actions"><button class="copy-btn" type="button" data-prompt="${esc(fixPrompt(c, meta))}">Copy the fix prompt</button><span>${esc(c.gap_label || '')}</span><a href="#state-${c.state_id}">Evidence</a></div>
     </div></div>
@@ -483,8 +498,9 @@ function fixesSection(ctx) {
 function stripSection(ctx) {
   const { needs } = ctx;
   const groups = [
-    { key: 'fixed', name: 'Fixed, verified in the browser', list: needs.filter((c) => c.fixed) },
-    ...CONSEQUENCES.map((k) => ({ key: k, name: CONS_GROUP[k], list: needs.filter((c) => !c.fixed && consequenceOf(c) === k) })),
+    { key: 'fixed', name: 'Fixed, verified on screen', list: needs.filter((c) => c.fixed) },
+    { key: 'fixed', name: 'Fixed in code, not verified on screen', list: needs.filter((c) => c.fixState === 'code') },
+    ...CONSEQUENCES.map((k) => ({ key: k, name: CONS_GROUP[k], list: needs.filter((c) => !c.fixState && consequenceOf(c) === k) })),
     { key: 'recommendation', name: 'Optional', list: needs.filter((c) => c.status === 'recommendation') },
     { key: 'covered', name: 'Designed', list: needs.filter((c) => c.status === 'covered') },
   ].filter((g) => g.list.length);
@@ -505,8 +521,8 @@ function matrixRow(c, tier2) {
   <td><div class="state-name">${esc(c.name)}</div><div class="state-component">${esc(c.component || 'screen-level')}</div></td>
   <td class="state-description">${esc(c.description || '')}</td>
   <td class="req-cell">${c.required ? '<span class="badge badge-required">Required</span>' : ''}</td>
-  <td>${c.fixed ? badge('fixed') : badge(c.status)}${consBadge(c) ? `<div style="margin-top:4px">${consBadge(c)}</div>` : ''}</td>
-  <td class="file-ref">${esc(c.evidence || '')}</td>
+  <td>${statusBadge(c)}${consBadge(c) ? `<div style="margin-top:4px">${consBadge(c)}</div>` : ''}</td>
+  <td class="file-ref">${c.verdict ? `<span class="badge ${/^confirmed$/i.test(c.verdict) ? 'badge-covered' : 'badge-partial'}">${esc(String(c.verdict).toUpperCase())}</span> ` : ''}${esc(c.evidence || '')}</td>
 </tr>\n`;
   if (expandable) {
     const from = (c.extends_from || []).map((e) => `<li><code>${esc(e)}</code></li>`).join('');
@@ -528,10 +544,10 @@ function matrixRow(c, tier2) {
 
 function matrixSection(ctx) {
   const { needs, exists, clusterOf, tier2 } = ctx;
-  const order = ['gap', 'partial', 'fixed', 'recommendation', 'covered'];
-  const titles = { gap: 'No design', partial: 'Half-built', fixed: 'Fixed', recommendation: 'Optional', covered: 'Designed' };
-  const dividers = { gap: 'gap', partial: 'partial', fixed: 'covered', recommendation: 'rec', covered: 'covered' };
-  const statusOf = (c) => (c.fixed ? 'fixed' : c.status);
+  const order = ['gap', 'partial', 'fixedcode', 'fixed', 'recommendation', 'covered'];
+  const titles = { gap: 'No design', partial: 'Half-built', fixedcode: 'Fixed in code, not verified', fixed: 'Fixed, verified on screen', recommendation: 'Optional', covered: 'Designed' };
+  const dividers = { gap: 'gap', partial: 'partial', fixedcode: 'rec', fixed: 'covered', recommendation: 'rec', covered: 'covered' };
+  const statusOf = (c) => (c.fixed ? 'fixed' : c.fixState === 'code' ? 'fixedcode' : c.status);
   let rows = '';
   for (const s of order) {
     const list = needs.filter((c) => statusOf(c) === s).sort((a, b) => deduction(b) - deduction(a) || idOrder(a, b));
@@ -609,7 +625,7 @@ function build(data) {
   const meta = { ...(data.meta || {}) };
   meta.feature = meta.feature || enumerator?.feature?.name || 'Feature';
   meta.description = meta.description || enumerator?.feature?.description || '';
-  meta.ds_name = meta.ds_name || inventory?.project?.ds_name || 'Design system';
+  meta.ds_name = meta.ds_name || inventory?.project?.ds_name || inventory?.ds_name || inventory?.project?.name || inventory?.name || '';
   meta.project_label = meta.project_path || inventory?.project?.name || '';
 
   const enumById = new Map((enumerator?.states || []).map((s) => [s.id, s]));
@@ -649,9 +665,20 @@ function build(data) {
   const cons = { blocker: 0, misleading: 0, nuisance: 0 };
   for (const c of needs) { const k = consequenceOf(c); if (k) cons[k]++; }
   const findings = needs.filter((c) => deduction(c) > 0);
-  const afterIds = new Set(Object.keys(data.shots?.after || {}));
-  for (const c of findings) if (afterIds.has(String(c.state_id))) c.fixed = true;
+  // Fixed only when someone looked at the after shot and saw the fix (verify.json).
+  const verify = data.shots?.verify || {};
+  if (data.shots) data.shots = { ...data.shots, before: { ...data.shots.before } };
+  for (const c of findings) {
+    const id = String(c.state_id);
+    const v = verify[id];
+    if (v?.note) c.verifyNote = v.note;
+    if (v?.before_shows_bug === false && data.shots?.before?.[id]) { delete data.shots.before[id]; c.noRepro = v.note || true; }
+    if (!data.shots?.after?.[id]) continue;
+    if (v?.after_shows_fix === true) { c.fixed = true; c.fixState = 'verified'; }
+    else c.fixState = 'code';
+  }
   const fixedCount = findings.filter((c) => c.fixed).length;
+  const codeFixedCount = findings.filter((c) => c.fixState === 'code').length;
   const afterScore = Math.round(scoreOf(findings.filter((c) => !c.fixed)));
   const raw = scoreOf(findings);
   const score = Math.round(raw);
@@ -672,7 +699,7 @@ function build(data) {
 
   const clusterOf = (c) => c.cluster || (c.source === 'screen-level' ? 'Whole screen' : null);
   const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  const ctx = { needs, exists, counts, cons, score, lifted, fixes, needsCount: needs.length - counts.recommendation, meta, mockups, tier2, clusterOf, date, shots: data.shots, fixNotes: data.fixNotes || {}, fixedCount, afterScore };
+  const ctx = { needs, exists, counts, cons, score, lifted, fixes, needsCount: needs.length - counts.recommendation, meta, mockups, tier2, clusterOf, date, shots: data.shots, fixNotes: data.fixNotes || {}, fixedCount, codeFixedCount, afterScore };
 
   const cssPath = resolve(__dirname, 'templates', 'report.css');
   const css = readFileSync(cssPath, 'utf8');
@@ -697,7 +724,7 @@ ${paletteCss(pal)}
     <div class="eyebrow">UI state coverage</div>
     <h1>${esc(meta.feature)}</h1>
     <div class="report-meta">
-      <span>${esc(date)}</span><span>&middot;</span><span>${esc(meta.ds_name)}</span>
+      <span>${esc(date)}</span>${meta.ds_name ? `<span>&middot;</span><span>${esc(meta.ds_name)}</span>` : ''}
       ${meta.project_label ? `<span>&middot;</span><span>${esc(meta.project_label)}</span>` : ''}
     </div>
   </header>
@@ -759,7 +786,7 @@ document.querySelectorAll('.copy-btn').forEach((b) => b.addEventListener('click'
 </script>
 </body>
 </html>`;
-  return { html, card: shareCard(ctx), score, lifted, fixed: fixedCount, after: fixedCount ? afterScore : undefined, counts, cons, needsCount: ctx.needsCount, exists: exists.length };
+  return { html, card: shareCard(ctx), score, lifted, fixed: fixedCount, fixed_in_code: codeFixedCount, after: fixedCount ? afterScore : undefined, counts, cons, needsCount: ctx.needsCount, exists: exists.length };
 }
 
 // ---------------------------------------------------------------------------
@@ -777,7 +804,7 @@ try {
     cardPath = resolve(dirname(outPath), basename(outPath).replace(/\.html?$/i, '') + '-card.svg');
     writeFileSync(cardPath, out.card);
   }
-  console.error(JSON.stringify({ status: 'ok', report: outPath, card: cardPath, score: out.score, lifted: out.lifted, fixed: out.fixed, after: out.after, needs: out.needsCount, exists: out.exists, ...out.counts, ...out.cons }));
+  console.error(JSON.stringify({ status: 'ok', report: outPath, card: cardPath, score: out.score, lifted: out.lifted, fixed: out.fixed, fixed_in_code: out.fixed_in_code, after: out.after, needs: out.needsCount, exists: out.exists, ...out.counts, ...out.cons }));
 } catch (e) {
   console.error(e.message);
   process.exit(1);

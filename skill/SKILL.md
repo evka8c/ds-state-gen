@@ -7,7 +7,7 @@ description: Find and fix the UI states AI-built features skip — loading, erro
 
 AI builds the happy path. This skill finds what happens when things go wrong, ranks it by harm to the user, and fixes it with the project's own components.
 
-`SKILL_DIR` below is the folder this file is in. The scripts are in its parent folder (`$SKILL_DIR/..`). Scratch files go in the session scratchpad (or `/tmp` if none).
+`SKILL_DIR` below is the folder this file is in. The scripts are in its parent folder (`$SKILL_DIR/..`). Scratch files go in a **new run folder for every run**: `<scratch>/states-<feature-slug>-<HHMMSS>/` inside the session scratchpad (or `/tmp`). Never reuse a folder; parallel runs overwrite each other. Below, `<scratch>` means that run folder.
 
 ## 1. Pick the mode
 
@@ -44,7 +44,7 @@ Then follow `$SKILL_DIR/prompts/plan.md` yourself (inline, no subagent — it re
 ```
 node $SKILL_DIR/../states-scan.mjs check <project root> [--paths <paths>] --out <scratch>/scope.json
 ```
-Print its one-line summary. If it reports no UI files, say so and stop. If `scope.dropped.count` is large, mention that the scope was cut and suggest a narrower path.
+Pass paths space- or comma-separated. Print its one-line summary. Check that `repo` in scope.json is the project you meant. If it reports no UI files, say so and stop. If `scope.dropped.count` is large, mention that the scope was cut and suggest a narrower path.
 
 **4b. Judge (three reviewers in parallel).** Always run all three; one pass misses too much. Spawn three general-purpose agents in one message, each with:
 ```
@@ -57,9 +57,15 @@ Write the JSON to <scratch>/findings-<name>.json and reply with a 3-line summary
 ```
 Lenses: `actions` (every action and guard: double submit, failure in every mode, input on 401, offline/cancel, rollback, guard holes), `screens` (who lands on each screen, truthful copy, config dead ends, v1/v2 parity, taxonomy states), `a11y` (keyboard path, names, announcements, dialogs, time limits).
 
-**Merge.** Read the three files. Merge findings that point at the same `file:line` or the same missing piece (keep the worst consequence, union `where`, keep the clearer repro). A finding from one lens beats an `ok` from another on the same target only if its repro holds when you read the cited line.
+**Merge.** Read the three files. Merge findings that point at the same `file:line` or the same missing piece (union `where`, keep the clearer repro). If the lenses disagree on consequence, decide with the definitions, not by taking the worst: does the screen state something false → misleading; can the user not finish, or lose work, even after refresh → blocker; otherwise nuisance. A finding from one lens beats an `ok` from another on the same target only if its repro holds when you read the cited line.
 
-**4c. Check the output before showing it.** Each lens file lists its targets; every one must have a `coverage` entry in that lens's output. If any are missing, or `not_checked` with `reads_used` under 25, send that agent back once with the list. Drop any finding with no `repro`, no `where`, or a `where` whose line doesn't exist. Re-apply the refresh test: if refreshing or retrying recovers it and nothing is lost, it is at most a nuisance. If the JSON is malformed, re-prompt once with the error; after that, judge inline.
+**4c. Check the output before showing it.** Each lens file lists its targets; every one must have a `coverage` entry in that lens's output. `not_checked` with a reason like "belongs to the a11y lens" or "not part of this feature" is fine. Send the agent back once only if targets are missing, or left `not_checked` for lack of reading while `reads_used` is under 25. Drop any finding with no `repro`, no `where`, or a `where` whose line doesn't exist. Re-apply the refresh test: if refreshing or retrying recovers it and nothing is lost, it is at most a nuisance. If the JSON is malformed, re-prompt once with the error; after that, judge inline.
+
+**4c-2. Verify (one sceptical agent).** Spawn one general-purpose agent with only `<scratch>/merged.json` and the project root:
+```
+You are a sceptical verifier. For each finding in <scratch>/merged.json, open every cited file:line and follow the code (helpers, components, status codes) far enough to judge it. Verdict: CONFIRMED (the code clearly behaves as the repro says), PLAUSIBLE (likely, but depends on runtime or server behaviour you can't see), or WRONG (the code already handles it, e.g. a shared component shows a spinner, or the repro can't happen). Check the consequence with the refresh test. Quote the 1–3 lines you relied on. Write <scratch>/verdicts.json as [{id, verdict, consequence_should_be, evidence, note}].
+```
+Drop WRONG findings. Put `verdict` on each remaining finding in merged.json and adopt the verifier's consequence when its reason is concrete.
 
 **4d. Present** (short, plain language, no raw JSON):
 
@@ -77,15 +83,17 @@ Then ask one question (AskUserQuestion) with these options:
 - **Not now.**
 Also let them narrow which findings (default: all blockers and misleading).
 
-**4e. Capture "today" (if a report was chosen).** Find the dev server: ask for the URL if one isn't obviously running; start it only if the user agrees (`npm run dev` or the project's script). Write recipes following `$SKILL_DIR/prompts/show.md` into `<scratch>/recipes.json`, then:
+**4e. Capture "today" (if a report was chosen).** Find the dev server: ask for the URL if one isn't obviously running; start it only if the user agrees (`npm run dev` or the project's script). Confirm it's the right app (fetch the page and check its `<title>`); other projects may be on the same port, and `localhost` vs `127.0.0.1` can reach different servers. If the app needs onboarding or login in every fresh browser, put that in the recipes' top-level `setup`. Write recipes following `$SKILL_DIR/prompts/show.md` into `<scratch>/recipes.json`, then:
 ```
 node $SKILL_DIR/../show-states.mjs <scratch>/recipes.json --base <url> --out <scratch>/shots --label before
 ```
-Look at each screenshot. If one doesn't show the bug, fix the recipe once; if it still doesn't, drop that screenshot (the report falls back to a drawn mockup). If there is no dev server, skip screenshots and say so.
+Look at each screenshot yourself. For each, record in `<scratch>/shots/verify.json` whether it shows the bug: `{ "<id>": { "before_shows_bug": true|false } }`. If one doesn't, fix the recipe once. If it still doesn't:
+- For a visible bug (wrong message, missing error, duplicate row, stuck spinner), the screenshot is evidence against the finding. **Drop the finding**, and tell the user it couldn't be reproduced. (On Excalidraw, a "no loading state" finding was disproved this way: the before shot showed a spinner.)
+- For something a screenshot can't show (screen-reader names, announcements, server-side races), keep the finding and set `before_shows_bug: false` with a note. If there is no dev server, skip screenshots and say so.
 
 **4f. Fix.** For each chosen finding, implement the fix using the named components and the sketch as a starting point. Match the file's conventions (imports, i18n wrapper, class style). Keep diffs minimal. Run the project's type check or lint if one is obvious (`tsc --noEmit`, `npm run lint`) and report the result honestly.
 
-**4g. Capture "after" and verify.** Rerun the same recipes with `--label after`. Look at each: the fixed state must now show what the finding's fix describes. If it still shows the bug, say so plainly and fix again once. A fix you couldn't confirm on screen is reported as "fixed in code, not verified on screen".
+**4g. Capture "after" and verify.** Rerun the same recipes with `--label after`. Look at each yourself and record `after_shows_fix: true|false` (plus a `note` for a fix that works but isn't clean) in `verify.json`. The report only calls a fix "verified" from this file; a fix without it shows as "fixed in code, not verified". The fixed state must show what the finding's fix describes. If it still shows the bug, say so plainly and fix again once. A fix you couldn't confirm on screen is reported as "fixed in code, not verified on screen".
 
 **4h. Report.**
 ```

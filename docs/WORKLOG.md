@@ -186,3 +186,9 @@ Caveat: Documenso and Supabase answer keys are AI findings from earlier pipeline
 Scan fixes found by the evals: rank files with actions above type/email/config files; follow one more hop to queue/api/submit files; `--include` to force files.
 
 Open: session-expiry input loss still missed on Supabase; human verification of answer keys; cost ~225K per feature.
+
+### Fix + show, and real-app runs (2026-09-26)
+
+- Fix step and before/after browser screenshots (`show-states.mjs`, recipes per `skill/prompts/show.md`); report shows verified fixes. Invoices fixture: 10/10 fixes visible on screen, 36 → 100.
+- Full runs on real apps: Excalidraw share link (8 findings, 1 disproved by its before screenshot, 4 fixed and shown, 44 → 85, ~340K tokens) and Actual Budget import (7 confirmed, 2 fixed and shown, 66 → 82, ~390K incl. 134K wasted on a scratch-path collision).
+- Changes from those runs: unique run folder per run; verifier step in SKILL.md; `verify.json` written after looking at screenshots is the only source of "verified" (else "fixed in code, not verified"); a before shot that doesn't show a visible bug drops the finding; consequence disagreements settled by definition, not worst-wins; dev server identity check; show-states gains setup/storage/evaluate/drag/real-file upload, 60s timeout, step-named errors, merging `--only`, overlay hiding.

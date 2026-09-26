@@ -250,7 +250,10 @@ function scopeFiles(repo, all, o, notes) {
     entries.forEach((p) => named.add(p));
   }
   entries = [...new Set(entries)].filter((p) => byPath.has(p) && CODE_EXT.has(extname(p)) && !NON_UI.test(p));
-  if (!entries.length) return { source, list: [], named, forced };
+  if (!entries.length) {
+    if (source === 'paths' && !(o.include || []).length) throw new Error(`No files matched: ${o.paths.join(', ')} (repo ${repo})`);
+    return { source, list: [], named, forced };
+  }
   // Follow imports a shallow depth; design-system files and app shells are covered by the inventory.
   // One extra hop, but only for files that hold actions (a thin component often
   // hands its submit/retry work to a queue or client module).
@@ -545,7 +548,7 @@ function check(repo, o) {
   const guardList = guards(files);
   const a11yList = a11y(files);
   if (o.verbose) {
-    return { mode: 'check', repo, scope: scopeOut, actions: acts, guards: guardList, a11y: a11yList, inventory: { ds_name: inv.ds_name, components: inv.components.map(({ exports, ...c }) => c), state_patterns: inv.state_patterns }, ui_types, states, screen_level, stats };
+    return { mode: 'check', repo, generated_at: new Date().toISOString(), scope: scopeOut, actions: acts, guards: guardList, a11y: a11yList, inventory: { ds_name: inv.ds_name, components: inv.components.map(({ exports, ...c }) => c), state_patterns: inv.state_patterns }, ui_types, states, screen_level, stats };
   }
 
   // Compact output (default): handled states as one-line pointers, full entries only for the rest.
@@ -566,7 +569,7 @@ function check(repo, o) {
   const typesOut = [];
   for (const u of ui_types) if (!typesOut.some((t) => t.type === u.type)) typesOut.push({ ...u, evidence: u.evidence.slice(0, 60), files: ui_types.filter((x) => x.type === u.type).length });
   return {
-    mode: 'check', repo,
+    mode: 'check', repo, generated_at: new Date().toISOString(),
     scope: { ...scopeOut, files: Object.fromEntries([...new Set(scopeOut.files.map((f) => f.depth))].map((d) => [`depth${d}`, scopeOut.files.filter((f) => f.depth === d).map((f) => `${f.path}:${f.lines}`)])), dropped: { count: dropped.length, lines: dropped.reduce((n, d) => n + d.lines, 0), top: dropped.slice(0, 5).map((d) => d.path) } },
     inventory: { ds_name: inv.ds_name, components, state_patterns },
     ui_types: typesOut,
@@ -602,7 +605,7 @@ function plan(feature, o) {
     const inv = loadInventory(repo, existsSync(cache) ? [] : walk(repo, repo, []));
     components = inv.components.map(({ name, file }) => ({ name, file }));
   }
-  return { mode: 'plan', feature, ui_types, states, screen_level, components };
+  return { mode: 'plan', ...(o.repo ? { repo: resolve(o.repo) } : {}), generated_at: new Date().toISOString(), feature, ui_types, states, screen_level, components };
 }
 
 // ---------------------------------------------------------------------------
@@ -612,7 +615,7 @@ function flags(argv) {
   const o = { base: null, paths: [], include: [], depth: 1, positional: [] };
   for (let i = 3; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '--paths') { while (argv[i + 1] && !argv[i + 1].startsWith('--')) o.paths.push(argv[++i]); }
+    if (a === '--paths') { while (argv[i + 1] && !argv[i + 1].startsWith('--')) o.paths.push(...argv[++i].split(',').map((x) => x.trim()).filter(Boolean)); }
     else if (a === '--base') o.base = argv[++i];
     else if (a === '--depth') o.depth = Number(argv[++i]);
     else if (a === '--verbose') o.verbose = true;
