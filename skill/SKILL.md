@@ -76,14 +76,11 @@ Drop WRONG findings. Put `verdict` on each remaining finding in merged.json and 
 >
 > Not checked: offline (needs a runtime check).
 
-Then ask one question (AskUserQuestion) with these options:
-- **Fix and show report (recommended)** — fix the chosen findings, then build the visual report with before/after screenshots.
-- **Fix only** — fix, then summarise what changed.
-- **Report only** — build the report with "today" screenshots and the proposed fix, change no code.
-- **Not now.**
-Also let them narrow which findings (default: all blockers and misleading).
+Then go straight to the report (4e, then 4h), unless the user said they don't want one. It's the default: screenshots of each problem today, the proposed fix, and the score. No code changes.
 
-**4e. Capture "today" (if a report was chosen).** Find the dev server: ask for the URL if one isn't obviously running; start it only if the user agrees (`npm run dev` or the project's script). Confirm it's the right app (fetch the page and check its `<title>`); other projects may be on the same port, and `localhost` vs `127.0.0.1` can reach different servers. If the app needs onboarding or login in every fresh browser, put that in the recipes' top-level `setup`. Write recipes following `$SKILL_DIR/prompts/show.md` into `<scratch>/recipes.json`, then:
+Fixing is opt-in. End the report message with one line: *"Say **fix** (or **fix 1, 3**) and I'll fix them and add after-screenshots to the report."* If they do, run 4f and 4g, then regenerate the report (4h). Default selection for "fix": all blockers and misleading.
+
+**4e. Capture "today".** If there is no dev server and the user doesn't want one started, skip screenshots; the report still works with drawn mockups. Find the dev server: ask for the URL if one isn't obviously running; start it only if the user agrees (`npm run dev` or the project's script). Confirm it's the right app (fetch the page and check its `<title>`); other projects may be on the same port, and `localhost` vs `127.0.0.1` can reach different servers. If the app needs onboarding or login in every fresh browser, put that in the recipes' top-level `setup`. Write recipes following `$SKILL_DIR/prompts/show.md` into `<scratch>/recipes.json`, then:
 ```
 node $SKILL_DIR/../show-states.mjs <scratch>/recipes.json --base <url> --out <scratch>/shots --label before
 ```
@@ -91,7 +88,7 @@ Look at each screenshot yourself. For each, record in `<scratch>/shots/verify.js
 - For a visible bug (wrong message, missing error, duplicate row, stuck spinner), the screenshot is evidence against the finding. **Drop the finding**, and tell the user it couldn't be reproduced. (On Excalidraw, a "no loading state" finding was disproved this way: the before shot showed a spinner.)
 - For something a screenshot can't show (screen-reader names, announcements, server-side races), keep the finding and set `before_shows_bug: false` with a note. If there is no dev server, skip screenshots and say so.
 
-**4f. Fix.** For each chosen finding, implement the fix using the named components and the sketch as a starting point. Match the file's conventions (imports, i18n wrapper, class style). Keep diffs minimal. Run the project's type check or lint if one is obvious (`tsc --noEmit`, `npm run lint`) and report the result honestly.
+**4f. Fix (only when asked).** For each chosen finding, implement the fix using the named components and the sketch as a starting point. Match the file's conventions (imports, i18n wrapper, class style). Keep diffs minimal. Run the project's type check or lint if one is obvious (`tsc --noEmit`, `npm run lint`) and report the result honestly.
 
 **4g. Capture "after" and verify.** Rerun the same recipes with `--label after`. Look at each yourself and record `after_shows_fix: true|false` (plus a `note` for a fix that works but isn't clean) in `verify.json`. The report only calls a fix "verified" from this file; a fix without it shows as "fixed in code, not verified". The fixed state must show what the finding's fix describes. If it still shows the bug, say so plainly and fix again once. A fix you couldn't confirm on screen is reported as "fixed in code, not verified on screen".
 
