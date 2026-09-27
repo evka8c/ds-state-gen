@@ -1,0 +1,405 @@
+{
+ "coverage": [
+  {
+   "state_id": 6,
+   "name": "Re-run hides results",
+   "status": "recommendation",
+   "evidence": "isExecuting branch in apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:41-47 replaces the grid with 'Running...' until new rows arrive.",
+   "gap_label": null,
+   "extends_from": null,
+   "notes": "Keeping stale rows dimmed under a progress bar would be nicer; nothing is lost because the new result replaces it."
+  },
+  {
+   "state_id": 7,
+   "name": "Results offline",
+   "status": "partial",
+   "evidence": "fetchHandler in apps/studio/data/fetchers.ts:22 turns 'Failed to fetch' into 'Unable to reach the server. Please check your network or try again later.', rendered as mono 'Error: ...' at UtilityTabResults.tsx:95 \u2014 missing: offline-specific copy and a Retry action (isNetWorkError at :39 only suppresses the limit note).",
+   "gap_label": "Extend UtilityTabResults error branch, add network-error copy + Retry button",
+   "extends_from": [
+    "Admonition (ui-patterns)",
+    "Button",
+    "InlineLink",
+    "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:39 isNetWorkError"
+   ],
+   "consequence": "nuisance",
+   "consequence_reason": "The SQL text stays in the editor; pressing Run again once connected recovers it, nothing is lost.",
+   "notes": "The EHOSTUNREACH case is really 'database host unreachable', covered under state 122."
+  },
+  {
+   "state_id": 8,
+   "name": "Very large result",
+   "status": "covered",
+   "evidence": "react-data-grid (virtualized) in apps/studio/components/ui/DataGridResults/index.tsx:3; rows wrapped in ref() to avoid proxy overhead at apps/studio/state/sql-editor/sql-editor-session-state.ts:46; 'Query is too large' handled at UtilityTabResults.tsx:53-120.",
+   "gap_label": null,
+   "extends_from": null,
+   "notes": "Row-count tooltip explains auto-limit (UtilityPanel.tsx:135-158)."
+  },
+  {
+   "state_id": 9,
+   "name": "Long-running query, no cancel",
+   "status": "partial",
+   "evidence": "SqlRunButton only swaps to a spinner and is disabled while executing (apps/studio/components/interfaces/SQLEditor/UtilityPanel/RunButton.tsx:36-44, UtilityActions.tsx:298); cancel exists only on another page via useQueryCancelMutation (apps/studio/data/sql/cancel-query-mutation.ts:40, used in components/interfaces/Observability/DatabaseConnections/ActivityRow.tsx) behind the 'View running queries' link (apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx:181) \u2014 missing: Stop button in the editor.",
+   "gap_label": "Reuse useQueryCancelMutation + Button for a Stop state on the Run button",
+   "extends_from": [
+    "useQueryCancelMutation (data/sql/cancel-query-mutation.ts)",
+    "getCancelQuerySQL (packages/pg-meta/src/sql/studio/sql-editor/abort-query.ts)",
+    "SqlRunButton",
+    "Button variant=default"
+   ],
+   "consequence": "blocker",
+   "consequence_reason": "A runaway statement keeps running (and holding locks) on the live database; refreshing the page does not cancel it server-side and Run stays disabled until timeout, so the user can't stop it from the editor.",
+   "notes": "Workaround via Observability > Connections is why this is half-built rather than missing."
+  },
+  {
+   "state_id": 10,
+   "name": "Target database unclear",
+   "status": "recommendation",
+   "evidence": "DatabaseSelector and RoleImpersonationPopover sit directly left of Run (apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:256-268); read-replica write errors get a 'Switch to primary database' action (UtilityTabResults.tsx:103-135). RunQueryWarningModal (apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx:141-151) doesn't name the target.",
+   "gap_label": null,
+   "extends_from": null,
+   "notes": "Worth restating database + role inside the destructive-query warning dialog; the current target is visible, so not a bug."
+  },
+  {
+   "state_id": 22,
+   "name": "Results lost on reload",
+   "status": "recommendation",
+   "evidence": "Results are intentionally ephemeral per sql-editor-session-state.ts:6-17 (not persisted); after refresh UtilityTabResults.tsx shows 'Click Run to execute your query'.",
+   "gap_label": null,
+   "extends_from": null,
+   "notes": "Re-running a SELECT recovers the rows; persisting large result sets locally is a design trade-off."
+  },
+  {
+   "state_id": 23,
+   "name": "Multiple statements result",
+   "status": "recommendation",
+   "evidence": "addResult stores a single entry per snippet (sql-editor-session-state.ts:52) and UtilityPanel.tsx:58 reads results[id][0]; only the final statement's rows are shown, with no label.",
+   "gap_label": null,
+   "extends_from": null,
+   "notes": "Consistent with Postgres simple-query behaviour; a caption like 'Showing result of last statement' would remove the ambiguity."
+  },
+  {
+   "state_id": 32,
+   "name": "Undetected destructive query",
+   "status": "gap",
+   "evidence": "destructiveSqlRegex (apps/studio/components/interfaces/SQLEditor/SQLEditor.constants.ts:40-50) only matches DROP/DELETE/TRUNCATE at the start or right after ';' or inside EXECUTE strings, so 'WITH d AS (DELETE FROM t RETURNING *) SELECT 1' and 'DO $$ BEGIN DELETE FROM t; END $$' pass checkDestructiveQuery (SQLEditor.utils.ts:127) and run without the RunQueryWarningModal.",
+   "gap_label": "Extend destructiveSqlRegex/analyzeQueryIssues to catch CTE and DO-block statements",
+   "extends_from": [
+    "apps/studio/components/interfaces/SQLEditor/SQLEditor.constants.ts:40 destructiveSqlRegex",
+    "apps/studio/components/interfaces/SQLEditor/SQLEditor.utils.ts:222 analyzeQueryIssues",
+    "apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx"
+   ],
+   "consequence": "misleading",
+   "consequence_reason": "Users learn the warning dialog as a safety net, so its silence reads as 'this is safe'; the statement runs irreversibly on the live database and neither retry nor refresh undoes it."
+  },
+  {
+   "state_id": 38,
+   "name": "Snippet fetch failed",
+   "status": "gap",
+   "evidence": "apps/studio/pages/project/[ref]/sql/[id].tsx:48-58 handles only 404 'Content not found' and 400 'Invalid uuid' (with retry:false); any other error leaves content undefined so deriveSnippetIdentity (apps/studio/components/interfaces/SQLEditor/SQLEditor.utils.ts:332) keeps isLoading true and SQLEditorEditorPanel.tsx:190 shows LoadingSpinner forever.",
+   "gap_label": "Reuse the invalid-id Admonition + Button branch for a generic load error with Retry",
+   "extends_from": [
+    "Admonition (ui-patterns)",
+    "Button",
+    "apps/studio/pages/project/[ref]/sql/[id].tsx:160 invalidId branch",
+    "refetch from useSqlSnippetByIdQuery"
+   ],
+   "consequence": "nuisance",
+   "consequence_reason": "The snippet is safe on the server; a manual refresh refetches it once the API recovers, so nothing is lost, only time spent watching a spinner."
+  },
+  {
+   "state_id": 39,
+   "name": "Snippet from other project",
+   "status": "partial",
+   "evidence": "Mismatch branch at apps/studio/pages/project/[ref]/sql/[id].tsx:73-77 calls router.replace('/sql/new') silently, while the deleted-snippet case right below shows a toast ('no longer exists. Opened a new query instead', [id].tsx:150) \u2014 missing: the same toast here.",
+   "gap_label": "Reuse toast from the deleted-snippet branch with 'belongs to another project' copy",
+   "extends_from": [
+    "toast (sonner)",
+    "apps/studio/pages/project/[ref]/sql/[id].tsx:150"
+   ],
+   "consequence": "misleading",
+   "consequence_reason": "A blank new query with no explanation implies the snippet is gone; refreshing repeats the same redirect, so the user can't tell they need to switch projects."
+  },
+  {
+   "state_id": 45,
+   "name": "Manual save failed",
+   "status": "partial",
+   "evidence": "persistSnippet sets status save_failed but never notifies (apps/studio/state/sql-editor/sql-editor-save.ts:103-105); in manual mode AutosaveStatus shows only 'Unsaved edits' (apps/studio/components/interfaces/SQLEditor/UtilityPanel/AutosaveStatus.tsx:31-36) and SavingIndicator's red AlertCircle + Retry is hidden (UtilityActions.tsx:110) \u2014 missing: a failure state in manual mode.",
+   "gap_label": "Extend AutosaveStatus with the SavingIndicator failure state (AlertCircle + 'Failed to save' + Retry) in manual mode",
+   "extends_from": [
+    "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SavingIndicator.tsx:49-80 AlertCircle text-red-900 + Retry",
+    "isSaveFailed (state/sql-editor/sql-editor-lifecycle.ts:21)",
+    "toast.error"
+   ],
+   "consequence": "misleading",
+   "consequence_reason": "After Cmd+S the label says 'Unsaved edits' as if the keystroke didn't register, so users retry blindly or assume a later save will work; the beforeunload guard (sql-editor-save-coordinator.tsx:133-146) protects the edits, but retrying fails again silently for persistent causes."
+  },
+  {
+   "state_id": 52,
+   "name": "No permission to save",
+   "status": "partial",
+   "evidence": "ReadOnlyBadge exists but only for snippets the user doesn't own (apps/studio/components/interfaces/SQLEditor/UtilityPanel/ReadOnlyBadge.tsx:12-15); lacking CREATE on user_content only triggers a one-off toast on New (apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx:76, apps/studio/components/interfaces/SQLEditor/hooks.ts:40) \u2014 missing: a persistent read-only notice in the editor.",
+   "gap_label": "Extend ReadOnlyBadge to show when canCreateSQLSnippet is false, with a tooltip",
+   "extends_from": [
+    "ReadOnlyBadge",
+    "Badge",
+    "Tooltip",
+    "useAsyncCheckPermissions(CREATE, 'user_content')"
+   ],
+   "consequence": "misleading",
+   "consequence_reason": "The editor looks fully editable and autosave's Retry suggests a temporary problem, but saves will never succeed; refresh or retry doesn't change the permission, and the typed SQL is lost when the tab closes."
+  },
+  {
+   "state_id": 53,
+   "name": "Concurrent edits conflict",
+   "status": "gap",
+   "evidence": "persistSnippet sends the whole snippet with no version, updated_at or If-Match check (apps/studio/state/sql-editor/sql-editor-save.ts:91-107); no BroadcastChannel/storage listener in state/sql-editor or SQLEditor/.",
+   "gap_label": "New conflict detection (compare server updated_at before upsert) + conflict notice",
+   "extends_from": [
+    "Admonition (ui-patterns)",
+    "Button",
+    "toast.warning",
+    "content upsert payload"
+   ],
+   "consequence": "misleading",
+   "consequence_reason": "Both tabs show 'Saved' while the later save silently overwrites the other's SQL; the overwritten work isn't recoverable by refresh.",
+   "notes": "Only affects the owner editing one snippet in two tabs/sessions; lower reach than other misleading items."
+  },
+  {
+   "state_id": 54,
+   "name": "Empty-list copy wrong in manual mode",
+   "status": "partial",
+   "evidence": "EmptyPrivateQueriesPanel says 'Queries will be automatically saved once you start writing in the editor' unconditionally (apps/studio/components/layouts/SQLEditorLayout/PrivateSqlSnippetEmpty.tsx:8) \u2014 missing: a manual-mode variant.",
+   "gap_label": "Reuse InnerSideBarEmptyPanel with copy switched on useIsSqlEditorManualSaveEnabled",
+   "extends_from": [
+    "InnerSideBarEmptyPanel (ui-patterns/InnerSideMenu)",
+    "useIsSqlEditorManualSaveEnabled"
+   ],
+   "consequence": "misleading",
+   "consequence_reason": "The panel states something false under manual save, so new users may close tabs expecting autosave; the close-tab confirm is the only thing that catches them."
+  },
+  {
+   "state_id": 61,
+   "name": "Snippet list fetch failed",
+   "status": "partial",
+   "evidence": "Error only fires a toast (apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:174-180); the panel then falls through to EmptyPrivateQueriesPanel 'No private queries created yet' (SQLEditorNav.tsx:683-686) \u2014 missing: an error branch with Retry.",
+   "gap_label": "Extend the private-snippets section with an error branch (Admonition + Retry)",
+   "extends_from": [
+    "Admonition (ui-patterns)",
+    "Button",
+    "refetch from the private snippets infinite query",
+    "\"Try again\" pattern (Auth/Users/UserLogs.tsx:139)"
+   ],
+   "consequence": "nuisance",
+   "consequence_reason": "Snippets are safe on the server; refreshing refetches the list once the API recovers, though the empty copy briefly suggests they're gone."
+  },
+  {
+   "state_id": 69,
+   "name": "Search failed",
+   "status": "gap",
+   "evidence": "SearchList ignores error from useSqlSnippetsQuery (apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SearchList.tsx:60-69) and shows 'No queries found' when not loading (SearchList.tsx:127-129); no error branch found.",
+   "gap_label": "Reuse Admonition + Retry in SearchList error branch",
+   "extends_from": [
+    "Admonition (ui-patterns)",
+    "Button",
+    "refetch"
+   ],
+   "consequence": "nuisance",
+   "consequence_reason": "Retyping the search or refreshing recovers it; nothing is lost."
+  },
+  {
+   "state_id": 87,
+   "name": "Export unsaved snippet",
+   "status": "gap",
+   "evidence": "DownloadSnippetModal only builds 'supabase snippets download <id>' CLI commands (apps/studio/components/interfaces/SQLEditor/DownloadSnippetModal.tsx:55-80, SQLEditor.utils.ts:338-354), which fetch the server copy; no check of hasUnsavedChanges and no notice in the modal.",
+   "gap_label": "Extend DownloadSnippetModal with a warning Admonition + Save action when the snippet has unsaved edits",
+   "extends_from": [
+    "Admonition type=warning",
+    "SqlSaveButton",
+    "hasUnsavedChanges (state/sql-editor/sql-editor-lifecycle.ts:30)"
+   ],
+   "consequence": "misleading",
+   "consequence_reason": "In manual-save mode the migration/seed file silently gets the older server SQL, which the user may then apply to production believing it matches the editor."
+  },
+  {
+   "state_id": 97,
+   "name": "Delete folder failed",
+   "status": "covered",
+   "evidence": "useSQLSnippetFoldersDeleteMutation defaults to toast.error('Failed to delete folder: ...') when no onError is passed (apps/studio/data/content/sql-folders-delete-mutation.ts:55-57); SQLEditorNav.tsx:339 relies on it.",
+   "gap_label": null,
+   "extends_from": null,
+   "notes": "Dialog stays open so the user can retry."
+  },
+  {
+   "state_id": 101,
+   "name": "Many tabs overflow",
+   "status": "covered",
+   "evidence": "Tab strip uses 'overflow-x-auto' with a pinned segment outside the scroll area (apps/studio/components/layouts/Tabs/Tabs.tsx:195-200).",
+   "gap_label": null,
+   "extends_from": null
+  },
+  {
+   "state_id": 109,
+   "name": "AI diff accept fails silently",
+   "status": "recommendation",
+   "evidence": "acceptAiHandler returns early with a 'TODO: show error if undefined' when editor/diff isn't ready (apps/studio/components/interfaces/SQLEditor/useSqlEditorAi.ts:156).",
+   "gap_label": null,
+   "extends_from": null,
+   "notes": "Narrow race while Monaco mounts; clicking Accept again works. A toast.error would close the TODO."
+  },
+  {
+   "state_id": 110,
+   "name": "Editor chunk loading",
+   "status": "recommendation",
+   "evidence": "MonacoEditor/DiffEditor loaded via dynamic() with no loading option (apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:20-27); the compat dynamic renders Suspense fallback null (apps/studio/compat/next/dynamic.tsx:49).",
+   "gap_label": null,
+   "extends_from": null,
+   "notes": "Reuse the existing LoadingSpinner (SQLEditorEditorPanel.tsx:175) as the fallback. Poor connectivity isn't normal for these users; collapsed under state 120."
+  },
+  {
+   "state_id": 116,
+   "name": "Chart with no results",
+   "status": "covered",
+   "evidence": "NoDataPlaceholder 'Execute a query and configure the chart options.' when there are no result keys (apps/studio/components/interfaces/SQLEditor/UtilityPanel/ChartConfig.tsx:110-118).",
+   "gap_label": null,
+   "extends_from": null
+  },
+  {
+   "state_id": 117,
+   "name": "Toast stack",
+   "status": "covered",
+   "evidence": "Single SonnerToaster (packages/ui/src/components/shadcn/ui/sonner.tsx:13) mounted once in apps/studio/pages/_app.tsx:226; Sonner stacks and caps visible toasts by default.",
+   "gap_label": null,
+   "extends_from": null
+  },
+  {
+   "state_id": 118,
+   "name": "First-time",
+   "status": "covered",
+   "evidence": "Editor placeholder 'Hit CMD+SHIFT+K to generate query or just start typing' (apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:29-30), EmptyPrivateQueriesPanel (apps/studio/components/layouts/SQLEditorLayout/PrivateSqlSnippetEmpty.tsx:5), Templates/Examples sections (apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/ReferenceSnippetsSection.tsx:48) and 'Click Run to execute your query' (UtilityTabResults.tsx:160-166).",
+   "gap_label": null,
+   "extends_from": null,
+   "notes": "Quick-scan found no onboarding keywords, but the empty states and templates cover it. The empty panel's autosave copy is wrong in manual mode (state 54)."
+  },
+  {
+   "state_id": 119,
+   "name": "Offline",
+   "status": "gap",
+   "evidence": "No navigator.onLine/offline listener in SQLEditor/, SQLEditorLayout/ or state/sql-editor; React Query v5 (package.json ~5.83) pauses mutations while offline by default (no networkMode override in apps/studio/data/query-client.ts), so a Run while offline leaves isPending true and UtilityTabResults.tsx:41-47 shows 'Running...' until reconnect, then fires.",
+   "gap_label": "New offline banner + offline-aware Run state",
+   "extends_from": [
+    "Admonition type=warning",
+    "Badge",
+    "onlineManager (@tanstack/react-query)",
+    "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SavingIndicator.tsx AlertCircle + Retry"
+   ],
+   "consequence": "misleading",
+   "consequence_reason": "The results panel claims the query is running when nothing was sent, and it may execute later on reconnect against the live database; autosave failures only show a small icon. Retrying doesn't clarify what's happening.",
+   "notes": "Autosave failure does get the AlertCircle + Retry in auto mode (SavingIndicator.tsx:49-80), so edits aren't silently dropped."
+  },
+  {
+   "state_id": 120,
+   "name": "Slow connection",
+   "status": "recommendation",
+   "evidence": "Request timeouts exist (apps/studio/data/fetchers.ts:399, 60s) and statement/upstream timeouts get tailored copy (UtilityTabResults.tsx:34-85); Monaco chunk has a blank fallback (state 110) and runs show only a spinner.",
+   "gap_label": null,
+   "extends_from": null,
+   "notes": "Includes state 110. context.poor_connectivity_is_normal: no, so elapsed-time hints are an enhancement."
+  },
+  {
+   "state_id": 121,
+   "name": "Session expired",
+   "status": "partial",
+   "evidence": "SessionTimeoutModal ('Session expired', apps/studio/components/interfaces/SignIn/SessionTimeoutModal.tsx:56) via hooks/misc/withAuth.tsx:106, and 401 sign-out in apps/studio/lib/profile.tsx:93 \u2014 missing: any local draft of snippet content; sqlEditorState is an in-memory valtio proxy (apps/studio/state/sql-editor/sql-editor-state.ts:19) with no localStorage persistence.",
+   "gap_label": "Extend the save coordinator to persist dirty snippets to safeLocalStorage and restore after sign-in",
+   "extends_from": [
+    "safeLocalStorage (pattern in apps/studio/state/tabs.tsx:172)",
+    "SessionTimeoutModal",
+    "Admonition 'Restored unsaved edits'"
+   ],
+   "consequence": "blocker",
+   "consequence_reason": "In manual mode, and for edits whose autosave failed after expiry, the SQL lives only in memory; the modal's 'Clear site data and reload' or any full reload on the way back from sign-in discards it, and refresh can't bring it back (context.unsaved_work: partly)."
+  },
+  {
+   "state_id": 122,
+   "name": "Project paused or unhealthy",
+   "status": "partial",
+   "evidence": "ProjectLayout renders ProjectPausedState, RestoringState, UpgradingState etc. for reported statuses (apps/studio/components/layouts/ProjectLayout/index.tsx:219-226, 464-472) \u2014 missing: copy for an ACTIVE project whose database is unreachable; EHOSTUNREACH is detected (UtilityTabResults.tsx:39) but the raw error is printed.",
+   "gap_label": "Extend UtilityTabResults error branch with 'database unreachable' copy + link to project status",
+   "extends_from": [
+    "Admonition",
+    "InlineLink",
+    "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:39 isNetWorkError"
+   ],
+   "consequence": "nuisance",
+   "consequence_reason": "Running again once the database is back recovers it and the SQL stays in the editor; the raw error just slows the user down."
+  },
+  {
+   "state_id": 123,
+   "name": "Stale app version",
+   "status": "recommendation",
+   "evidence": "Persisted tabs are shape-checked and fall back to defaults on bad data (apps/studio/state/tabs.tsx:176-192); no 'new version available' prompt found.",
+   "gap_label": null,
+   "extends_from": null,
+   "notes": "Old persisted state degrades safely; a reload prompt after deploy is an enhancement."
+  },
+  {
+   "state_id": 125,
+   "name": "Keyboard navigation",
+   "status": "partial",
+   "evidence": "Cmd+Enter/Cmd+S shortcuts (apps/studio/components/interfaces/SQLEditor/useSqlEditorShortcuts.ts:76), focus-ring utilities and Radix dialogs cover most paths \u2014 missing: the timeout/payload-too-large 'connect to your database directly' actions are <span onClick> without role or tabIndex (apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:77-82, 112-118).",
+   "gap_label": "Reuse InlineLink/Button (asChild) for the two direct-connection actions",
+   "extends_from": [
+    "InlineLink",
+    "Button type=text",
+    "focus-ring utility (packages/config/css/utilities.css)"
+   ],
+   "consequence": "nuisance",
+   "consequence_reason": "Keyboard users can still open Connect from the page header, so they can get unstuck; nothing is lost."
+  },
+  {
+   "state_id": 126,
+   "name": "Screen reader",
+   "status": "partial",
+   "evidence": "Live-region patterns exist in the DS (packages/ui/src/components/shadcn/ui/alert.tsx:37 role=alert) and controls have aria-labels (SQLEditorMenu.tsx:101, SqlTabStatusIndicator role=img 'Unsaved changes') \u2014 missing: no aria-live/role=status anywhere in SQLEditor/ or DataGridResults, so 'Running...', errors and 'Success. No rows returned' aren't announced.",
+   "gap_label": "Reuse role=status/aria-live on the UtilityTabResults status line",
+   "extends_from": [
+    "role=status / aria-live=polite",
+    "Alert (packages/ui shadcn alert.tsx)",
+    "sr-only text"
+   ],
+   "consequence": "nuisance",
+   "consequence_reason": "Screen reader users can move to the results panel to read the outcome; nothing is lost, it just takes extra navigation."
+  },
+  {
+   "state_id": 127,
+   "name": "High contrast",
+   "status": "recommendation",
+   "evidence": "No forced-colors/prefers-contrast rules found in apps/studio/styles or packages/config/css; the unsaved dot also carries aria-label (SqlTabStatusIndicator.tsx) and errors are printed as text in the results panel, so meaning isn't colour-only.",
+   "gap_label": null,
+   "extends_from": null,
+   "notes": "Enhancement: forced-colors styles for the Monaco error-line decoration."
+  },
+  {
+   "state_id": 128,
+   "name": "Reduced motion",
+   "status": "recommendation",
+   "evidence": "prefers-reduced-motion handled for shimmer (packages/config/css/utilities.css:176) and tabs (packages/ui/src/components/shadcn/ui/tabs.tsx:56); Loader2 animate-spin spinners in RunButton.tsx:38 and UtilityTabResults.tsx:44 are not reduced.",
+   "gap_label": null,
+   "extends_from": null,
+   "notes": "Small spinners are low-risk; add motion-reduce:animate-none for completeness."
+  }
+ ],
+ "summary": {
+  "total": 33,
+  "covered": 6,
+  "partial": 11,
+  "gap": 6,
+  "recommendation": 10,
+  "blocker": 2,
+  "misleading": 8,
+  "nuisance": 7,
+  "reuse": 7,
+  "extend": 8,
+  "new": 2
+ }
+}

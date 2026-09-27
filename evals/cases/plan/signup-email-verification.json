@@ -1,0 +1,23 @@
+{
+  "name": "plan-signup-email-verification",
+  "mode": "plan",
+  "description": "A signup form (name, email, password) that sends a verification email. The user must click the link in the email to activate the account before signing in.",
+  "expected_states": [
+    { "id": "field-validation", "keywords": ["validation", "invalid email", "required"] },
+    { "id": "weak-password", "keywords": ["password strength", "weak password", "password requirements"] },
+    { "id": "submitting", "keywords": ["submitting", "loading", "disabled while"] },
+    { "id": "email-already-registered", "keywords": ["already registered", "already exists", "email taken", "existing account"] },
+    { "id": "check-your-email", "keywords": ["check your email", "verification sent", "email sent"] },
+    { "id": "resend-verification", "keywords": ["resend"] },
+    { "id": "link-expired", "keywords": ["link expired", "expired link", "token expired", "verification expired"] },
+    { "id": "link-invalid-or-used", "keywords": ["invalid link", "already used", "already verified", "invalid token"] },
+    { "id": "verified-success", "keywords": ["verified", "email confirmed", "account activated"] },
+    { "id": "sign-in-unverified", "keywords": ["unverified", "not verified", "verify before"], "required": false },
+    { "id": "submit-error", "keywords": ["server error", "network error", "signup failed"] }
+  ],
+  "must_not": [
+    { "id": "bulk-delete", "keywords": ["bulk delete"] },
+    { "id": "pagination", "keywords": ["pagination"] },
+    { "id": "empty-filtered", "keywords": ["filtered empty", "clear filters"] }
+  ]
+}

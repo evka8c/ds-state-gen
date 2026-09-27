@@ -1,0 +1,13 @@
+{
+  "findings": [
+    { "title": "Create invoice can be submitted twice", "state_id": "submitting", "consequence": "misleading", "where": [{ "file": "src/features/invoices/CreateInvoiceForm.tsx", "line": 111 }], "repro": "Double-click Create invoice on a slow network", "today": "Button stays enabled; two invoices are created" },
+    { "title": "Load error shows 'No invoices yet'", "state_id": "list-error", "consequence": "misleading", "where": [{ "file": "src/features/invoices/useInvoices.ts", "line": 13 }], "repro": "Make GET /api/invoices fail", "today": "catch sets [] so the empty state appears" },
+    { "title": "Session expired loses the new invoice form", "state_id": "session-expired", "consequence": "blocker", "where": [{ "file": "src/lib/api.ts", "line": 35 }], "repro": "Let the session expire, then submit", "today": "401 redirects to /login and the typed form is gone" },
+    { "title": "Bulk delete failure leaves rows hidden (no rollback)", "state_id": "bulk-delete-failed", "consequence": "misleading", "where": [{ "file": "src/features/invoices/InvoicesPage.tsx", "line": 24 }], "repro": "Make bulk-delete return 500", "today": "Rows vanish optimistically; only a toast says it failed" },
+    { "title": "Delete invoice toasts success before the request resolves", "state_id": "delete-pending", "consequence": "misleading", "where": [{ "file": "src/features/invoices/InvoiceDetail.tsx", "line": 44 }], "repro": "Make DELETE fail", "today": "'Invoice deleted' toast and navigation happen first; failure is silent" },
+    { "title": "Status filter with no results shows the first-use empty state", "state_id": "empty-filtered", "consequence": "nuisance", "where": [{ "file": "src/features/invoices/InvoicesPage.tsx", "line": 87 }], "repro": "Filter by Overdue with none overdue", "today": "'No invoices yet' with Create invoice; no clear filter" },
+    { "title": "Upload has no file size or type check", "state_id": "upload-too-large", "consequence": "nuisance", "where": [{ "file": "src/features/invoices/AttachmentUpload.tsx", "line": 36 }], "repro": "Attach a 40 MB file", "today": "Generic 'Upload failed'" },
+    { "title": "Invoice list has no loading state", "state_id": "list-loading", "consequence": "nuisance", "where": [{ "file": "src/features/invoices/InvoicesPage.tsx", "line": 74 }], "repro": "Throttle network", "today": "Blank area until data arrives" }
+  ],
+  "checked_ok": ["Search no results: shows the query and Clear search", "Form validation: inline errors with aria-invalid", "Detail loading: skeleton"]
+}

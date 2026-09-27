@@ -1,0 +1,9 @@
+{ "states": [
+  { "id": "loading", "name": "Loading skeleton rows" },
+  { "id": "empty", "name": "No invoices yet (first use)" },
+  { "id": "empty-filtered", "name": "No results for filters, with Clear filters" },
+  { "id": "error", "name": "Failed to load invoices, with retry" },
+  { "id": "confirm", "name": "Bulk delete confirmation dialog" },
+  { "id": "deleting", "name": "Deleting in progress" },
+  { "id": "delete-failed", "name": "Delete failed, rows restored (rollback)" }
+] }

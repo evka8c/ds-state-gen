@@ -1,0 +1,114 @@
+{
+  "name": "documenso-signing",
+  "mode": "audit",
+  "repo": "/private/tmp/claude-502/-Users-evka-career-ops/aaf50c25-c68f-426d-b1bb-ea565f7cbb6a/scratchpad/documenso",
+  "repo_commit": "39ae854",
+  "source": "examples/documenso-signing/data/auditor.json + reclassify.json; docs/WORKLOG.md 'Documenso, reclassified by consequence'. Line numbers re-verified against the clone on 2026-09-25.",
+  "context": { "unsaved_work": "partly", "poor_connectivity_is_normal": false, "stakes": "legal signatures" },
+  "paths": [
+    "apps/remix/app/routes/_recipient+/sign.$token+/_index.tsx",
+    "apps/remix/app/routes/_recipient+/sign.$token+/complete.tsx",
+    "apps/remix/app/routes/_recipient+/sign.$token+/expired.tsx",
+    "apps/remix/app/routes/_recipient+/sign.$token+/rejected.tsx",
+    "apps/remix/app/routes/_recipient+/sign.$token+/waiting.tsx",
+    "apps/remix/app/components/general/document-signing/",
+    "apps/remix/app/components/general/envelope-signing/",
+    "apps/remix/app/components/general/pdf-viewer/",
+    "apps/remix/app/components/dialogs/sign-field-text-dialog.tsx",
+    "packages/ui/primitives/signature-pad/"
+  ],
+  "expected": [
+    {
+      "id": "keyboard-navigation",
+      "title": "V2 fields are Konva canvas shapes with pointerdown only; keyboard-only recipients cannot insert any field",
+      "match": { "files": ["envelope-signer-page-renderer.tsx", "signature-pad-draw.tsx", "document-signing-field-container.tsx"], "keywords": ["keyboard", "tab key", "pointerdown", "focus", "canvas", "konva"] },
+      "evidence": ["apps/remix/app/components/general/envelope-signing/envelope-signer-page-renderer.tsx:419-420", "packages/ui/primitives/signature-pad/signature-pad-draw.tsx:246", "packages/trpc/server/envelope-router/create-envelope.ts:174"],
+      "consequence": "blocker",
+      "must_find": true
+    },
+    {
+      "id": "screen-reader",
+      "title": "Fields expose nothing to assistive tech: V2 canvas has no DOM/ARIA, V1 insert/remove buttons are empty",
+      "match": { "files": ["envelope-signer-page-renderer.tsx", "document-signing-field-container.tsx"], "keywords": ["screen reader", "aria", "accessible name", "unlabeled", "unnamed", "assistive"] },
+      "evidence": ["apps/remix/app/components/general/document-signing/document-signing-field-container.tsx:122-125", "apps/remix/app/components/general/document-signing/document-signing-field-container.tsx:143"],
+      "consequence": "blocker",
+      "must_find": true
+    },
+    {
+      "id": "signature-methods-all-disabled",
+      "title": "API accepts all three signature methods disabled; SignaturePad throws 'No signature enabled' and every recipient hits the 500 page",
+      "match": { "files": ["signature-pad.tsx", "schema.ts", "document-meta.ts"], "keywords": ["no signature enabled", "signature method", "all disabled", "typedSignatureEnabled", "drawSignatureEnabled", "throw"] },
+      "evidence": ["packages/ui/primitives/signature-pad/signature-pad.tsx:83", "packages/api/v1/schema.ts:170-172"],
+      "consequence": "blocker",
+      "must_find": true
+    },
+    {
+      "id": "status-page-says-sign-up",
+      "title": "complete/expired/rejected render the auth page without emailHasAccount, so existing account holders are told to Sign up",
+      "match": { "files": ["document-signing-auth-page.tsx", "complete.tsx", "expired.tsx", "rejected.tsx"], "keywords": ["sign up", "signup", "emailHasAccount", "existing account", "login"] },
+      "evidence": ["apps/remix/app/components/general/document-signing/document-signing-auth-page.tsx:28", "apps/remix/app/components/general/document-signing/document-signing-auth-page.tsx:69", "apps/remix/app/routes/_recipient+/sign.$token+/complete.tsx:146"],
+      "consequence": "misleading",
+      "must_find": true
+    },
+    {
+      "id": "v2-text-over-limit",
+      "title": "V2 text dialog has no max length; counter goes negative, server rejects with generic error, text is cleared",
+      "match": { "files": ["sign-field-text-dialog.tsx", "envelope-signing.ts", "envelope-signer-page-renderer.tsx"], "keywords": ["character limit", "characters remaining", "characterLimit", "too long", "max length", "over limit"] },
+      "evidence": ["apps/remix/app/components/dialogs/sign-field-text-dialog.tsx:21-23", "apps/remix/app/components/dialogs/sign-field-text-dialog.tsx:72-77"],
+      "consequence": "misleading",
+      "must_find": true
+    },
+    {
+      "id": "2fa-code-expired",
+      "title": "Expired 2FA code is reported as 'Invalid verification code'; Verify stays enabled after expiry",
+      "match": { "files": ["access-auth-2fa-form.tsx", "document-signing-complete-dialog.tsx"], "keywords": ["2fa", "verification code", "expired", "expiry", "two factor", "invalid"] },
+      "evidence": ["apps/remix/app/components/general/document-signing/access-auth-2fa-form.tsx:254-262", "apps/remix/app/components/general/document-signing/document-signing-complete-dialog.tsx:174-178"],
+      "consequence": "misleading",
+      "must_find": true
+    },
+    {
+      "id": "offline",
+      "title": "No offline detection; field inserts fail with a generic destructive toast",
+      "match": { "files": ["envelope-signer-page-renderer.tsx", "document-signing-field-container.tsx", "envelope-signing-provider.tsx"], "keywords": ["offline", "network", "connection", "navigator.onLine", "connectivity"] },
+      "evidence": ["apps/remix/app/components/general/envelope-signing/envelope-signer-page-renderer.tsx:527-531"],
+      "consequence": "nuisance",
+      "must_find": false
+    },
+    {
+      "id": "pdf-load-error-no-retry",
+      "title": "PDF load error says 'Please try again' with nothing to click",
+      "match": { "files": ["pdf-viewer-states.tsx", "pdf-viewer.tsx"], "keywords": ["pdf", "retry", "try again", "load error", "document failed"] },
+      "evidence": ["apps/remix/app/components/general/pdf-viewer/pdf-viewer-states.tsx:12-25"],
+      "consequence": "nuisance",
+      "must_find": false
+    },
+    {
+      "id": "slow-connection",
+      "title": "No progress or slow-load messaging while the PDF loads",
+      "match": { "files": ["pdf-viewer.tsx", "pdf-viewer-states.tsx"], "keywords": ["slow", "progress", "timeout", "long load"] },
+      "evidence": ["apps/remix/app/components/general/pdf-viewer/pdf-viewer-states.tsx:4-10"],
+      "consequence": "nuisance",
+      "must_find": false
+    },
+    {
+      "id": "link-expires-mid-session",
+      "title": "Document expires/is rejected mid-session: toast shows but dialog stays open, no navigation to the status page",
+      "match": { "files": ["envelope-signing-complete-dialog.tsx", "toast-error-messages.ts", "document-signing-complete-dialog.tsx"], "keywords": ["expired", "mid-session", "cancelled", "rejected", "no longer available", "deadline"] },
+      "evidence": ["apps/remix/app/components/general/envelope-signing/envelope-signing-complete-dialog.tsx:141-158"],
+      "consequence": "nuisance",
+      "must_find": false
+    }
+  ],
+  "recommendations": [
+    { "id": "reduced-motion", "keywords": ["reduced motion", "prefers-reduced-motion"] },
+    { "id": "high-contrast", "keywords": ["high contrast", "forced-colors"] },
+    { "id": "print", "keywords": ["print"] }
+  ],
+  "must_not_flag": [
+    { "state": "Signing deadline expired (page load)", "keywords": ["deadline expired", "expired page"], "files": ["expired.tsx"], "why": "Dedicated terminal page with icon and heading", "evidence": "apps/remix/app/routes/_recipient+/sign.$token+/expired.tsx:102" },
+    { "state": "Completion processing / waiting for other signers", "keywords": ["processing", "polling", "completion pending"], "files": ["complete.tsx"], "why": "Complete page polls document status every 3s", "evidence": "apps/remix/app/routes/_recipient+/sign.$token+/complete.tsx:130" },
+    { "state": "V1 text field over character limit", "keywords": ["characters over"], "files": ["document-signing-text-field.tsx"], "why": "V1 validates before sending and shows '(N characters over)' (only V2 is broken)", "evidence": "apps/remix/app/components/general/document-signing/document-signing-text-field.tsx:296-305" },
+    { "state": "2FA resend code", "keywords": ["resend"], "files": ["access-auth-2fa-form.tsx"], "why": "Resend code button exists", "evidence": "apps/remix/app/components/general/document-signing/access-auth-2fa-form.tsx:111,286-289" },
+    { "state": "Complete button submitting", "keywords": ["double submit", "submitting", "complete button"], "files": ["document-signing-complete-dialog.tsx"], "why": "Button has loading={isSubmitting} / form.formState.isSubmitting", "evidence": "apps/remix/app/components/general/document-signing/document-signing-complete-dialog.tsx:221,383" }
+  ]
+}

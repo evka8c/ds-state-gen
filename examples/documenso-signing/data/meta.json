@@ -1,0 +1,13 @@
+{
+ "feature": "Recipient document signing page",
+ "description": "Documenso /sign/:token: link gating, access auth, PDF with assigned fields, signature pad, rejection, completion, terminal pages.",
+ "ds_name": "@documenso/ui (shadcn + Tailwind)",
+ "project_path": "documenso/documenso",
+ "summary": "On new envelopes, a recipient who uses a keyboard or a screen reader cannot sign at all: the fields are drawn on a canvas that only answers to a mouse or finger. Of the 38 states this page needs, 3 block signing outright and 3 mislead, while offline and slow loading turn out to be nuisances that a refresh fixes. Fixing those three takes the score from 50 to 89.",
+ "context": {
+  "unsaved_work": "partly",
+  "poor_connectivity_is_normal": "no",
+  "stakes": "legally binding e-signatures sent to the public; accessibility obligations"
+ },
+ "unsaved_work_reason": "Every field saves to the server the moment it is inserted (trpc.field.signFieldWithToken in each document-signing-*-field.tsx, e.g. document-signing-signature-field.tsx:68,149; trpc.envelope.field.sign in envelope-signing-provider.tsx:141,333), so inserted fields survive a refresh. Lost on refresh or on a failed insert: a signature drawn/typed/uploaded in the pad but not yet inserted, text typed into an open field dialog, and the Full Name and Signature typed into the side panel, all of which live only in React state (document-signing-provider.tsx:48-52, document-signing-form.tsx:239-259). A logged-in recipient gets their account name/signature back from the loader (_index.tsx:472-473), an anonymous recipient does not. In the V2 renderer a failed insert also drops the drawn signature, because setSignature only runs after signField succeeds (envelope-signer-page-renderer.tsx:396-407), and the text dialog reopens empty (sign-field-text-dialog.tsx:35-38)."
+}

@@ -1,0 +1,710 @@
+[
+  {
+    "path": "apps/studio/pages/project/[ref]/sql/[id].tsx",
+    "depth": 0,
+    "lines": 206,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/pages/project/[ref]/sql/index.tsx",
+    "depth": 0,
+    "lines": 51,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/SQLEditor.tsx",
+    "depth": 1,
+    "lines": 12,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/DefaultLayout.tsx",
+    "depth": 1,
+    "lines": 154,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/editors/EditorBaseLayout.tsx",
+    "depth": 1,
+    "lines": 82,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorLayout.tsx",
+    "depth": 1,
+    "lines": 20,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx",
+    "depth": 1,
+    "lines": 187,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/state/tabs.tsx",
+    "depth": 1,
+    "lines": 718,
+    "ui": true
+  },
+  {
+    "path": "packages/common/index.tsx",
+    "depth": 1,
+    "lines": 18,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/Admonition/index.tsx",
+    "depth": 1,
+    "lines": 10,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/querySource.ts",
+    "depth": 1,
+    "lines": 57,
+    "ui": false
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/SQLEditor.constants.ts",
+    "depth": 1,
+    "lines": 108,
+    "ui": false
+  },
+  {
+    "path": "apps/studio/components/layouts/editors/EditorsLayout.hooks.ts",
+    "depth": 1,
+    "lines": 16,
+    "ui": false
+  },
+  {
+    "path": "apps/studio/data/content/content-id-query.ts",
+    "depth": 1,
+    "lines": 85,
+    "ui": false
+  },
+  {
+    "path": "apps/studio/hooks/misc/useDashboardHistory.ts",
+    "depth": 1,
+    "lines": 64,
+    "ui": false
+  },
+  {
+    "path": "apps/studio/hooks/misc/useSelectedProject.ts",
+    "depth": 1,
+    "lines": 67,
+    "ui": false
+  },
+  {
+    "path": "apps/studio/lib/constants/index.ts",
+    "depth": 1,
+    "lines": 84,
+    "ui": false
+  },
+  {
+    "path": "apps/studio/state/sql-editor/sql-editor-lifecycle.ts",
+    "depth": 1,
+    "lines": 104,
+    "ui": false
+  },
+  {
+    "path": "apps/studio/state/sql-editor/sql-editor-state.ts",
+    "depth": 1,
+    "lines": 319,
+    "ui": false
+  },
+  {
+    "path": "packages/common/hooks/useParams.ts",
+    "depth": 1,
+    "lines": 66,
+    "ui": false
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/SQLEditorContext.tsx",
+    "depth": 2,
+    "lines": 248,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/SQLEditorControllers.tsx",
+    "depth": 2,
+    "lines": 264,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/SQLEditorLayout.tsx",
+    "depth": 2,
+    "lines": 160,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/SqlEditorManualSaveNoticeDialog.tsx",
+    "depth": 2,
+    "lines": 88,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SearchList.tsx",
+    "depth": 2,
+    "lines": 200,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx",
+    "depth": 2,
+    "lines": 894,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/hooks/misc/withAuth.tsx",
+    "depth": 2,
+    "lines": 168,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/lib/profile.tsx",
+    "depth": 2,
+    "lines": 148,
+    "ui": true
+  },
+  {
+    "path": "packages/common/auth.tsx",
+    "depth": 2,
+    "lines": 186,
+    "ui": true
+  },
+  {
+    "path": "packages/common/feature-flags.tsx",
+    "depth": 2,
+    "lines": 292,
+    "ui": true
+  },
+  {
+    "path": "packages/common/MetaFavicons/pages-router.tsx",
+    "depth": 2,
+    "lines": 93,
+    "ui": true
+  },
+  {
+    "path": "packages/common/Providers.tsx",
+    "depth": 2,
+    "lines": 34,
+    "ui": true
+  },
+  {
+    "path": "packages/common/telemetry.tsx",
+    "depth": 2,
+    "lines": 499,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/Admonition/Admonition.tsx",
+    "depth": 2,
+    "lines": 126,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/Admonition/AdmonitionIcons.tsx",
+    "depth": 2,
+    "lines": 95,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/InnerSideMenu/index.tsx",
+    "depth": 2,
+    "lines": 317,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/App/FeaturePreview/FeaturePreviewContext.tsx",
+    "depth": 3,
+    "lines": 202,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SignIn/SessionTimeoutModal.tsx",
+    "depth": 3,
+    "lines": 104,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/DownloadSnippetModal.tsx",
+    "depth": 3,
+    "lines": 174,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx",
+    "depth": 3,
+    "lines": 368,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx",
+    "depth": 3,
+    "lines": 261,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx",
+    "depth": 3,
+    "lines": 189,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx",
+    "depth": 3,
+    "lines": 204,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx",
+    "depth": 3,
+    "lines": 313,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityPanel.tsx",
+    "depth": 3,
+    "lines": 192,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/SQLEditorLayout/PrivateSqlSnippetEmpty.tsx",
+    "depth": 3,
+    "lines": 35,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/DeleteSnippetsModal.tsx",
+    "depth": 3,
+    "lines": 105,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/LogsSnippetsSection.tsx",
+    "depth": 3,
+    "lines": 137,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/ReferenceSnippetsSection.tsx",
+    "depth": 3,
+    "lines": 63,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/ShareSnippetModal.tsx",
+    "depth": 3,
+    "lines": 101,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorLoadingSnippets.tsx",
+    "depth": 3,
+    "lines": 29,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorTreeViewItem.tsx",
+    "depth": 3,
+    "lines": 488,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SqlSnippetTree.tsx",
+    "depth": 3,
+    "lines": 123,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/UnshareSnippetModal.tsx",
+    "depth": 3,
+    "lines": 99,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/TableEditorLayout/EditorMenuListSkeleton.tsx",
+    "depth": 3,
+    "lines": 24,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/lib/auth.tsx",
+    "depth": 3,
+    "lines": 58,
+    "ui": true
+  },
+  {
+    "path": "packages/common/fetchWrappers.tsx",
+    "depth": 3,
+    "lines": 55,
+    "ui": true
+  },
+  {
+    "path": "packages/common/hooks/useBreakpoint.tsx",
+    "depth": 3,
+    "lines": 40,
+    "ui": true
+  },
+  {
+    "path": "packages/common/hooks/useDebounce.tsx",
+    "depth": 3,
+    "lines": 23,
+    "ui": true
+  },
+  {
+    "path": "packages/common/hooks/useDragToClose.tsx",
+    "depth": 3,
+    "lines": 49,
+    "ui": true
+  },
+  {
+    "path": "packages/common/hooks/useIsomorphicLayoutEffect.tsx",
+    "depth": 3,
+    "lines": 5,
+    "ui": true
+  },
+  {
+    "path": "packages/common/hooks/useThemeSandbox.tsx",
+    "depth": 3,
+    "lines": 119,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/Dialogs/ConfirmationModal.tsx",
+    "depth": 3,
+    "lines": 173,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/ShimmeringLoader/index.tsx",
+    "depth": 3,
+    "lines": 108,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/RoleImpersonationSelector/RoleImpersonationPopover.tsx",
+    "depth": 4,
+    "lines": 101,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/Settings/General/DashboardPreferences.tsx",
+    "depth": 4,
+    "lines": 203,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/LegacyLogsRewriteBanner.tsx",
+    "depth": 4,
+    "lines": 48,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/MonacoEditor.tsx",
+    "depth": 4,
+    "lines": 254,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/AutosaveStatus.tsx",
+    "depth": 4,
+    "lines": 65,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/ChartConfig.tsx",
+    "depth": 4,
+    "lines": 291,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/QuerySourceMenu/QuerySourceMenu.tsx",
+    "depth": 4,
+    "lines": 171,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/RunButton.tsx",
+    "depth": 4,
+    "lines": 50,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SaveButton.tsx",
+    "depth": 4,
+    "lines": 40,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SavingIndicator.tsx",
+    "depth": 4,
+    "lines": 91,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx",
+    "depth": 4,
+    "lines": 180,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/Support/SupportLink.tsx",
+    "depth": 4,
+    "lines": 29,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider.tsx",
+    "depth": 4,
+    "lines": 128,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/state/ai-assistant-state.tsx",
+    "depth": 4,
+    "lines": 872,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/state/database-selector.tsx",
+    "depth": 4,
+    "lines": 42,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/state/role-impersonation-state.tsx",
+    "depth": 4,
+    "lines": 316,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/state/shortcuts/useShortcut.tsx",
+    "depth": 4,
+    "lines": 124,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/state/sidebar-manager-state.tsx",
+    "depth": 4,
+    "lines": 194,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/state/sql-editor/sql-editor-save-coordinator.tsx",
+    "depth": 4,
+    "lines": 168,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/CodeBlock/index.tsx",
+    "depth": 4,
+    "lines": 2,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/collapsible-alert.tsx",
+    "depth": 4,
+    "lines": 47,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/form/FormItemLayout/FormItemLayout.tsx",
+    "depth": 4,
+    "lines": 22,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/Auth/Users/Users.utils.tsx",
+    "depth": 5,
+    "lines": 516,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/Markdown.tsx",
+    "depth": 5,
+    "lines": 55,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/QuerySources/DatabaseParametersSubMenu.tsx",
+    "depth": 5,
+    "lines": 88,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/QuerySources/LogsCustomRangeDialog.tsx",
+    "depth": 5,
+    "lines": 57,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/QuerySources/LogsTimeRangeSubMenu.tsx",
+    "depth": 5,
+    "lines": 87,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/QuerySources/QuerySourceIcon.tsx",
+    "depth": 5,
+    "lines": 16,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/RoleImpersonationSelector/index.tsx",
+    "depth": 5,
+    "lines": 126,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/Settings/Logs/LegacyLogsRewriteBanner.tsx",
+    "depth": 5,
+    "lines": 63,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/Settings/Logs/UpgradePrompt.tsx",
+    "depth": 5,
+    "lines": 103,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/SqlTabStatusIndicator.tsx",
+    "depth": 5,
+    "lines": 34,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/QuerySourceMenu/RowLimitSubMenu.tsx",
+    "depth": 5,
+    "lines": 39,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/QuerySourceMenu/RunAsSubMenu.tsx",
+    "depth": 5,
+    "lines": 45,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/ReadOnlyBadge.tsx",
+    "depth": 5,
+    "lines": 19,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/Support/SupportForm.utils.tsx",
+    "depth": 5,
+    "lines": 260,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/hooks/misc/useCustomAccessTokenHookDetails.tsx",
+    "depth": 5,
+    "lines": 24,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/CodeBlock/CodeBlock.tsx",
+    "depth": 5,
+    "lines": 294,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/CommandMenu/index.tsx",
+    "depth": 5,
+    "lines": 29,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/PageSection/index.tsx",
+    "depth": 5,
+    "lines": 221,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/Auth/AuthProvidersFormValidation.tsx",
+    "depth": 6,
+    "lines": 1768,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/Auth/Users/UsersGridComponents.tsx",
+    "depth": 6,
+    "lines": 112,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/RoleImpersonationSelector/UserImpersonationSelector.tsx",
+    "depth": 6,
+    "lines": 496,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/components/interfaces/Settings/Logs/LegacyLogsRewriteAdmonition.tsx",
+    "depth": 6,
+    "lines": 108,
+    "ui": true
+  },
+  {
+    "path": "apps/studio/lib/datetime.tsx",
+    "depth": 6,
+    "lines": 186,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/CommandMenu/api/Badges.tsx",
+    "depth": 6,
+    "lines": 17,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/CommandMenu/api/CommandHeader.tsx",
+    "depth": 6,
+    "lines": 14,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/CommandMenu/api/CommandMenu.tsx",
+    "depth": 6,
+    "lines": 297,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/CommandMenu/api/CommandMenuInput.tsx",
+    "depth": 6,
+    "lines": 141,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/CommandMenu/api/CommandMenuList.tsx",
+    "depth": 6,
+    "lines": 56,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/CommandMenu/api/CommandProvider.tsx",
+    "depth": 6,
+    "lines": 133,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/CommandMenu/api/hooks/useCommandMenuTelemetryContext.tsx",
+    "depth": 6,
+    "lines": 20,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/CommandMenu/api/hooks/useCrossCompatRouter.tsx",
+    "depth": 6,
+    "lines": 66,
+    "ui": true
+  },
+  {
+    "path": "packages/ui-patterns/src/CommandMenu/api/TextHighlighter.tsx",
+    "depth": 6,
+    "lines": 44,
+    "ui": true
+  }
+]

@@ -1,0 +1,383 @@
+[
+ {
+  "state_id": 1,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:175"
+ },
+ {
+  "state_id": 2,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:41"
+ },
+ {
+  "state_id": 3,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:170"
+ },
+ {
+  "state_id": 4,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:163"
+ },
+ {
+  "state_id": 5,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:87"
+ },
+ {
+  "state_id": 11,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:60"
+ },
+ {
+  "state_id": 12,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:103"
+ },
+ {
+  "state_id": 13,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:109"
+ },
+ {
+  "state_id": 14,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:97"
+ },
+ {
+  "state_id": 15,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/useSqlEditorExecution.ts:126"
+ },
+ {
+  "state_id": 16,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/SQLEditorContext.tsx:133"
+ },
+ {
+  "state_id": 17,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityPanel.tsx:143"
+ },
+ {
+  "state_id": 18,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/RunButton.tsx:46"
+ },
+ {
+  "state_id": 19,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:298"
+ },
+ {
+  "state_id": 20,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:300"
+ },
+ {
+  "state_id": 21,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:101"
+ },
+ {
+  "state_id": 24,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityPanel.tsx:161"
+ },
+ {
+  "state_id": 25,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:147"
+ },
+ {
+  "state_id": 26,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx:86"
+ },
+ {
+  "state_id": 27,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx:94"
+ },
+ {
+  "state_id": 28,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx:107"
+ },
+ {
+  "state_id": 29,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx:181"
+ },
+ {
+  "state_id": 30,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/RunQueryWarningModal.tsx:160"
+ },
+ {
+  "state_id": 31,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/SQLEditorLayout.tsx:30"
+ },
+ {
+  "state_id": 33,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:190"
+ },
+ {
+  "state_id": 34,
+  "evidence": "apps/studio/pages/project/[ref]/sql/[id].tsx:150"
+ },
+ {
+  "state_id": 35,
+  "evidence": "apps/studio/pages/project/[ref]/sql/[id].tsx:164"
+ },
+ {
+  "state_id": 36,
+  "evidence": "apps/studio/pages/project/[ref]/sql/index.tsx:25"
+ },
+ {
+  "state_id": 37,
+  "evidence": "apps/studio/pages/project/[ref]/sql/[id].tsx:65"
+ },
+ {
+  "state_id": 40,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SavingIndicator.tsx:66"
+ },
+ {
+  "state_id": 41,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SavingIndicator.tsx:59"
+ },
+ {
+  "state_id": 42,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SavingIndicator.tsx:49"
+ },
+ {
+  "state_id": 43,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/AutosaveStatus.tsx:35"
+ },
+ {
+  "state_id": 44,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/SaveButton.tsx:28"
+ },
+ {
+  "state_id": 46,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/SqlTabStatusIndicator.tsx:27"
+ },
+ {
+  "state_id": 47,
+  "evidence": "apps/studio/state/sql-editor/sql-editor-save-coordinator.tsx:120"
+ },
+ {
+  "state_id": 48,
+  "evidence": "apps/studio/state/sql-editor/sql-editor-save-coordinator.tsx:138"
+ },
+ {
+  "state_id": 49,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/SqlEditorManualSaveNoticeDialog.tsx:57"
+ },
+ {
+  "state_id": 50,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/MonacoEditor.tsx:190"
+ },
+ {
+  "state_id": 51,
+  "evidence": "apps/studio/state/sql-editor/sql-editor-save-scheduler.ts:54"
+ },
+ {
+  "state_id": 55,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:137"
+ },
+ {
+  "state_id": 56,
+  "evidence": "apps/studio/state/sql-editor/sql-editor-save.ts:148"
+ },
+ {
+  "state_id": 57,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:683"
+ },
+ {
+  "state_id": 58,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:686"
+ },
+ {
+  "state_id": 59,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:776"
+ },
+ {
+  "state_id": 60,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:744"
+ },
+ {
+  "state_id": 62,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:530"
+ },
+ {
+  "state_id": 63,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:605"
+ },
+ {
+  "state_id": 64,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx:129"
+ },
+ {
+  "state_id": 65,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorTreeViewItem.tsx:304"
+ },
+ {
+  "state_id": 66,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SearchList.tsx:110"
+ },
+ {
+  "state_id": 67,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SearchList.tsx:115"
+ },
+ {
+  "state_id": 68,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SearchList.tsx:128"
+ },
+ {
+  "state_id": 70,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx:119"
+ },
+ {
+  "state_id": 71,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:244"
+ },
+ {
+  "state_id": 72,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:48"
+ },
+ {
+  "state_id": 73,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:226"
+ },
+ {
+  "state_id": 74,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:152"
+ },
+ {
+  "state_id": 75,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:147"
+ },
+ {
+  "state_id": 76,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:196"
+ },
+ {
+  "state_id": 77,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:81"
+ },
+ {
+  "state_id": 78,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/RenameQueryModal.tsx:186"
+ },
+ {
+  "state_id": 79,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx:210"
+ },
+ {
+  "state_id": 80,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx:357"
+ },
+ {
+  "state_id": 81,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx:79"
+ },
+ {
+  "state_id": 82,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx:356"
+ },
+ {
+  "state_id": 83,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/MoveQueryModal.tsx:74"
+ },
+ {
+  "state_id": 84,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorTreeViewItem.tsx:253"
+ },
+ {
+  "state_id": 85,
+  "evidence": "apps/studio/state/sql-editor/sql-editor-save.ts:164"
+ },
+ {
+  "state_id": 86,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/DownloadSnippetModal.tsx:104"
+ },
+ {
+  "state_id": 88,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/ShareSnippetModal.tsx:65"
+ },
+ {
+  "state_id": 89,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/ShareSnippetModal.tsx:26"
+ },
+ {
+  "state_id": 90,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/UnshareSnippetModal.tsx:26"
+ },
+ {
+  "state_id": 91,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/DeleteSnippetsModal.tsx:76"
+ },
+ {
+  "state_id": 92,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/DeleteSnippetsModal.tsx:82"
+ },
+ {
+  "state_id": 93,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/DeleteSnippetsModal.tsx:65"
+ },
+ {
+  "state_id": 94,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/DeleteSnippetsModal.tsx:87"
+ },
+ {
+  "state_id": 95,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/DeleteSnippetsModal.tsx:32"
+ },
+ {
+  "state_id": 96,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:871"
+ },
+ {
+  "state_id": 98,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx:81"
+ },
+ {
+  "state_id": 99,
+  "evidence": "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx:85"
+ },
+ {
+  "state_id": 100,
+  "evidence": "apps/studio/state/sql-editor/sql-editor-save-coordinator.tsx:128"
+ },
+ {
+  "state_id": 102,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/SQLTemplates/SQLTemplates.tsx:76"
+ },
+ {
+  "state_id": 103,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/SQLTemplates/SQLTemplates.tsx:42"
+ },
+ {
+  "state_id": 104,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:157"
+ },
+ {
+  "state_id": 105,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:170"
+ },
+ {
+  "state_id": 106,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:109"
+ },
+ {
+  "state_id": 107,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/useSqlEditorAi.ts:252"
+ },
+ {
+  "state_id": 108,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:57"
+ },
+ {
+  "state_id": 111,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:226"
+ },
+ {
+  "state_id": 112,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:95"
+ },
+ {
+  "state_id": 113,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityActions.tsx:119"
+ },
+ {
+  "state_id": 114,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/SQLEditorEditorPanel.tsx:196"
+ },
+ {
+  "state_id": 115,
+  "evidence": "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityPanel.tsx:81"
+ },
+ {
+  "state_id": 124,
+  "evidence": "Breakpoints in feature files: EditorBaseLayout.tsx:71, SQLEditorMenu.tsx:118 (quick scan)",
+  "notes": "Pre-classified from quick scan"
+ }
+]

@@ -1,0 +1,493 @@
+[
+ {
+  "id": 6,
+  "name": "Re-run hides results",
+  "component": "results grid",
+  "source": "taxonomy",
+  "cluster": "Query Execution",
+  "required": false,
+  "description": "Re-running replaces previous results with 'Running...'; old rows vanish until new ones arrive (loading-refresh).",
+  "priority": "nice-to-have"
+ },
+ {
+  "id": 7,
+  "name": "Results offline",
+  "component": "results grid",
+  "source": "taxonomy",
+  "cluster": "Query Execution",
+  "required": true,
+  "description": "Network loss mid-run shows raw EHOSTUNREACH text; no offline explanation or retry (UtilityTabResults.tsx:39).",
+  "priority": "critical"
+ },
+ {
+  "id": 8,
+  "name": "Very large result",
+  "component": "results grid",
+  "source": "taxonomy",
+  "cluster": "Query Execution",
+  "required": false,
+  "description": "Wide or huge results under 'No limit'; ambiguous how grid copes beyond browser limits.",
+  "priority": "nice-to-have"
+ },
+ {
+  "id": 9,
+  "name": "Long-running query, no cancel",
+  "component": "run button",
+  "source": "feature-specific",
+  "cluster": "Query Execution",
+  "required": true,
+  "description": "While running, only a spinner shows; no Stop/Cancel, only a separate 'View running queries' link.",
+  "priority": "critical",
+  "trigger": "executeQuery pending (useSqlEditorExecution.ts:65)"
+ },
+ {
+  "id": 10,
+  "name": "Target database unclear",
+  "component": "toolbar",
+  "source": "feature-specific",
+  "cluster": "Query Execution",
+  "required": true,
+  "description": "Run button never restates target (production primary vs replica, role); context lives in separate selectors.",
+  "priority": "critical",
+  "trigger": "Run on primary DB with postgres role (UtilityActions.tsx:258)"
+ },
+ {
+  "id": 22,
+  "name": "Results lost on reload",
+  "component": "results grid",
+  "source": "feature-specific",
+  "cluster": "Query Execution",
+  "required": false,
+  "description": "Results live in session state only; after refresh the panel resets to 'Click Run'.",
+  "priority": "nice-to-have",
+  "trigger": "Browser refresh after a run (sql-editor-session-state)"
+ },
+ {
+  "id": 23,
+  "name": "Multiple statements result",
+  "component": "results grid",
+  "source": "feature-specific",
+  "cluster": "Query Execution",
+  "required": false,
+  "description": "Only results[id][0] renders; ambiguous which statement's output a multi-statement run shows.",
+  "priority": "nice-to-have",
+  "trigger": "Run script with several SELECTs (UtilityPanel.tsx:58)"
+ },
+ {
+  "id": 32,
+  "name": "Undetected destructive query",
+  "component": "warning dialog",
+  "source": "feature-specific",
+  "cluster": "Run Warnings",
+  "required": false,
+  "description": "Heuristic analyzeQueryIssues may miss destructive SQL (e.g. inside DO blocks); ambiguous coverage.",
+  "priority": "nice-to-have",
+  "trigger": "Destructive statement the analyzer doesn't parse (useSqlEditorExecution.ts:97)"
+ },
+ {
+  "id": 38,
+  "name": "Snippet fetch failed",
+  "component": "editor",
+  "source": "feature-specific",
+  "cluster": "Snippet Loading",
+  "required": true,
+  "description": "A 500 or network error loading content leaves both panels spinning forever, no message or retry.",
+  "priority": "critical",
+  "trigger": "useSqlSnippetByIdQuery error not 404/400 ([id].tsx:48; SQLEditor.utils.ts:332)"
+ },
+ {
+  "id": 39,
+  "name": "Snippet from other project",
+  "component": "page",
+  "source": "feature-specific",
+  "cluster": "Snippet Loading",
+  "required": false,
+  "description": "Opening another project's snippet silently redirects to a blank new query with no explanation.",
+  "priority": "nice-to-have",
+  "trigger": "data.project_id !== project.id ([id].tsx:77)"
+ },
+ {
+  "id": 45,
+  "name": "Manual save failed",
+  "component": "save status",
+  "source": "feature-specific",
+  "cluster": "Saving",
+  "required": true,
+  "description": "In manual mode a failed save shows no error; label just says 'Unsaved edits' again.",
+  "priority": "critical",
+  "trigger": "upsertContent throws in manual mode (sql-editor-save.ts:103; UtilityActions.tsx:110)"
+ },
+ {
+  "id": 52,
+  "name": "No permission to save",
+  "component": "editor",
+  "source": "feature-specific",
+  "cluster": "Saving",
+  "required": false,
+  "description": "Users without create permission get one toast on New; the editor itself never says work won't save.",
+  "priority": "nice-to-have",
+  "trigger": "canCreateSQLSnippet false (SQLEditorMenu.tsx:76)"
+ },
+ {
+  "id": 53,
+  "name": "Concurrent edits conflict",
+  "component": "editor",
+  "source": "feature-specific",
+  "cluster": "Saving",
+  "required": false,
+  "description": "Same snippet edited in two tabs or by two sessions: last write wins silently, no conflict notice.",
+  "priority": "nice-to-have",
+  "trigger": "Two browser tabs on one snippet (sql-editor-save.ts:91)"
+ },
+ {
+  "id": 54,
+  "name": "Empty-list copy wrong in manual mode",
+  "component": "snippet list",
+  "source": "feature-specific",
+  "cluster": "Saving",
+  "required": false,
+  "description": "Empty panel promises queries are 'automatically saved', which is false under manual save.",
+  "priority": "nice-to-have",
+  "trigger": "Manual save on, no private snippets (PrivateSqlSnippetEmpty.tsx:8)"
+ },
+ {
+  "id": 61,
+  "name": "Snippet list fetch failed",
+  "component": "snippet list",
+  "source": "taxonomy",
+  "cluster": "Snippet Library",
+  "required": true,
+  "description": "Error toasts, then list shows 'No private queries created yet' as if the user has none.",
+  "priority": "critical"
+ },
+ {
+  "id": 69,
+  "name": "Search failed",
+  "component": "snippet search",
+  "source": "taxonomy",
+  "cluster": "Snippet Search",
+  "required": true,
+  "description": "SearchList has no error branch; a failed search likely reads as 'No queries found'.",
+  "priority": "nice-to-have"
+ },
+ {
+  "id": 87,
+  "name": "Export unsaved snippet",
+  "component": "export dialog",
+  "source": "feature-specific",
+  "cluster": "Snippet Organize",
+  "required": false,
+  "description": "CLI command downloads the server copy; unsaved or never-saved edits are silently missing (ambiguous).",
+  "priority": "nice-to-have",
+  "trigger": "Export while status is new/unsaved (DownloadSnippetModal.tsx:63)"
+ },
+ {
+  "id": 97,
+  "name": "Delete folder failed",
+  "component": "delete dialog",
+  "source": "feature-specific",
+  "cluster": "Snippet Delete",
+  "required": false,
+  "description": "Folder delete mutation has no onError here; ambiguous whether a default toast fires or dialog just stops.",
+  "priority": "nice-to-have",
+  "trigger": "Folder delete request fails (SQLEditorNav.tsx:339)"
+ },
+ {
+  "id": 101,
+  "name": "Many tabs overflow",
+  "component": "tabs",
+  "source": "taxonomy",
+  "cluster": "Tabs",
+  "required": false,
+  "description": "Tab bar with many open snippets; overflow behavior not visible in feature files.",
+  "priority": "nice-to-have"
+ },
+ {
+  "id": 109,
+  "name": "AI diff accept fails silently",
+  "component": "diff editor",
+  "source": "feature-specific",
+  "cluster": "AI Assistant",
+  "required": false,
+  "description": "Accept returns early with no message when editor or diff isn't ready (TODO in code).",
+  "priority": "nice-to-have",
+  "trigger": "acceptAiHandler guard fails (useSqlEditorAi.ts:156)"
+ },
+ {
+  "id": 110,
+  "name": "Editor chunk loading",
+  "component": "editor",
+  "source": "feature-specific",
+  "cluster": "Editor",
+  "required": false,
+  "description": "Monaco is dynamically imported with no loading fallback; area stays blank on slow networks.",
+  "priority": "nice-to-have",
+  "trigger": "next/dynamic without loading (SQLEditorEditorPanel.tsx:20)"
+ },
+ {
+  "id": 116,
+  "name": "Chart with no results",
+  "component": "chart tab",
+  "source": "feature-specific",
+  "cluster": "Editor",
+  "required": false,
+  "description": "Chart tab before any run or with zero rows; ChartConfig not read, behavior unverified.",
+  "priority": "nice-to-have",
+  "trigger": "Open Chart tab with no result (UtilityPanel.tsx:187)"
+ },
+ {
+  "id": 117,
+  "name": "Toast stack",
+  "component": "toast",
+  "source": "taxonomy",
+  "cluster": null,
+  "required": false,
+  "description": "Several failures at once (autosave, list, run) stack toasts; ambiguous ordering and limit.",
+  "priority": "nice-to-have"
+ },
+ {
+  "id": 118,
+  "name": "First-time",
+  "component": "screen",
+  "source": "screen-level",
+  "cluster": null,
+  "required": true,
+  "description": "New user lands on /sql/new with no snippets; only placeholder and templates guide them.",
+  "priority": "critical",
+  "quick_scan": {
+   "status": "missing",
+   "signals": [],
+   "problems": []
+  }
+ },
+ {
+  "id": 119,
+  "name": "Offline",
+  "component": "screen",
+  "source": "screen-level",
+  "cluster": null,
+  "required": true,
+  "description": "Connection drops: runs, autosave and list fetch fail separately with no unified offline banner.",
+  "priority": "critical",
+  "quick_scan": {
+   "status": "missing",
+   "signals": [],
+   "problems": []
+  }
+ },
+ {
+  "id": 120,
+  "name": "Slow connection",
+  "component": "screen",
+  "source": "screen-level",
+  "cluster": null,
+  "required": true,
+  "description": "Slow network stretches Monaco load, snippet fetch and query run spinners.",
+  "priority": "critical",
+  "quick_scan": {
+   "status": "partial",
+   "signals": [
+    {
+     "label": "Request timeouts",
+     "files": 1,
+     "at": [
+      "apps/studio/data/fetchers.ts:399"
+     ]
+    }
+   ],
+   "problems": []
+  }
+ },
+ {
+  "id": 121,
+  "name": "Session expired",
+  "component": "screen",
+  "source": "screen-level",
+  "cluster": null,
+  "required": true,
+  "description": "Auth expires mid-edit: autosave fails quietly; unsaved SQL must survive re-login.",
+  "priority": "critical",
+  "quick_scan": {
+   "status": "handled",
+   "signals": [
+    {
+     "label": "\"Session expired\" copy",
+     "files": 2,
+     "at": [
+      "apps/studio/components/interfaces/SignIn/SessionTimeoutModal.tsx:56",
+      "packages/shared-data/error-codes.ts:101"
+     ]
+    },
+    {
+     "label": "401 handling",
+     "files": 1,
+     "at": [
+      "apps/studio/lib/profile.tsx:93"
+     ]
+    },
+    {
+     "label": "Token refresh",
+     "files": 3,
+     "at": [
+      "packages/common/auth.tsx:23",
+      "packages/pg-meta/src/sql/studio/advisor/lints.ts:1187",
+      "packages/shared-data/error-codes.ts:255"
+     ]
+    }
+   ],
+   "problems": []
+  }
+ },
+ {
+  "id": 122,
+  "name": "Project paused or unhealthy",
+  "component": "screen",
+  "source": "screen-level",
+  "cluster": null,
+  "required": true,
+  "description": "Database unreachable (paused, restoring, upgrading); runs fail with raw errors.",
+  "priority": "critical"
+ },
+ {
+  "id": 123,
+  "name": "Stale app version",
+  "component": "screen",
+  "source": "screen-level",
+  "cluster": null,
+  "required": true,
+  "description": "Persisted tabs/local state from an older deploy after an update.",
+  "priority": "nice-to-have",
+  "quick_scan": {
+   "status": "missing",
+   "signals": [],
+   "problems": []
+  }
+ },
+ {
+  "id": 125,
+  "name": "Keyboard navigation",
+  "component": "screen",
+  "source": "screen-level",
+  "cluster": null,
+  "required": true,
+  "description": "Cmd+Enter run, Cmd+S save, focus leaving Monaco, dialog focus traps.",
+  "priority": "critical",
+  "quick_scan": {
+   "status": "handled",
+   "signals": [
+    {
+     "label": "Visible focus styles",
+     "files": 15,
+     "at": [
+      "packages/ui/src/components/radio-group-card.tsx:50",
+      "packages/ui/src/components/radio-group-stacked.tsx:54",
+      "packages/ui/src/components/shadcn/ui/input-group.tsx:59"
+     ]
+    },
+    {
+     "label": "Keyboard handlers",
+     "files": 8,
+     "at": [
+      "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx:108",
+      "packages/ui/src/components/shadcn/ui/sidebar.tsx:101",
+      "apps/studio/components/interfaces/SQLEditor/useSqlEditorShortcuts.ts:76"
+     ]
+    }
+   ],
+   "problems": [
+    {
+     "label": "Clickable elements a keyboard can't reach (div or span with a click handler)",
+     "count": 4,
+     "at": [
+      "packages/ui/src/components/shadcn/ui/input-group.tsx:106",
+      "packages/ui/src/components/Menu/Menu.tsx:106",
+      "apps/studio/components/interfaces/SQLEditor/UtilityPanel/UtilityTabResults.tsx:77"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "id": 126,
+  "name": "Screen reader",
+  "component": "screen",
+  "source": "screen-level",
+  "cluster": null,
+  "required": true,
+  "description": "Run status, errors and results announced; Monaco and grid accessible.",
+  "priority": "nice-to-have",
+  "quick_scan": {
+   "status": "handled",
+   "signals": [
+    {
+     "label": "Live announcements (aria-live, role=status/alert)",
+     "files": 3,
+     "at": [
+      "packages/ui/src/components/shadcn/ui/alert.tsx:37",
+      "packages/ui/src/components/shadcn/ui/field.tsx:209",
+      "apps/studio/components/interfaces/RoleImpersonationSelector/index.tsx:119"
+     ]
+    },
+    {
+     "label": "Screen-reader-only text",
+     "files": 7,
+     "at": [
+      "packages/ui-patterns/src/InnerSideMenu/index.tsx:178",
+      "packages/ui/src/components/shadcn/ui/breadcrumb.tsx:105",
+      "packages/ui/src/components/shadcn/ui/dialog.tsx:122"
+     ]
+    },
+    {
+     "label": "aria-label on controls",
+     "files": 22,
+     "at": [
+      "apps/studio/components/layouts/SQLEditorLayout/SQLEditorMenu.tsx:101",
+      "apps/studio/components/layouts/SQLEditorLayout/SQLEditorNavV2/SQLEditorNav.tsx:538",
+      "packages/ui-patterns/src/Admonition/Admonition.tsx:48"
+     ]
+    }
+   ],
+   "problems": []
+  }
+ },
+ {
+  "id": 127,
+  "name": "High contrast",
+  "component": "screen",
+  "source": "screen-level",
+  "cluster": null,
+  "required": true,
+  "description": "Error-line highlight and unsaved dot must not rely on colour alone.",
+  "priority": "nice-to-have",
+  "quick_scan": {
+   "status": "missing",
+   "signals": [],
+   "problems": []
+  }
+ },
+ {
+  "id": 128,
+  "name": "Reduced motion",
+  "component": "screen",
+  "source": "screen-level",
+  "cluster": null,
+  "required": true,
+  "description": "Spinners and AI animation respect prefers-reduced-motion.",
+  "priority": "nice-to-have",
+  "quick_scan": {
+   "status": "handled",
+   "signals": [
+    {
+     "label": "prefers-reduced-motion",
+     "files": 5,
+     "at": [
+      "packages/common/helpers.ts:21",
+      "packages/ui/src/components/shadcn/ui/accordion.tsx:57",
+      "packages/ui/src/components/shadcn/ui/tabs.tsx:56"
+     ]
+    }
+   ],
+   "problems": []
+  }
+ }
+]

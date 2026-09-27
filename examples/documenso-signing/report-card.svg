@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="Inter, -apple-system, 'Segoe UI', system-ui, sans-serif">
+  <rect width="1200" height="630" fill="#f6f6f3"/>
+  <rect x="40" y="40" width="1120" height="550" rx="28" fill="#ffffff" stroke="#e4e4e0" stroke-width="2"/>
+  <text x="96" y="118" font-size="24" font-weight="600" fill="#18181b">Recipient document signing page</text>
+  <text x="96" y="152" font-size="19" fill="#95959c" font-family="ui-monospace, Menlo, monospace">documenso/documenso</text>
+  <text x="1104" y="118" font-size="17" font-weight="600" fill="#95959c" text-anchor="end" letter-spacing="2">UI STATE COVERAGE</text>
+  <text x="90" y="392" font-size="210" font-weight="700" fill="#a86f00" letter-spacing="-8">50</text>
+  <text x="340" y="392" font-size="46" font-weight="500" fill="#95959c">/100</text>
+  <text x="96" y="446" font-size="23" fill="#5f5f66">3 fixes lift it to 89</text>
+  <line x1="600" y1="200" x2="600" y2="470" stroke="#e4e4e0" stroke-width="2"/>
+  <text x="640" y="196" font-size="17" font-weight="600" fill="#95959c" letter-spacing="2">WORST FIRST</text>
+  <circle cx="652" cy="242" r="8" fill="#b42318"/>
+  <text x="676" y="250" font-size="26" font-weight="650" fill="#18181b">Keyboard navigation</text>
+  <text x="676" y="284" font-size="21" fill="#6b6b72">Blocker · no design</text>
+  <circle cx="652" cy="330" r="8" fill="#b42318"/>
+  <text x="676" y="338" font-size="26" font-weight="650" fill="#18181b">Screen reader</text>
+  <text x="676" y="372" font-size="21" fill="#6b6b72">Blocker · no design</text>
+  <circle cx="652" cy="418" r="8" fill="#b42318"/>
+  <text x="676" y="426" font-size="26" font-weight="650" fill="#18181b">Signature methods restricted</text>
+  <text x="676" y="460" font-size="21" fill="#6b6b72">Blocker · half-built</text>
+  <line x1="96" y1="510" x2="1104" y2="510" stroke="#efefec" stroke-width="2"/>
+  <text x="96" y="552" font-size="20" fill="#5f5f66" font-family="ui-monospace, Menlo, monospace">ds-state-gen</text>
+  <text x="1104" y="552" font-size="18" fill="#95959c" text-anchor="end">September 25, 2026</text>
+</svg>

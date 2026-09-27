@@ -1,0 +1,187 @@
+{
+  "project": {
+    "name": "documenso",
+    "path": "/private/tmp/claude-502/-Users-evka-career-ops/aaf50c25-c68f-426d-b1bb-ea565f7cbb6a/scratchpad/documenso",
+    "framework": "react",
+    "framework_detail": "React Router v7 / Remix (apps/remix, flat routes with + folders), turbo monorepo",
+    "ds_name": "@documenso/ui",
+    "ds_framework": "shadcn",
+    "notes": "Tokens are HSL triplets consumed as hsl(var(--x)) via packages/tailwind-config/index.cjs. Dark mode = class 'dark' on <html> (remix-themes, apps/remix/app/root.tsx:134). Variants live in cva() calls in TSX; there is no BEM CSS."
+  },
+  "tokens": {
+    "colors": [
+      {"name": "--background", "value": "0 0% 100% (light) / 0 0% 14.9% (dark)", "file": "packages/ui/styles/theme.css:8,145"},
+      {"name": "--foreground", "value": "222.2 47.4% 11.2% / 0 0% 97%", "file": "packages/ui/styles/theme.css:9,146"},
+      {"name": "--muted", "value": "210 40% 96.1% / 0 0% 23.4%", "file": "packages/ui/styles/theme.css:11,148"},
+      {"name": "--muted-foreground", "value": "215.4 16.3% 46.9% / 0 0% 85%", "file": "packages/ui/styles/theme.css:12,149"},
+      {"name": "--card", "value": "0 0% 100% / 0 0% 14.9%", "file": "packages/ui/styles/theme.css:17,154"},
+      {"name": "--card-border", "value": "214.3 31.8% 91.4% / 0 0% 27.9%", "file": "packages/ui/styles/theme.css:18,155"},
+      {"name": "--field-card", "value": "95 74% 90%", "file": "packages/ui/styles/theme.css:22"},
+      {"name": "--field-card-border", "value": "95.08 71.08% 67.45%", "file": "packages/ui/styles/theme.css:23"},
+      {"name": "--border", "value": "214.3 31.8% 91.4% / 0 0% 27.9%", "file": "packages/ui/styles/theme.css:29,162"},
+      {"name": "--input", "value": "214.3 31.8% 91.4% / 0 0% 27.9%", "file": "packages/ui/styles/theme.css:30,163"},
+      {"name": "--primary", "value": "95.08 71.08% 67.45% (#A2E771 brand green)", "file": "packages/ui/styles/theme.css:32,167"},
+      {"name": "--primary-foreground", "value": "95.08 71.08% 10%", "file": "packages/ui/styles/theme.css:33,168"},
+      {"name": "--secondary", "value": "210 40% 96.1% / 0 0% 23.4%", "file": "packages/ui/styles/theme.css:35,170"},
+      {"name": "--accent", "value": "210 40% 96.1% / 0 0% 27.9%", "file": "packages/ui/styles/theme.css:38,173"},
+      {"name": "--destructive", "value": "0 100% 50% / 0 87% 62%", "file": "packages/ui/styles/theme.css:41,176"},
+      {"name": "--destructive-foreground", "value": "210 40% 98% / 0 0% 98%", "file": "packages/ui/styles/theme.css:42,177"},
+      {"name": "--ring", "value": "95.08 71.08% 67.45%", "file": "packages/ui/styles/theme.css:44,179"},
+      {"name": "--warning", "value": "54 96% 45%", "file": "packages/ui/styles/theme.css:48,183"},
+      {"name": "--recipient-green/blue/purple/orange/yellow/pink", "value": "100 48% 55% / 212 56% 50% / 266 100% 64% / 36 92% 54% / 51 100% 43% / 313 65% 57%", "file": "packages/ui/styles/theme.css:52-57"},
+      {"name": "--new-neutral-50..950, --new-primary-50..950, --new-info-50..950, --new-error-50..950, --new-warning-50..950", "value": "11-step ramps, not yet wired into tailwind config", "file": "packages/ui/styles/theme.css:60-135"},
+      {"name": "documenso (tailwind palette)", "value": "DEFAULT #A2E771; 50 #FFFFFF .. 950 #284E0D", "file": "packages/tailwind-config/index.cjs:70-83"}
+    ],
+    "spacing": [{"name": "(none custom)", "value": "Tailwind default scale", "file": "packages/tailwind-config/index.cjs:9-158"}],
+    "typography": [
+      {"name": "--font-sans", "value": "Inter variable, self-hosted", "file": "apps/remix/app/app.css:67"},
+      {"name": "--font-signature", "value": "Caveat variable 400-600", "file": "apps/remix/app/app.css:68"},
+      {"name": "type scale in use", "value": "Tailwind defaults: text-xs (badge, form error), text-sm (buttons, inputs), text-base (alert title), text-lg (dialog/card titles), text-2xl (flow step title), text-2xl/3xl (error page h1)", "file": "packages/ui/primitives/button.tsx:10; dialog.tsx:115; card.tsx:62"}
+    ],
+    "radii": [
+      {"name": "--radius", "value": "0.5rem", "file": "packages/ui/styles/theme.css:46,181"},
+      {"name": "borderRadius sm/md/lg/xl/2xl", "value": "radius-4px / radius-2px / var(--radius) / radius+2px / radius+4px", "file": "packages/tailwind-config/index.cjs:127-131"},
+      {"name": "field rounded-[2px]", "value": "2px signing field containers", "file": "packages/ui/lib/field-root-container-classes.ts:2"}
+    ],
+    "shadows": [
+      {"name": "Card shadow (light)", "value": "3-layer ring; dark: none", "file": "packages/ui/primitives/card.tsx:38-39"},
+      {"name": "elevation usage", "value": "shadow-md (popover, select, dropdown, tooltip), shadow-lg (dialog, sheet, toast), shadow-2xl (command dialog)", "file": "packages/ui/primitives/popover.tsx:22; dialog.tsx:63; command.tsx:41"}
+    ],
+    "motion": [
+      {"name": "keyframes accordion-down/up", "value": "0.2s ease-out", "file": "packages/tailwind-config/index.cjs:134-141"},
+      {"name": "keyframes caret-blink", "value": "1.25s ease-out infinite", "file": "packages/tailwind-config/index.cjs:142-145"},
+      {"name": "tailwindcss-animate", "value": "animate-in/out, fade-in-80/90, slide-in-from-*, zoom-in-90 on overlays", "file": "packages/tailwind-config/index.cjs:161; dialog.tsx:63; toast.tsx:28"},
+      {"name": "overlay duration", "value": "duration-100 (dialog/sheet overlay), duration-300 (sheet panel)", "file": "packages/ui/primitives/dialog.tsx:42; sheet.tsx:42,57-60"},
+      {"name": "framer-motion", "value": "form error enter/exit, dropzone, upsells, theme switcher", "file": "packages/ui/primitives/form/form-error-message.tsx:26-46; document-dropzone.tsx:78"}
+    ],
+    "z_index": [
+      {"name": "z-50", "value": "dialog overlay/content, alert-dialog, popover, dropdown", "file": "packages/ui/primitives/dialog.tsx:42,63"},
+      {"name": "z-[61]", "value": "sheet", "file": "packages/ui/primitives/sheet.tsx:14,42,53"},
+      {"name": "z-[1000]/z-[1001]", "value": "dialog portal / toast viewport, select content", "file": "packages/ui/primitives/dialog.tsx:21; toast.tsx:18; select.tsx:58"},
+      {"name": "z-9999", "value": "tooltip", "file": "packages/ui/primitives/tooltip.tsx:26"}
+    ],
+    "breakpoints": [
+      {"name": "sm/md/lg/xl/2xl", "value": "Tailwind defaults 640/768/1024/1280/1536px", "file": "packages/tailwind-config/index.cjs:152"},
+      {"name": "3xl/4xl/5xl", "value": "1920/2560/3840px", "file": "packages/tailwind-config/index.cjs:153-155"},
+      {"name": "print", "value": "raw: print", "file": "packages/tailwind-config/index.cjs:156"},
+      {"name": "aspectRatio signature-pad", "value": "16 / 7", "file": "packages/tailwind-config/index.cjs:19-21"}
+    ]
+  },
+  "components": [
+    {"name": "button", "base_class": "buttonVariants (cva): rounded-md text-sm font-medium transition-colors focus-visible:ring-2 disabled:opacity-50 disabled:pointer-events-none", "file": "packages/ui/primitives/button.tsx:9-34",
+     "variants": [
+       {"class": "variant=default", "purpose": "primary, bg-primary (button.tsx:14)"},
+       {"class": "variant=destructive", "purpose": "delete/remove (button.tsx:15-16)"},
+       {"class": "variant=outline", "purpose": "border border-input hover:bg-accent (button.tsx:17)"},
+       {"class": "variant=secondary", "purpose": "cancel/secondary; 168 usages (button.tsx:18)"},
+       {"class": "variant=ghost", "purpose": "icon/toolbar; 83 usages (button.tsx:19)"},
+       {"class": "variant=link", "purpose": "underline text-primary (button.tsx:20)"},
+       {"class": "size=default|sm|lg", "purpose": "h-10 px-4 / h-9 px-3 / h-11 px-8 (button.tsx:24-26)"},
+       {"class": "loading prop", "purpose": "Loader animate-spin before children + disabled (button.tsx:36-47,66-71)"}
+     ],
+     "structure": {"elements": "button > [Loader.animate-spin.mr-2] + children", "required_parts": ["text label"], "common_combinations": ["<Button variant=\"secondary\">Cancel</Button>", "<Button type=\"submit\" loading={isSubmitting}>Create</Button>", "<Button variant=\"destructive\" loading>Delete</Button>"], "usage_refs": "apps/remix/app/components/dialogs/team-delete-dialog.tsx:200-205; general/generic-error-layout.tsx:91-107"}},
+    {"name": "badge", "base_class": "badgeVariants (cva): rounded-md text-xs font-medium ring-1 ring-inset, role=status", "file": "packages/ui/primitives/badge.tsx:7-31,36",
+     "variants": [{"class": "variant=neutral|destructive|warning|default|secondary|orange", "purpose": "gray/red/yellow/green/blue/orange (badge.tsx:10-19)"}, {"class": "size=small|default|large", "purpose": "(badge.tsx:21-25)"}]},
+    {"name": "alert", "base_class": "alertVariants (cva): rounded-lg p-4 [&>svg]:absolute, role=alert", "file": "packages/ui/primitives/alert.tsx:7-29,35",
+     "variants": [{"class": "variant=default|neutral|secondary|destructive|warning", "purpose": "green success / gray info / blue info / red error / yellow (alert.tsx:12-16)"}, {"class": "padding=tighter|tight|default", "purpose": "(alert.tsx:18-22)"}],
+     "structure": {"elements": "div[role=alert] > [svg] + AlertTitle(h5 text-base) + AlertDescription(div text-sm)"}},
+    {"name": "toast", "base_class": "toastVariants (cva): Radix Toast, rounded-md border p-6 pr-8 shadow-lg, swipe + animate-in/out", "file": "packages/ui/primitives/toast.tsx:27-40",
+     "variants": [{"class": "variant=default", "purpose": "bg-background (toast.tsx:32)"}, {"class": "variant=destructive", "purpose": "bg-destructive; ~260 call sites (toast.tsx:33)"}],
+     "structure": {"elements": "ToastViewport(fixed top-0 sm:bottom-0 sm:right-0 md:max-w-[420px]) > Toast > [ToastTitle] + [ToastDescription] + [action] + ToastClose", "note": "TOAST_LIMIT=1, TOAST_REMOVE_DELAY=1000000ms (use-toast.ts:6-7); no success/warning/info variants"}},
+    {"name": "dialog", "base_class": "DialogContent: fixed z-50 animate-in border bg-background p-6 shadow-lg sm:max-w-lg sm:rounded-lg", "file": "packages/ui/primitives/dialog.tsx:14-32,50-88",
+     "variants": [{"class": "position=start|end|center", "purpose": "(dialog.tsx:21-25,66-68)"}, {"class": "hideClose", "purpose": "omit close X (dialog.tsx:59)"}],
+     "structure": {"elements": "DialogContent > DialogHeader > DialogTitle + DialogDescription; body; DialogFooter(flex-col-reverse sm:flex-row sm:justify-end); Close(sr-only 'Close')", "required_parts": ["DialogTitle", "close icon (unless hideClose)"], "footer_pattern": "secondary Cancel + submit with loading", "usage_refs": "92 dialog files in apps/remix/app/components/dialogs"}},
+    {"name": "alert-dialog", "base_class": "AlertDialogContent fixed z-50 max-w-lg animate-in border bg-background p-6 shadow-lg", "file": "packages/ui/primitives/alert-dialog.tsx:35-52", "variants": [{"class": "Action=buttonVariants(); Cancel=outline", "purpose": "(alert-dialog.tsx:88,99)"}], "structure": {"footer_pattern": "Cancel(outline) + Action(default)", "has_close_icon": false}},
+    {"name": "sheet", "base_class": "sheetVariants (cva): fixed z-[61] border bg-background p-6 shadow-lg", "file": "packages/ui/primitives/sheet.tsx:14-24,52-138", "variants": [{"class": "position=top|bottom|left|right", "purpose": "duration-300 (sheet.tsx:56-61)"}, {"class": "size=content|default|sm|lg|xl|full", "purpose": "(sheet.tsx:71-132)"}]},
+    {"name": "input", "base_class": "h-10 rounded-md border border-input bg-background text-base md:text-sm focus-visible:ring-2 disabled:opacity-50", "file": "packages/ui/primitives/input.tsx:7-22", "variants": [{"class": "aria-invalid", "purpose": "!ring-destructive ring-2 (input.tsx:15)"}], "structure": {"related": "textarea.tsx:7-20; password-input.tsx:9-14; pin-input.tsx:7-55 (OTP)"}},
+    {"name": "label", "base_class": "labelVariants: text-sm font-medium peer-disabled:opacity-70", "file": "packages/ui/primitives/label.tsx:8-19", "variants": [{"class": "required", "purpose": "appends text-destructive '*' (label.tsx:17)"}]},
+    {"name": "form", "base_class": "FormItem space-y-2; FormDescription text-sm muted; FormMessage text-destructive text-xs", "file": "packages/ui/primitives/form/form.tsx:67-73,117-121,126-159", "variants": [{"class": "FormErrorMessage", "purpose": "framer-motion animated error (form/form-error-message.tsx:15-48)"}]},
+    {"name": "card", "base_class": "rounded-lg border-2 bg-background + 3-layer ring shadow", "file": "packages/ui/primitives/card.tsx:18-48", "variants": [{"class": "gradient", "purpose": "gradient border mask (card.tsx:33-36)"}], "structure": {"elements": "Card > CardHeader > CardTitle + CardDescription; CardContent; CardFooter (card.tsx:52-84)"}},
+    {"name": "checkbox", "base_class": "h-4 w-4 rounded-sm border data-[state=checked]:bg-primary disabled:opacity-50", "file": "packages/ui/primitives/checkbox.tsx:7-30"},
+    {"name": "switch", "base_class": "h-[24px] w-[44px] rounded-full data-[state=checked]:bg-primary disabled:opacity-50", "file": "packages/ui/primitives/switch.tsx:6-30"},
+    {"name": "radio-group", "base_class": "RadioGroupItem h-4 w-4 rounded-full border-primary; RadioGroupSegmented segmented control", "file": "packages/ui/primitives/radio-group.tsx:7-70"},
+    {"name": "select", "base_class": "SelectTrigger h-10 rounded-md border; SelectContent z-[1001] animate-in", "file": "packages/ui/primitives/select.tsx:16-100"},
+    {"name": "combobox / multiselect", "base_class": "Popover + Command", "file": "packages/ui/primitives/combobox.tsx; multi-select-combobox.tsx; multiselect.tsx"},
+    {"name": "command", "base_class": "Command palette; CommandEmpty slot", "file": "packages/ui/primitives/command.tsx:9-155", "variants": [{"class": "CommandDialog", "purpose": "(command.tsx:31-45)"}, {"class": "CommandEmpty", "purpose": "(command.tsx:109-114)"}]},
+    {"name": "dropdown-menu", "base_class": "DropdownMenuContent z-50 animate-in; Item focus:bg-accent data-[disabled]:opacity-50", "file": "packages/ui/primitives/dropdown-menu.tsx:70-180"},
+    {"name": "popover", "base_class": "PopoverContent z-50 w-72 animate-in shadow-md", "file": "packages/ui/primitives/popover.tsx:12-30"},
+    {"name": "tooltip", "base_class": "TooltipContent z-9999 animate-in fade-in-50 shadow-md", "file": "packages/ui/primitives/tooltip.tsx:17-30", "variants": [{"class": "tooltipVariants (field tooltips)", "purpose": "signing field tooltips (packages/ui/components/field/field-tooltip.tsx:11)"}]},
+    {"name": "tabs", "base_class": "TabsList h-10 rounded-md bg-muted; TabsTrigger data-[state=active]:bg-background", "file": "packages/ui/primitives/tabs.tsx:8-50"},
+    {"name": "toggle", "base_class": "toggleVariants: data-[state=on]:bg-accent", "file": "packages/ui/primitives/toggle.tsx:8-27"},
+    {"name": "table / data-table", "base_class": "Table text-sm; TableRow hover:bg-muted/50; DataTable wrapper with skeleton/error/empty props", "file": "packages/ui/primitives/table.tsx:5-90; data-table.tsx:33-59,159-189", "variants": [{"class": "DataTable skeleton/error/hasFilters/emptyState", "purpose": "error row 'Something went wrong.', skeleton rows, empty 'No results found' + 'Clear filters' (data-table.tsx:159-189)"}]},
+    {"name": "avatar", "base_class": "h-10 w-10 rounded-full; AvatarFallback bg-muted", "file": "packages/ui/primitives/avatar.tsx:6-40"},
+    {"name": "accordion", "base_class": "animate-accordion-up/down", "file": "packages/ui/primitives/accordion.tsx:9-50"},
+    {"name": "progress", "base_class": "h-4 rounded-full bg-secondary > bg-primary indicator", "file": "packages/ui/primitives/progress.tsx:6-20"},
+    {"name": "scroll-area", "base_class": "ScrollArea + .custom-scrollbar/.hover-scrollbar utilities", "file": "packages/ui/primitives/scroll-area.tsx:6-30; packages/ui/styles/theme.css:230-276"},
+    {"name": "document-dropzone", "base_class": "Card role=button focus-visible:ring-2; disabled illustrated state", "file": "packages/ui/primitives/document-dropzone.tsx:78-110"},
+    {"name": "document-flow (stepper)", "base_class": "step header h3 text-2xl + description + hr; footer Back/Continue", "file": "packages/ui/primitives/document-flow/document-flow-root.tsx:19-85"},
+    {"name": "signing field container", "base_class": "field--FieldRootContainer field-card-container dark-mode-disabled rounded-[2px] bg-white/90 ring-2 ring-gray-200 transition-all", "file": "packages/ui/lib/field-root-container-classes.ts:1-6", "variants": [{"class": "recipient color styles", "purpose": "ring-recipient-{color}, hover:bg-recipient-{color}/30; readOnly ring-neutral-400 (packages/ui/lib/recipient-colors.ts:22-64)"}]},
+    {"name": "signature-pad", "base_class": "draw/type/upload signature, aspect 16/7", "file": "packages/ui/primitives/signature-pad/"}
+  ],
+  "state_patterns": {
+    "loading": [
+      {"type": "skeleton", "class": "Skeleton: animate-pulse rounded-md bg-muted", "file": "packages/ui/primitives/skeleton.tsx:3-5", "usage": "DataTable skeleton rows (data-table.tsx:167-170); 12 table components"},
+      {"type": "spinner", "class": "spinnerVariants: animate-spin, size sm/default/lg", "file": "packages/ui/primitives/spinner.tsx:7-18", "usage": "75 files; PdfViewerLoadingState h-[80vh] (apps/remix/app/components/general/pdf-viewer/pdf-viewer-states.tsx:4-10)"},
+      {"type": "spinner", "class": "SpinnerBox", "file": "packages/ui/primitives/spinner.tsx:36-44", "usage": "dialog loading states; analytics-hydrate-fallback.tsx:10-11 with role=status aria-live=polite"},
+      {"type": "spinner", "class": "Button loading prop", "file": "packages/ui/primitives/button.tsx:36-47,66-71", "usage": "form submit buttons"},
+      {"type": "progress", "class": "Progress", "file": "packages/ui/primitives/progress.tsx:6-20"}
+    ],
+    "empty": [
+      {"class": "DocumentsTableEmptyState: h-60 flex-col items-center text-muted-foreground/60 > lucide icon h-12 w-12 + h3 text-lg + p", "file": "apps/remix/app/components/tables/documents-table-empty-state.tsx:9-67", "has_illustration": true, "has_cta": false},
+      {"class": "DataTable default empty row 'No results found' + 'Clear filters' when hasFilters", "file": "packages/ui/primitives/data-table.tsx:171-189", "has_illustration": false, "has_cta": true},
+      {"class": "CommandEmpty 'No results found.'", "file": "packages/ui/primitives/command.tsx:109-114", "has_illustration": false, "has_cta": false}
+    ],
+    "error": [
+      {"type": "toast", "class": "toast({variant:'destructive'}) via useToast; ~260 call sites", "file": "packages/ui/primitives/toast.tsx:33; use-toast.ts:6-7"},
+      {"type": "inline", "class": "FormMessage / FormErrorMessage text-destructive text-xs; Input aria-invalid ring", "file": "packages/ui/primitives/form/form.tsx:159; form/form-error-message.tsx:41; input.tsx:15"},
+      {"type": "banner", "class": "Alert variant=destructive", "file": "packages/ui/primitives/alert.tsx:15"},
+      {"type": "banner", "class": "root.tsx global destructive banner bg-destructive px-4 py-3 text-sm", "file": "apps/remix/app/root.tsx:163-164"},
+      {"type": "page", "class": "GenericErrorLayout: full-screen illustration + subHeading + h1 text-2xl/3xl + p text-sm + 'Go Back' secondary + 'Home' primary; used by root ErrorBoundary, _authenticated+/_layout.tsx, _recipient+/_layout.tsx", "file": "apps/remix/app/components/general/generic-error-layout.tsx:61-107"},
+      {"type": "inline", "class": "DataTable error row 'Something went wrong.'", "file": "packages/ui/primitives/data-table.tsx:159-166"},
+      {"type": "inline", "class": "PdfViewerErrorState h-[80vh] 'try again or contact support'", "file": "apps/remix/app/components/general/pdf-viewer/pdf-viewer-states.tsx:12-25"}
+    ],
+    "toast": [{"variants": ["default", "destructive"], "file": "packages/ui/primitives/toast.tsx:27-40", "notes": "Radix toast; TOAST_LIMIT=1; bottom-right on sm+, top on mobile; close X hidden until hover on md+ (toast.tsx:75)"}],
+    "modal": [
+      {"class": "Dialog", "sizes": ["sm:max-w-lg; position start|end|center"], "file": "packages/ui/primitives/dialog.tsx:50-88", "has_close_icon": true, "footer_pattern": "secondary Cancel + submit with loading"},
+      {"class": "AlertDialog", "sizes": ["max-w-lg"], "file": "packages/ui/primitives/alert-dialog.tsx:35-52", "has_close_icon": false, "footer_pattern": "Cancel(outline) + Action"},
+      {"class": "Sheet", "sizes": ["content", "default", "sm", "lg", "xl", "full"], "file": "packages/ui/primitives/sheet.tsx:52-138", "has_close_icon": true}
+    ],
+    "disabled": [
+      {"class": "Button disabled:opacity-50 disabled:pointer-events-none", "file": "packages/ui/primitives/button.tsx:10,67"},
+      {"class": "Input/Textarea/Select/Checkbox/Switch/Radio disabled:cursor-not-allowed disabled:opacity-50", "file": "packages/ui/primitives/input.tsx:12; textarea.tsx:11; select.tsx:25; checkbox.tsx:16; switch.tsx:12; radio-group.tsx:24"},
+      {"class": "menu items data-[disabled]:opacity-50", "file": "packages/ui/primitives/dropdown-menu.tsx:98; select.tsx:96; command.tsx:150"},
+      {"class": "DocumentDropzone aria-disabled illustrated state", "file": "packages/ui/primitives/document-dropzone.tsx:88,94-110"}
+    ],
+    "offline": [],
+    "responsive": [
+      {"breakpoint": "sm (640px)", "file": "packages/ui/primitives/dialog.tsx:63-68; toast.tsx:18; sheet.tsx:167,173", "behavior": "dialog full-width sheet -> centered; toast top -> bottom-right; footers col-reverse -> row"},
+      {"breakpoint": "md (768px)", "file": "packages/ui/primitives/input.tsx:12; toast.tsx:75", "behavior": "input text-base -> text-sm (iOS zoom guard); toast close hidden until hover"},
+      {"breakpoint": "mobile nav", "file": "apps/remix/app/components/general/app-nav-mobile.tsx:91", "behavior": "Sheet-based mobile nav"},
+      {"breakpoint": "print", "file": "packages/tailwind-config/index.cjs:156; packages/ui/styles/theme.css:212-217; apps/remix/app/routes/_internal+/[__htmltopdf]+/audit-log.print.css:1", "behavior": ".print-provider @page A4; audit log/certificate print routes only"},
+      {"note": "no @media queries in TSX and no useMediaQuery/matchMedia hook; all responsive via tailwind prefixes"}
+    ],
+    "focus": [
+      {"class": "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 (ring = primary green)", "file": "packages/ui/primitives/button.tsx:10; input.tsx:12; checkbox.tsx:16; switch.tsx:12; tabs.tsx:31; toggle.tsx:9"},
+      {"class": "focus:ring-2 (non-visible variant) on Select trigger, dialog/sheet close, toast action", "file": "packages/ui/primitives/select.tsx:25; dialog.tsx:77; sheet.tsx:153; toast.tsx:58"},
+      {"class": "focus:bg-accent on menu/select items (no ring)", "file": "packages/ui/primitives/dropdown-menu.tsx:98; select.tsx:96"}
+    ],
+    "accessibility": [
+      {"pattern": "sr-only labels (23)", "file": "packages/ui/primitives/dialog.tsx:80; sheet.tsx:155"},
+      {"pattern": "role=alert (Alert), role=status (Badge, analytics fallback), aria-live=polite", "file": "packages/ui/primitives/alert.tsx:35; badge.tsx:36; apps/remix/app/components/general/analytics/analytics-hydrate-fallback.tsx:10"},
+      {"pattern": "aria-invalid drives destructive ring", "file": "packages/ui/primitives/input.tsx:15"},
+      {"pattern": "reduced motion: framer useReducedMotion only in settings-upsell components; no prefers-reduced-motion CSS / motion-reduce utilities anywhere", "file": "apps/remix/app/components/general/settings-upsell/branding-upsell.tsx:47; sso-portal-upsell.tsx:13"},
+      {"pattern": "dark mode: class on <html> via remix-themes; .dark-mode-disabled escape hatch for signing fields", "file": "apps/remix/app/root.tsx:25,102,134; packages/ui/styles/theme.css:6-7,144"}
+    ]
+  },
+  "screens": [
+    {"name": "auth (signin, signup, forgot/reset password, verify email, org signin, invites)", "file": "apps/remix/app/routes/_unauthenticated+/*.tsx", "components_used": ["Card", "Form", "Input", "PasswordInput", "Button", "Alert", "toast"]},
+    {"name": "authenticated shell", "file": "apps/remix/app/routes/_authenticated+/_layout.tsx", "components_used": ["AppHeader", "AppNavDesktop", "AppNavMobile(Sheet)", "AppBanner", "AppCommandMenu", "GenericErrorLayout"]},
+    {"name": "dashboard / inbox", "file": "apps/remix/app/routes/_authenticated+/dashboard.tsx; inbox.tsx", "components_used": ["DataTable", "Skeleton", "Badge"]},
+    {"name": "team documents (list, folders, detail, edit, logs)", "file": "apps/remix/app/routes/_authenticated+/t.$teamUrl+/documents.*.tsx", "components_used": ["DocumentsTable", "DocumentsTableEmptyState", "DocumentDropzone", "EnvelopeEditor", "DocumentFlow", "Dialog"]},
+    {"name": "team templates", "file": "apps/remix/app/routes/_authenticated+/t.$teamUrl+/templates.*.tsx", "components_used": ["TemplatesTable", "TemplateUseDialog", "Sheet"]},
+    {"name": "team / org / user settings, analytics, admin", "file": "apps/remix/app/routes/_authenticated+/**", "components_used": ["Form", "Switch", "Select", "DataTable", "Dialog", "PinInput"]},
+    {"name": "recipient signing (sign, complete, expired, rejected, waiting, direct template, report)", "file": "apps/remix/app/routes/_recipient+/sign.$token+/_index.tsx; complete.tsx; expired.tsx; rejected.tsx; waiting.tsx; d.$token+/_index.tsx; report.$token.tsx; _layout.tsx", "components_used": ["document-signing/* fields", "signature-pad", "field containers", "Dialog", "Button", "GenericErrorLayout", "RecipientBranding"]},
+    {"name": "embed v0/v1/v2 (sign, direct, authoring, multisign)", "file": "apps/remix/app/routes/embed+/**", "components_used": ["embed/authoring/*", "DocumentDropzone", "field containers"]},
+    {"name": "internal print (audit-log, certificate)", "file": "apps/remix/app/routes/_internal+/[__htmltopdf]+/*", "components_used": ["print-provider", "Table"]}
+  ]
+}

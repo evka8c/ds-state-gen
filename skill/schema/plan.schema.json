@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "plan.schema.json",
+  "title": "/states plan output",
+  "description": "Output of skill/prompts/plan.md: prioritised states to build plus a paste-ready prompt block.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["feature", "context_assumed", "must", "later", "build_prompt"],
+  "properties": {
+    "feature": { "type": "string" },
+    "context_assumed": { "type": "boolean" },
+    "must": { "type": "array", "maxItems": 15, "items": { "$ref": "#/$defs/state" } },
+    "later": { "type": "array", "maxItems": 10, "items": { "$ref": "#/$defs/state" } },
+    "dropped": {
+      "type": "array", "description": "Scan states judged not to apply.",
+      "items": { "type": "object", "additionalProperties": false, "required": ["id", "why"],
+        "properties": { "id": { "type": "string" }, "why": { "type": "string" } } }
+    },
+    "build_prompt": { "type": "string", "description": "Markdown starting '## States to build', < 40 lines." }
+  },
+  "$defs": {
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "trigger", "shows", "component", "why", "source"],
+      "properties": {
+        "id": { "type": ["string", "null"], "description": "Scan id; null when added." },
+        "name": { "type": "string" },
+        "trigger": { "type": "string", "description": "When it appears." },
+        "shows": { "type": "string", "description": "One line: what the user sees and how they get out." },
+        "component": { "type": "string", "description": "Exact component name, or 'new: <base>'." },
+        "why": { "type": "string", "description": "Harm if missing, one short clause." },
+        "source": { "enum": ["taxonomy", "screen", "added"] }
+      }
+    }
+  }
+}
