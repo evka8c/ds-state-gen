@@ -20,6 +20,22 @@ Existing tools (StateBuilder, Figma plugins) only handle component-level states 
 
 The output is actionable: every gap cites what DS components to reuse, what tokens to extend, and what's genuinely new.
 
+## `/states` — the Claude Code skill
+
+The pipeline below, refined into a skill you run while building. AI builds the happy path; `/states` finds what happens when things go wrong, ranks it by harm to the user, and fixes it with the project's own components.
+
+- **Plan** — `/states "invoice table with filters and bulk delete"`: no code yet, lists the states to build and a prompt to paste into your build.
+- **Check** — `/states` (changed files on the branch) or `/states src/app/invoices`: a script scopes the files in about a second, then three reviewers run in parallel through different lenses (actions and guards, screens and copy, accessibility). Findings are merged, a sceptical verifier agent reopens every cited line and drops what the code already handles, and the rest are ranked blocker / misleading / nuisance. The result is an HTML report with browser screenshots of each problem as it is today, the proposed fix, and a score.
+- **Fix** — opt-in (`fix` or `fix 1, 3`): fixes the chosen findings with the project's own components, reruns the screenshots, and marks a fix "verified" only when the after-shot shows it.
+
+Install by linking the `skill/` folder into your project's or user's Claude Code skills:
+
+```
+ln -s /path/to/ds-state-gen/skill ~/.claude/skills/states
+```
+
+Evals (fixture app with known answers, real-repo cases) live in [`evals/`](evals/).
+
 ## Quick Scan (seconds, no AI)
 
 ```
