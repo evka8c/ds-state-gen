@@ -2,7 +2,7 @@
 
 A multi-agent Claude Code tool that generates complete UI state coverage for any feature. You design the happy path. It generates everything else.
 
-![Report example](docs/report-example.png)
+![Report example: Documenso signing page](docs/report-example.png)
 
 **[Example: Documenso's signing page, 50/100](examples/documenso-signing/report.html)** · **[Supabase SQL editor](examples/supabase-sql-editor/report.html)** · [FlyTabs editor](examples/flytabs-editor.html) · [FlyTabs landing page](examples/flytabs-landing.html)
 
